@@ -1,0 +1,670 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>使用HiCUP进行Hi-C数据预处理  - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"使用HiCUP进行Hi-C数据预处理\n\n\n\n\n\nHiCUP是一款经典的Hi-C数据预处理软件，官网如下\n\nhttps://www.bioinformatics.babraham.ac.uk/projects/hicup/\n\n数据处理的流程示意如下:\n\n\n首先通过hicup_truncater识别原始序列中的junction reads, 最典型的Hi-C的reads如下所示:\n\n\nR1和R2来自两个不同的fragments, 当然这取决于插入偏度长度和读长的关系，当连接点与fragment两端的距离小于测序读长是，会发生下图所示的情况:\n\n\n其中一端的序列是一个嵌合体序列，这样的序列在后续比对时会被过滤掉。为了保留这部分有效reads,hicup_truncater根据酶切位点的特征来识别所有reads上的连接位点，从而识别上图中的嵌合体序列，并对这样的序列末端进行切割，切除多余的嵌合体序列。切割完之后，这样的序列和普通的R1,R2就一样了，可以进行后续的mapping。\nhicup_mapper将双端reads与参考基因组比对，由于Hi-C文库的R1和R2来源于空间结构近的染色质，其线性距离比传统的双端测序插入片段的长度大的多，如果直接进行双端比对，觉得部分reads都比对不上参考基因组，所以这里是对每一端的序列分别比对，然后再进行合并。\nhicup_filter对比对上的序列进行过滤，如下图所示:\n\n\n只保留valid di-tags, 其他诸如selft-ligation, Re-ligation等片段都会被过滤掉。\nhicup_deduplicator用来去除PCR重复，因为valid reads的多少用来表征染色质互作的频率，PCR重复的reads数量会对这个信息造成干扰，如果不去除PCR重复，junction reads的数目多可能是PCR重复多，不一定是因为染色质交互频率强而导致的reads多。\n软件的安装也很方便，直接下载解压缩即可。使用步骤如下\n\n准备参考基因组的索引文件所有的参考基因组比对软件都需要事先对基因组建立索引，HiCUP支持使用bowtie或bowtie2进行比对，以bowtie2为例，建立基因组索引的方式如下:bowite2-build hg19.fa hg19第一个参数是基因组的fasta文件，第二个参数是输出的索引文件的名称。\n\n准备参考基因组酶切位点图谱采用hicup_digester这个脚本来创建基因组的酶切图谱，基本用法如下:\n\n\nhicup_digester \\\n    --re1 A^AGCTT,HindIII \\\n    --genome hg19_digester_db \\\n    hg19.fa\n\n根据限制性内切酶识别的位点，将基因组序列进行模拟酶切，得到所有可能的酶切片段。--re1指定切割位点的序列和内切酶的名字，--genome指定输出文件的名称。最终输出的文件名示例如下:Digest_hg19_digester_db_HindIII_None_09-46-07_17-05-2019.txt3. 编辑配置文件首先通过如下命令生成一个配置文件的模板\nhicup --example\n\n该命令会生成一个名为hicup_example.conf的文件，在此基础上进行编辑就可以了。在配置中对每个选项都体用了详细的注释，根据需求修改即可。常用的修改的选项如下：\n#Path to the reference genome indices\n#Remember to include the basename of the genome indices\nIndex: /bi/scratch/Genomes/Human/GRCh38/Homo_sapiens.GRCh38\n#Path to the genome digest file produced by hicup_digester\nDigest: /bi/scratch/Genomes/Human/GRCh38/Digest_Homo_sapiens_GRCh38_HindIII_None_14-43-31_10-02-2016.txt.gz\n#FASTQ files to be analysed, placing paired files on adjacent lines\ns_1_1_sequence.fastq.gz\ns_1_2_sequence.fastq.gz\n\n包括基因组索引和酶切图谱的路径，以及需要处理的Hi-C原始fastq文件的路径。\n\n运行准备好配置文件之后，就可以运行了，用法如下\n\nhicup --config hicup.conf\n\n在输出结果的目录会生成一个html文件，展示了质控的各项指标，内容如下所示\n\n1. Truncating and Mapping\n2. Filtering示意如下，可以看到valid  pairs的比例在50%左右\n3. Length Distribution\n4. De-dupliation\n除此之外，输出目录还有很多的文件，其中后缀为hicup_bam的文件包含了最终的de-duplication之后的reads的比对结果，可以用于下游的分析。\n\n","dateCreated":"2019-11-02T22:49:55+08:00","dateModified":"2019-11-02T22:49:55+08:00","datePublished":"2019-11-02T22:49:55+08:00","description":"使用HiCUP进行Hi-C数据预处理","headline":"使用HiCUP进行Hi-C数据预处理 ","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/","keywords":"Hi-C, HiCUP"}</script>
+    <meta name="description" content="使用HiCUP进行Hi-C数据预处理">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="使用HiCUP进行Hi-C数据预处理 ">
+<meta property="og:url" content="https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:description" content="使用HiCUP进行Hi-C数据预处理">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/1.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/2.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/3.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/4.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/5.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/6.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/7.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/8.png">
+<meta property="article:published_time" content="2019-11-02T14:49:55.000Z">
+<meta property="article:modified_time" content="2019-11-02T14:49:55.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta property="article:tag" content="Hi-C">
+<meta property="article:tag" content="HiCUP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/1.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            使用HiCUP进行Hi-C数据预处理 
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2019-11-02T22:49:55+08:00">
+	
+		    11月 02, 2019
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/all-categories/Hi-C%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">Hi-C数据分析</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>使用HiCUP进行Hi-C数据预处理</p>
+<span id="more"></span>
+
+
+<h1 id="table-of-contents">目录</h1>
+<hr>
+<p>HiCUP是一款经典的Hi-C数据预处理软件，官网如下</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.bioinformatics.babraham.ac.uk/projects/hicup/">https://www.bioinformatics.babraham.ac.uk/projects/hicup/</a></li>
+</ul>
+<p>数据处理的流程示意如下:</p>
+<img src="/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/1.png" class="">
+
+<p>首先通过<code>hicup_truncater</code>识别原始序列中的<code>junction reads</code>, 最典型的Hi-C的reads如下所示:</p>
+<img src="/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/2.png" class="">
+
+<p>R1和R2来自两个不同的fragments, 当然这取决于插入偏度长度和读长的关系，当连接点与fragment两端的距离小于测序读长是，会发生下图所示的情况:</p>
+<img src="/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/3.png" class="">
+
+<p>其中一端的序列是一个嵌合体序列，这样的序列在后续比对时会被过滤掉。为了保留这部分有效reads,<code>hicup_truncater</code>根据酶切位点的特征来识别所有reads上的连接位点，从而识别上图中的嵌合体序列，并对这样的序列末端进行切割，切除多余的嵌合体序列。切割完之后，这样的序列和普通的R1,R2就一样了，可以进行后续的mapping。</p>
+<p>hicup_mapper将双端reads与参考基因组比对，由于Hi-C文库的R1和R2来源于空间结构近的染色质，其线性距离比传统的双端测序插入片段的长度大的多，如果直接进行双端比对，觉得部分reads都比对不上参考基因组，所以这里是对每一端的序列分别比对，然后再进行合并。</p>
+<p><code>hicup_filter</code>对比对上的序列进行过滤，如下图所示:</p>
+<img src="/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/4.png" class="">
+
+<p>只保留valid di-tags, 其他诸如<code>selft-ligation</code>, <code>Re-ligation</code>等片段都会被过滤掉。</p>
+<p><code>hicup_deduplicator</code>用来去除PCR重复，因为valid reads的多少用来表征染色质互作的频率，PCR重复的reads数量会对这个信息造成干扰，如果不去除PCR重复，junction reads的数目多可能是PCR重复多，不一定是因为染色质交互频率强而导致的reads多。</p>
+<p>软件的安装也很方便，直接下载解压缩即可。使用步骤如下</p>
+<ol>
+<li><p>准备参考基因组的索引文件<br>所有的参考基因组比对软件都需要事先对基因组建立索引，HiCUP支持使用<code>bowtie</code>或<code>bowtie2</code>进行比对，以<code>bowtie2</code>为例，建立基因组索引的方式如下:<br><code>bowite2-build hg19.fa hg19</code><br>第一个参数是基因组的fasta文件，第二个参数是输出的索引文件的名称。</p>
+</li>
+<li><p>准备参考基因组酶切位点图谱<br>采用hicup_digester这个脚本来创建基因组的酶切图谱，基本用法如下:</p>
+</li>
+</ol>
+<pre><code>hicup_digester \
+    --re1 A^AGCTT,HindIII \
+    --genome hg19_digester_db \
+    hg19.fa
+</code></pre>
+<p>根据限制性内切酶识别的位点，将基因组序列进行模拟酶切，得到所有可能的酶切片段。<code>--re1</code>指定切割位点的序列和内切酶的名字，<code>--genome</code>指定输出文件的名称。最终输出的文件名示例如下:<br><code>Digest_hg19_digester_db_HindIII_None_09-46-07_17-05-2019.txt</code><br>3. 编辑配置文件<br>首先通过如下命令生成一个配置文件的模板</p>
+<pre><code>hicup --example
+</code></pre>
+<p>该命令会生成一个名为<code>hicup_example.conf</code>的文件，在此基础上进行编辑就可以了。在配置中对每个选项都体用了详细的注释，根据需求修改即可。常用的修改的选项如下：</p>
+<pre><code>#Path to the reference genome indices
+#Remember to include the basename of the genome indices
+Index: /bi/scratch/Genomes/Human/GRCh38/Homo_sapiens.GRCh38
+#Path to the genome digest file produced by hicup_digester
+Digest: /bi/scratch/Genomes/Human/GRCh38/Digest_Homo_sapiens_GRCh38_HindIII_None_14-43-31_10-02-2016.txt.gz
+#FASTQ files to be analysed, placing paired files on adjacent lines
+s_1_1_sequence.fastq.gz
+s_1_2_sequence.fastq.gz
+</code></pre>
+<p>包括基因组索引和酶切图谱的路径，以及需要处理的Hi-C原始fastq文件的路径。</p>
+<ol start="4">
+<li>运行<br>准备好配置文件之后，就可以运行了，用法如下</li>
+</ol>
+<pre><code>hicup --config hicup.conf
+</code></pre>
+<p>在输出结果的目录会生成一个html文件，展示了质控的各项指标，内容如下所示</p>
+<ul>
+<li><strong>1. Truncating and Mapping</strong><img src="/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/5.png" class=""></li>
+<li><strong>2. Filtering</strong><br>示意如下，可以看到valid  pairs的比例在50%左右<img src="/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/6.png" class=""></li>
+<li><strong>3. Length Distribution</strong><img src="/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/7.png" class=""></li>
+<li><strong>4. De-dupliation</strong><img src="/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/8.png" class="">
+除此之外，输出目录还有很多的文件，其中后缀为hicup_bam的文件包含了最终的de-duplication之后的reads的比对结果，可以用于下游的分析。</li>
+</ul>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/Hi-C/" rel="tag">Hi-C</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/HiCUP/" rel="tag">HiCUP</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-juicer-hi-c-shu-ju-chu-li-fen-xi-de-li-qi/"
+                    data-tooltip="Juicer:Hi-C数据处理分析的利器"
+                    aria-label="上一篇: Juicer:Hi-C数据处理分析的利器"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-promoter-capture-hi-c-yan-jiu-qi-dong-zi-qu-ran-se-zhi-hu-zuo-de-li-qi/"
+                    data-tooltip="Promoter Capture Hi-C:研究启动子区染色质互作的利器"
+                    aria-label="下一篇: Promoter Capture Hi-C:研究启动子区染色质互作的利器"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-juicer-hi-c-shu-ju-chu-li-fen-xi-de-li-qi/"
+                    data-tooltip="Juicer:Hi-C数据处理分析的利器"
+                    aria-label="上一篇: Juicer:Hi-C数据处理分析的利器"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-promoter-capture-hi-c-yan-jiu-qi-dong-zi-qu-ran-se-zhi-hu-zuo-de-li-qi/"
+                    data-tooltip="Promoter Capture Hi-C:研究启动子区染色质互作的利器"
+                    aria-label="下一篇: Promoter Capture Hi-C:研究启动子区染色质互作的利器"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-shi-yong-hicup-jin-xing-hi-c-shu-ju-yu-chu-li/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

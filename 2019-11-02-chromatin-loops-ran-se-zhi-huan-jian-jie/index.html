@@ -1,0 +1,638 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>chromatin loops:染色质环简介 - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"chromatin loops:染色质环简介\n\n\n\n\n\n利用5kb分辨率的Hi-C基因组互作图谱，科学家识别到了chromatin loop这种染色质结构，文章发表在cell上,标题如下:**A 3D Map of the Human Genome at Kilobase Resolution Reveals Principles of Chromatin Looping\n通过对不同分辨率的Hi-C图谱进行分析，检测到了不同层级的染色质结构，从高到低依次为A&#x2F;B compartments, subcompartments, TAD, chromation loop。Hi-C图谱和染色质结构模型的对应关系如下:\n\n\n早期研究中利用1MB的Hi-C图谱 ，定义了每条染色质包含了A和B两个compartments。该文章中对100kb分辨率的Hi-C图谱进行聚类分析，发现A&#x2F;B compartments进一步分成了6个子类，即subcompartments。对每条染色质的Hi-C图谱进行不同算法的聚类分析，除了19号染色质外，都得到了5个cluster，对于19号染色质，得到了6个cluster。\n通过分析这些subcompartments与A&#x2F;B compartments的关系，发现其中2个属于A compartments, 标记为A1和A2, 另外4个属于B comprtmants, 标记为B1, B2, B3, B4。\n对于TAD拓扑关联结构域的识别，首创了一种ArrowHead算法，核心是对归一化之后的交互矩阵进行变换，变化的公式如下:\n\n\n和DI的算法类似，i-d和i+d分别代表上下游的两个bin, 如果i和上游bin互作频率高，则A值为正数，如果和下游bin互作频率高，则A值为负数，如果相等，则为0。示意如下:\n\n\nA图中的正方形区域为一个TAD domain, 经过转换后，变成了图B所示的形状。对应到整个互作矩阵上，看上去就是图E所示的箭头型。利用动态规划算法，识别变换后矩阵中的箭头区域，就可以预测TAD domain。文章中识别到的TAD domain,长度在40kb-3Mb，中位数为185kb。\n对于染色质环，定义为Hi-C图谱中互作频率比周围相邻区域都高的格子区域，这样的区域称之为peak , 而对应的染色质区域称之为peak loci，如下图中蓝色圆点标记的区域:\n\n\n如上图所示，通过与四周区域的交互频率进行比较鉴定peak区域，这要去HI-C图谱的分辨率在5kb以下。对于全基因组互作图谱而言，这个计算量是非常大的，文章作者也提供了一种名为HiCCUPS的算法，集成在了开发的juicer软件中。\n进一步比较不同细胞系和不同物种间的染色质环区域，结果如下:\n\n\n发现在不同细胞系间相对稳定，在物种间也具有一定进化保守性。对染色质环的分布位置进行分析，发现其处于TAD边界处。进一步分析发现染色质环中有很大部分为promoter-enhancer loops， 这也解释了增强子对靶基因的调控机制，虽然增强子与靶基因线性距离很远，但是增强子与靶基因启动子位于一个染色质环上，空间距离近，通过与启动子结合调控靶基因。\n对染色质环对应区域富集的各种mark进行分析，发现其富集CTCF等转录因子, 如下图所示:\n\n\n对于染色质环的空间结构，提出了如下模型:\n\n通过构建5kb以下分辨率的Hi-C图谱，可以识别染色质环这种染色质结构单元。\n","dateCreated":"2019-11-02T22:49:25+08:00","dateModified":"2019-11-02T22:49:25+08:00","datePublished":"2019-11-02T22:49:25+08:00","description":"chromatin loops:染色质环简介","headline":"chromatin loops:染色质环简介","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/","keywords":"Hi-C, chromatin loops, 染色质环"}</script>
+    <meta name="description" content="chromatin loops:染色质环简介">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="chromatin loops:染色质环简介">
+<meta property="og:url" content="https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:description" content="chromatin loops:染色质环简介">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/8.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/2.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/3.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/4.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/5.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/6.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/7.png">
+<meta property="article:published_time" content="2019-11-02T14:49:25.000Z">
+<meta property="article:modified_time" content="2019-11-02T14:49:25.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta property="article:tag" content="Hi-C">
+<meta property="article:tag" content="chromatin loops">
+<meta property="article:tag" content="染色质环">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/8.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            chromatin loops:染色质环简介
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2019-11-02T22:49:25+08:00">
+	
+		    11月 02, 2019
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/all-categories/Hi-C%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">Hi-C数据分析</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>chromatin loops:染色质环简介</p>
+<span id="more"></span>
+
+
+<h1 id="table-of-contents">目录</h1>
+<hr>
+<p>利用5kb分辨率的Hi-C基因组互作图谱，科学家识别到了chromatin loop这种染色质结构，文章发表在cell上,标题如下:<br>**<a target="_blank" rel="noopener" href="https://www.cell.com/fulltext/S0092-8674(14)01497-401497-4">A 3D Map of the Human Genome at Kilobase Resolution Reveals Principles of Chromatin Looping</a></p>
+<p>通过对不同分辨率的Hi-C图谱进行分析，检测到了不同层级的染色质结构，从高到低依次为A&#x2F;B compartments, subcompartments, TAD, chromation loop。Hi-C图谱和染色质结构模型的对应关系如下:</p>
+
+
+<p>早期研究中利用1MB的Hi-C图谱 ，定义了每条染色质包含了A和B两个compartments。该文章中对100kb分辨率的Hi-C图谱进行聚类分析，发现A&#x2F;B compartments进一步分成了6个子类，即subcompartments。对每条染色质的Hi-C图谱进行不同算法的聚类分析，除了19号染色质外，都得到了5个cluster，对于19号染色质，得到了6个cluster。</p>
+<p>通过分析这些subcompartments与A&#x2F;B compartments的关系，发现其中2个属于A compartments, 标记为A1和A2, 另外4个属于B comprtmants, 标记为B1, B2, B3, B4。</p>
+<p>对于TAD拓扑关联结构域的识别，首创了一种<code>ArrowHead</code>算法，核心是对归一化之后的交互矩阵进行变换，变化的公式如下:</p>
+<img src="/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/8.png" class="">
+
+<p>和DI的算法类似，i-d和i+d分别代表上下游的两个bin, 如果i和上游bin互作频率高，则A值为正数，如果和下游bin互作频率高，则A值为负数，如果相等，则为0。示意如下:</p>
+<img src="/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/2.png" class="">
+
+<p>A图中的正方形区域为一个TAD domain, 经过转换后，变成了图B所示的形状。对应到整个互作矩阵上，看上去就是图E所示的箭头型。利用动态规划算法，识别变换后矩阵中的箭头区域，就可以预测TAD domain。文章中识别到的TAD domain,长度在40kb-3Mb，中位数为185kb。</p>
+<p>对于染色质环，定义为Hi-C图谱中互作频率比周围相邻区域都高的格子区域，这样的区域称之为peak , 而对应的染色质区域称之为peak loci，如下图中蓝色圆点标记的区域:</p>
+<img src="/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/3.png" class="">
+
+<p>如上图所示，通过与四周区域的交互频率进行比较鉴定peak区域，这要去HI-C图谱的分辨率在5kb以下。对于全基因组互作图谱而言，这个计算量是非常大的，文章作者也提供了一种名为HiCCUPS的算法，集成在了开发的juicer软件中。</p>
+<p>进一步比较不同细胞系和不同物种间的染色质环区域，结果如下:</p>
+<img src="/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/4.png" class="">
+<img src="/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/5.png" class="">
+<p>发现在不同细胞系间相对稳定，在物种间也具有一定进化保守性。对染色质环的分布位置进行分析，发现其处于TAD边界处。进一步分析发现染色质环中有很大部分为promoter-enhancer loops， 这也解释了增强子对靶基因的调控机制，虽然增强子与靶基因线性距离很远，但是增强子与靶基因启动子位于一个染色质环上，空间距离近，通过与启动子结合调控靶基因。</p>
+<p>对染色质环对应区域富集的各种mark进行分析，发现其富集CTCF等转录因子, 如下图所示:</p>
+<img src="/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/6.png" class="">
+
+<p>对于染色质环的空间结构，提出了如下模型:</p>
+<img src="/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/7.png" class="">
+<p>通过构建5kb以下分辨率的Hi-C图谱，可以识别染色质环这种染色质结构单元。</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/Hi-C/" rel="tag">Hi-C</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/chromatin-loops/" rel="tag">chromatin loops</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/%E6%9F%93%E8%89%B2%E8%B4%A8%E7%8E%AF/" rel="tag">染色质环</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-promoter-capture-hi-c-yan-jiu-qi-dong-zi-qu-ran-se-zhi-hu-zuo-de-li-qi/"
+                    data-tooltip="Promoter Capture Hi-C:研究启动子区染色质互作的利器"
+                    aria-label="上一篇: Promoter Capture Hi-C:研究启动子区染色质互作的利器"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/"
+                    data-tooltip="TAD:拓扑关联结构域简介"
+                    aria-label="下一篇: TAD:拓扑关联结构域简介"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-promoter-capture-hi-c-yan-jiu-qi-dong-zi-qu-ran-se-zhi-hu-zuo-de-li-qi/"
+                    data-tooltip="Promoter Capture Hi-C:研究启动子区染色质互作的利器"
+                    aria-label="上一篇: Promoter Capture Hi-C:研究启动子区染色质互作的利器"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/"
+                    data-tooltip="TAD:拓扑关联结构域简介"
+                    aria-label="下一篇: TAD:拓扑关联结构域简介"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-chromatin-loops-ran-se-zhi-huan-jian-jie/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

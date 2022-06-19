@@ -1,0 +1,706 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>sRNAnalyzer - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"sRNAnalyzer–A pipeline for small RNA sequencing data analysis\n\n\n\n\n\n\n\nGetting Started with sRNAnalyzer\n\n\n\n\n\nIntroductionsRNAnalyzer is a flexible, modular pipeline for the analysis of small RNA sequencing data. Features include,\n\nAdditional adapter trimming process to generate cleaner data\nComprehensive microRNA profiling strategies to better handle isomiR issues\nSummarization for each nucleotide to detect potential SNPs on miRNAs\nMultiple assignment to simulate miRNA array and qRT-PCR platforms\nA local probabilistic model to map reads to the most-likely entry IDs\nComprehensive ribosomal RNA filtering to get more accurate mapping results\nMore specific species assignment on exogenous RNAs in circulation\nTaxonomy annotation&#x2F;summarization at major ranks for exogenous species\n\nDownloadsDownload the sRNAnalyzer pipeline and alignment databases as .tar.gz files.\n\nsRNAnalyzer Pipeline: sRNAnalyzer   \nsmall RNA Databases: sRNA_DBs   \nHuman and Exogenous Databases: MainDBs   \nNCBI Non-Human Databases: NCBI_NonHuman\nE.Coli Samples for Pipeline Evaluation: E_coli_evaluation_samples\n\nWeb ApplicationTo demonstrate how to use sRNAnalyzer, we built a web interface in a local server, which can be accessed at Web Application page for uploading data and running sRNAnalyzer pipeline online. For testing purpose, Username – ‘isb’ and Password – ‘password’ can be used. For academic use, free accounts will be provided based on email applications. Please send emails to Dr. Kai Wang.\nGetting StartedTo get started using sRNAnalyzer, download the sRNAnalyzer as a .zip or a .tar.gz file as well as the sRNA databases required. Then head to the Getting Started page for instruction on setting up and running sRNAnalyzer.\nDocumentationFor more information on options and configuration, head to the Documentation. For documentation on the format of the output and summary files, go to the Output file documentation.\n1. Download and Install Dependencies\n\nMake sure you have python 2.6 or later and perl 5 or later installed.\n\nDownload and install bowtie. Make sure the bowtie command is in your system path. Note: bowtie 2 is not supported in sRNAnalyzer.\n\nDownload and install the fastx_toolkit, following the instructions on the website. Download the fastx 0.0.14 version. Make sure the command fastx_collapser is in your system path.\n\nDownload and install cutadapt. This requires python 2.6 or later and a C compiler. The easiest way to install cutadapt is using pip following the instructions on the cutadapt website. Make sure the cutadapt command is in your system path.\n\n\n2. Download and Setup sRNAnalyzer\n\nDownload sRNAnalyzer. Unzip the downloaded archive. You may want to add the sRNAnalzyer directory to your system PATH so you can use the sRNAnalyzer commands directly. Next, we need to download some databases for alignment. There are three options for databases to download: a small RNA database, a database with human DNA and RNA, as well as some bacterial sequences, and the NCBI non-human database. The latter two databases are quite large (&gt; 70GB uncompressed), so it is recommended to begin with the sRNA database. The installation procedure for all three databases is the same. First, download one of the databases and unzip the archive. Open the DB_config file and change the line\n\nbase: Insert the path to this folder here\n\nby inserting the full path to the folder. For example,\nbase: /databases/bowtie/indexes/sRNA_DBs\n\nLooking at the DB_config, you should see a list of database names with paths. These databases are the ones that you can use in your pipeline now. It is also possible to add many new databases to the pipeline by downloading or building bowtie indexes and specifying their location in the database configuration file. For more information, see the Configuration File Documentation Now you’re ready to begin using the pipeline.\n\n\n3. Using the Pipeline\nIn order to use the pipeline, we need to create a pipeline configuration file, which specifies preprocessing setting, such as adapter sequences, and alignment settings such as database order and maximum mismatch allowances. Go to the Config Docs to learn how to create a configuration file with the settings required for your project.\nAn typical pipeline configuration file is shown below,\npreprocess:\n  kit:        NEB\n  gzip:       true\n  stop-oligo: false\n        \nalignment:\n  type: single\n  human_miRNA:     2\n  human_miRNA_sub: 2\n  human_piRNA:     2\n  human_snoRNA:    2\n\n3.1 Preprocessing\nUsing a terminal, change the directory so that the fastq or fast.gz files you wish to process are in the current working directory. In order to run preprocessing, run the command\n/Downloads/sRNAnalyzer/preprocess.pl --config pipeline_config.conf\n\nwhere pipeline_config.yaml is your pipeline configuration file, and &#x2F;Downloads&#x2F; is replaced with wherever your sRNAnalyzer folder is located. Or if you have added the sRNAnalyzer directory to the system PATH, then simply use\npreprocess.pl --config pipeline_config.conf\n\nThe preprocessing will generated sample_Processed.fa files that have had adapter trimmed, low-quality reads filtered out, and collapsed. Additional report files are also generated with information about adapter trimming and read quality.\n3.2 Alignment\nTo perform the alignment, ensure that your database and pipeline configuration files are properly setup. After downloading the initial human small RNA databases, the databases available for alignment, which can be specified in the pipeline configuration file are,\nhuman_miRNA\nhuman_miRNA_sub\nhuman_piRNA\nhuman_snoRNA\nvirus_miRNA\nplant_miRNA\nall_miRNA\nall_miRNA_sub\n\nThen, making sure that you are in the directory containing the _Processed.fa files you wish to align, run the command\n/Downloads/sRNAnalyzer/align.pl /home/data pipeline_config.yaml DB_config.conf\n\nor\nalign.pl /home/data pipeline_config.yaml DB_config.conf\n\nif you have added sRNAnalyzer to the system PATH\nIn the command, pipeline_config.yaml is the pipeline configuration file and DB_config.conf is the database configuration file.\nThe align command will output several files, including feature files, profile files, a read distribution file, and an unmatched sequences file.\n3.3 SummarizationThe next step in the pipeline is the summarization of the results of the alignment in order to prepare for statistical analysis of the data. An example summarization command is,\nsummarize.pl DB_config.conf --project my_project\n\nThis command will sum the feature and profile result from individual samples into result files for all samples. my_project is the name of the project, so all of the result files with start with the prefix my_project_. The general form of the summarize command is,\nsummarize.pl &lt;db-config-file&gt; &lt;sample-order-file&gt; --project &lt;project-name&gt;\n\nwhere the db-config-file is required, and the sample-order-file and project-name are both optional. The db-config-file is the database configuration file discussed above, and the sample-order-file specifies the order of the samples in the result files. If the sample order file is not provided, the order is alphabetical. The summarize.pl command has two additional options, --miRNA and --exogenous. Use the –miRNA flag if you would like to summarize miRNA separately and get information about possible miRNA SNPs. Use the --exogenous flag if you would like to summarize exogenous reads, including summarizing by taxonomy information. Note that the --exogenous option is only available if the MainDBs or NCBI_NonHuman databases are installed.\n","dateCreated":"2020-05-02T23:49:27+08:00","dateModified":"2020-05-02T23:49:27+08:00","datePublished":"2020-05-02T23:49:27+08:00","description":"sRNAnalyzer–A pipeline for small RNA sequencing data analysis","headline":"sRNAnalyzer","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2020-05-02-srnanalyzer/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2020-05-02-srnanalyzer/","keywords":"small RNA-seq"}</script>
+    <meta name="description" content="sRNAnalyzer–A pipeline for small RNA sequencing data analysis">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="sRNAnalyzer">
+<meta property="og:url" content="https://iuu19.github.io/2020-05-02-srnanalyzer/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:description" content="sRNAnalyzer–A pipeline for small RNA sequencing data analysis">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://iuu19.github.io/2020-05-02-srnanalyzer/1.png">
+<meta property="article:published_time" content="2020-05-02T15:49:27.000Z">
+<meta property="article:modified_time" content="2020-05-02T15:49:27.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta property="article:tag" content="small RNA-seq">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iuu19.github.io/2020-05-02-srnanalyzer/1.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            sRNAnalyzer
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-05-02T23:49:27+08:00">
+	
+		    5月 02, 2020
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/all-categories/RNA-seq/">RNA-seq</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>sRNAnalyzer–A pipeline for small RNA sequencing data analysis</p>
+<span id="more"></span>
+
+
+<h1 id="table-of-contents">目录</h1><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Getting-Started-with-sRNAnalyzer"><span class="toc-text">Getting Started with sRNAnalyzer</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Introduction"><span class="toc-text">Introduction</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Downloads"><span class="toc-text">Downloads</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Web-Application"><span class="toc-text">Web Application</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Getting-Started"><span class="toc-text">Getting Started</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Documentation"><span class="toc-text">Documentation</span></a></li></ol>
+<hr>
+<font face="黑体" color=darkgreen size=2>
+
+<h1 id="Getting-Started-with-sRNAnalyzer"><a href="#Getting-Started-with-sRNAnalyzer" class="headerlink" title="Getting Started with sRNAnalyzer"></a>Getting Started with <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/start.html">sRNAnalyzer</a></h1></font>
+<font face="黑体" color=darkgreen size=4>
+</font>
+
+<img src="/2020-05-02-srnanalyzer/1.png" class="">
+
+<h1 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h1><p>sRNAnalyzer is a flexible, modular pipeline for the analysis of small RNA sequencing data. Features include,</p>
+<ol>
+<li>Additional adapter trimming process to generate cleaner data</li>
+<li>Comprehensive microRNA profiling strategies to better handle isomiR issues</li>
+<li>Summarization for each nucleotide to detect potential SNPs on miRNAs</li>
+<li>Multiple assignment to simulate miRNA array and qRT-PCR platforms</li>
+<li>A local probabilistic model to map reads to the most-likely entry IDs</li>
+<li>Comprehensive ribosomal RNA filtering to get more accurate mapping results</li>
+<li>More specific species assignment on exogenous RNAs in circulation</li>
+<li>Taxonomy annotation&#x2F;summarization at major ranks for exogenous species</li>
+</ol>
+<h1 id="Downloads"><a href="#Downloads" class="headerlink" title="Downloads"></a>Downloads</h1><p>Download the sRNAnalyzer pipeline and alignment databases as .tar.gz files.</p>
+<ul>
+<li>sRNAnalyzer Pipeline: <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/downloads/sRNAnalyzer.tar.gz">sRNAnalyzer</a>   </li>
+<li>small RNA Databases: <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/downloads/sRNA_DBs.tar.gz">sRNA_DBs</a>   </li>
+<li>Human and Exogenous Databases: <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/downloads/MainDBs.tar.gz">MainDBs</a>   </li>
+<li>NCBI Non-Human Databases: <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/downloads/NCBI_NonHuman.tar.gz">NCBI_NonHuman</a></li>
+<li>E.Coli Samples for Pipeline Evaluation: <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/downloads/E_coli_evaluation_samples.tar.gz">E_coli_evaluation_samples</a></li>
+</ul>
+<h1 id="Web-Application"><a href="#Web-Application" class="headerlink" title="Web Application"></a>Web Application</h1><p>To demonstrate how to use sRNAnalyzer, we built a web interface in a local server, which can be accessed at <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/webapp.html">Web Application</a> page for uploading data and running sRNAnalyzer pipeline online. For testing purpose, Username – ‘isb’ and Password – ‘password’ can be used. For academic use, free accounts will be provided based on email applications. Please send emails to <a target="_blank" rel="noopener" href="https://www.systemsbiology.org/bio/kai-wang-phd/">Dr. Kai Wang</a>.</p>
+<h1 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h1><p>To get started using sRNAnalyzer, download the sRNAnalyzer as a .zip or a .tar.gz file as well as the sRNA databases required. Then head to the <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/start.html">Getting Started</a> page for instruction on setting up and running sRNAnalyzer.</p>
+<h1 id="Documentation"><a href="#Documentation" class="headerlink" title="Documentation"></a>Documentation</h1><p>For more information on options and configuration, head to the <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/docs.html">Documentation</a>. For documentation on the format of the output and summary files, go to the <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/summary_docs.html">Output file documentation</a>.</p>
+<p><strong>1. Download and Install Dependencies</strong><br></font></p>
+<ul>
+<li><p><strong>Make sure you have <code>python 2.6</code> or later and <code>perl 5</code> or later installed.</strong></p>
+</li>
+<li><p><strong>Download and install <a target="_blank" rel="noopener" href="http://bowtie-bio.sourceforge.net/index.shtml">bowtie</a></strong>. Make sure the bowtie command is in your system path. Note: bowtie 2 is not supported in sRNAnalyzer.</p>
+</li>
+<li><p><strong>Download and install the <a target="_blank" rel="noopener" href="http://hannonlab.cshl.edu/fastx_toolkit/download.html">fastx_toolkit</a></strong>, following the instructions on the website. <strong>Download the fastx 0.0.14 version</strong>. Make sure the command <code>fastx_collapser</code> is in your system path.</p>
+</li>
+<li><p><strong>Download and install <a target="_blank" rel="noopener" href="https://cutadapt.readthedocs.io/en/stable/installation.html">cutadapt</a></strong>. This requires python 2.6 or later and a C compiler. The easiest way to install cutadapt is using pip following the instructions on the cutadapt website. Make sure the cutadapt command is in your system path.</p>
+<font face="黑体" color=darkgreen size=4></li>
+</ul>
+<p><strong>2. Download and Setup sRNAnalyzer</strong><br></font></p>
+<ul>
+<li><strong>Download sRNAnalyzer</strong>. Unzip the downloaded archive. You may want to add the sRNAnalzyer directory to your system <code>PATH</code> so you can use the sRNAnalyzer commands directly. Next, we need to download some databases for alignment. There are three options for databases to download: a small RNA database, a database with human DNA and RNA, as well as some bacterial sequences, and the NCBI non-human database. The latter two databases are quite large (&gt; 70GB uncompressed), so it is recommended to begin with the sRNA database. The installation procedure for all three databases is the same. First, download one of the databases and unzip the archive. Open the DB_config file and change the line</li>
+</ul>
+<pre><code>base: Insert the path to this folder here
+</code></pre>
+<p>by inserting the full path to the folder. For example,</p>
+<pre><code>base: /databases/bowtie/indexes/sRNA_DBs
+</code></pre>
+<p>Looking at the DB_config, you should see a list of database names with paths. These databases are the ones that you can use in your pipeline now. It is also possible to add many new databases to the pipeline by downloading or building bowtie indexes and specifying their location in the database configuration file. For more information, see the <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/docs.html">Configuration File Documentation</a> Now you’re ready to begin using the pipeline.</p>
+<font face="黑体" color=darkgreen size=4>
+
+<p><strong>3. Using the Pipeline</strong><br></font></p>
+<p>In order to use the pipeline, we need to create a pipeline configuration file, which specifies preprocessing setting, such as adapter sequences, and alignment settings such as database order and maximum mismatch allowances. Go to the <a target="_blank" rel="noopener" href="http://srnanalyzer.systemsbiology.net/docs.html">Config Docs</a> to learn how to create a configuration file with the settings required for your project.</p>
+<p>An typical pipeline configuration file is shown below,</p>
+<pre><code>preprocess:
+  kit:        NEB
+  gzip:       true
+  stop-oligo: false
+        
+alignment:
+  type: single
+  human_miRNA:     2
+  human_miRNA_sub: 2
+  human_piRNA:     2
+  human_snoRNA:    2
+</code></pre>
+<p><strong>3.1 Preprocessing</strong></p>
+<p>Using a terminal, change the directory so that the fastq or fast.gz files you wish to process are in the current working directory. In order to run preprocessing, run the command</p>
+<pre><code>/Downloads/sRNAnalyzer/preprocess.pl --config pipeline_config.conf
+</code></pre>
+<p>where pipeline_config.yaml is your pipeline configuration file, and &#x2F;Downloads&#x2F; is replaced with wherever your sRNAnalyzer folder is located. Or if you have added the sRNAnalyzer directory to the system PATH, then simply use</p>
+<pre><code>preprocess.pl --config pipeline_config.conf
+</code></pre>
+<p>The preprocessing will generated sample_Processed.fa files that have had adapter trimmed, low-quality reads filtered out, and collapsed. Additional report files are also generated with information about adapter trimming and read quality.</p>
+<p><strong>3.2 Alignment</strong></p>
+<p>To perform the alignment, ensure that your database and pipeline configuration files are properly setup. After downloading the initial human small RNA databases, the databases available for alignment, which can be specified in the pipeline configuration file are,</p>
+<pre><code>human_miRNA
+human_miRNA_sub
+human_piRNA
+human_snoRNA
+virus_miRNA
+plant_miRNA
+all_miRNA
+all_miRNA_sub
+</code></pre>
+<p>Then, making sure that you are in the directory containing the _Processed.fa files you wish to align, run the command</p>
+<pre><code>/Downloads/sRNAnalyzer/align.pl /home/data pipeline_config.yaml DB_config.conf
+</code></pre>
+<p>or</p>
+<pre><code>align.pl /home/data pipeline_config.yaml DB_config.conf
+</code></pre>
+<p>if you have added sRNAnalyzer to the system <code>PATH</code></p>
+<p>In the command, <code>pipeline_config.yaml</code> is the pipeline configuration file and DB_config.conf is the database configuration file.</p>
+<p>The align command will output several files, including feature files, profile files, a read distribution file, and an unmatched sequences file.</p>
+<p><strong>3.3 Summarization</strong><br>The next step in the pipeline is the summarization of the results of the alignment in order to prepare for statistical analysis of the data. An example summarization command is,</p>
+<pre><code>summarize.pl DB_config.conf --project my_project
+</code></pre>
+<p>This command will sum the feature and profile result from individual samples into result files for all samples. my_project is the name of the project, so all of the result files with start with the prefix my_project_. The general form of the summarize command is,</p>
+<pre><code>summarize.pl &lt;db-config-file&gt; &lt;sample-order-file&gt; --project &lt;project-name&gt;
+</code></pre>
+<p>where the db-config-file is required, and the sample-order-file and project-name are both optional. The <code>db-config-file</code> is the database configuration file discussed above, and the <code>sample-order-file</code> specifies the order of the samples in the result files. If the sample order file is not provided, the order is alphabetical. The <code>summarize.pl</code> command has two additional options, <code>--miRNA</code> and <code>--exogenous</code>. Use the –miRNA flag if you would like to summarize miRNA separately and get information about possible miRNA SNPs. Use the <code>--exogenous</code> flag if you would like to summarize exogenous reads, including summarizing by taxonomy information. Note that the <code>--exogenous</code> option is only available if the MainDBs or NCBI_NonHuman databases are installed.</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/small-RNA-seq/" rel="tag">small RNA-seq</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                    data-tooltip="RNA-Seq分析|MicroRazerS-small RNA-seq map"
+                    aria-label="上一篇: RNA-Seq分析|MicroRazerS-small RNA-seq map"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-04-21-shi-yong-aspera-gao-su-xia-zai-sra-shu-ju/"
+                    data-tooltip="使用Aspera高速下载SRA数据"
+                    aria-label="下一篇: 使用Aspera高速下载SRA数据"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                    data-tooltip="RNA-Seq分析|MicroRazerS-small RNA-seq map"
+                    aria-label="上一篇: RNA-Seq分析|MicroRazerS-small RNA-seq map"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-04-21-shi-yong-aspera-gao-su-xia-zai-sra-shu-ju/"
+                    data-tooltip="使用Aspera高速下载SRA数据"
+                    aria-label="下一篇: 使用Aspera高速下载SRA数据"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

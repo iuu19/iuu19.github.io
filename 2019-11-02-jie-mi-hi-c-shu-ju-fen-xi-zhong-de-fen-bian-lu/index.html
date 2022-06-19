@@ -1,0 +1,620 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>解密Hi-C数据分析中的分辨率 - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"解密Hi-C数据分析中的分辨率\n\n\n\n\n\nHi-C基于传统的染色质构象捕获技术，在DNA连接时引入生物素标记分子，标记交联的染色质，然后富集带有生物素标记的junction reads,  再结合高通量测序和下游的生物信息学分析，可以在全基因组范围内研究染色质的空间互作关系。\n在Hi-C文库中，我们得到的是互作染色质形成的junciton reads, 通过将这些reads 比对到参考基因组之后，可以分析染色质之间的互作。以下图为例：\n\n图中蓝色和红色对应的染色质区域有互作，黑色和黄色对应的染色质区域有互作，在对应的Hi-C文库中，我们可以得到如下所示的junction reads\n\n将这些reads正确比对到参考基因组上之后，就可以确定对应的染色质区域之间存在互作，而对应的junction reads的数目越多，则代表两个区域交互作用发生的频率越高。\n\n对于所有区域的互作信息，通常会用一个交互矩阵interaction matirx来表示，该矩阵是一个方阵，每一行或者列都代表一个染色质区域，方格的颜色代表代表两个区域交互作用的强弱，示意如下：\n\n在构建矩阵的过程中，我们首先需要确定每一行代表的染色质区域的范围，互作的片段是通过酶切来得到的, 理论上存在10的11方种唯一的酶切片段。如果想要精确分析所有酶切片段之间的交互，首先需要足够的测序深度，涵盖所有类型的酶切片段，这就要求非常庞大的测序数据量，其次对于如此庞大的交互矩阵，数数据分析阶段对于计算资源的消耗也是一个天文数字。\n为了有效利用Hi-C文库中的信息，科学家提出了binning的概念，将基因组划分为等长的窗口，这样的窗口称之为bin, 利用窗口内reads的分布来研究不同窗口之间的互作关系。这样的处理相比最原始，最直接的染色质互作数据，其分辨率确实是有一定程度的丢失，但是基于全基因组范围，仍然能够挖掘出很多有效信息。\nbin窗口的长度称之为分辨率。如果分辨率为1Mb,  以人类基因组为例，在交互矩阵中会有3000左右的行。bin窗口的长度越小，则基因组区域的划分越细致，对于染色质三维构象的研究的就越精细。\n不同分辨率对于测序量的要求不同，适用的场景也不同。基于不同分辨率的Hi-C数据，陆续发现了A&#x2F;B  compartments, TAD拓扑结构域，染色质环等空间结构。\n","dateCreated":"2019-11-02T22:42:23+08:00","dateModified":"2019-11-02T22:42:23+08:00","datePublished":"2019-11-02T22:42:23+08:00","description":"解密Hi-C数据分析中的分辨率","headline":"解密Hi-C数据分析中的分辨率","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/","keywords":"Hi-C, 分辨率"}</script>
+    <meta name="description" content="解密Hi-C数据分析中的分辨率">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="解密Hi-C数据分析中的分辨率">
+<meta property="og:url" content="https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:description" content="解密Hi-C数据分析中的分辨率">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/1.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/2.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/3.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/4.png">
+<meta property="article:published_time" content="2019-11-02T14:42:23.000Z">
+<meta property="article:modified_time" content="2019-11-02T14:42:23.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta property="article:tag" content="Hi-C">
+<meta property="article:tag" content="分辨率">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/1.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            解密Hi-C数据分析中的分辨率
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2019-11-02T22:42:23+08:00">
+	
+		    11月 02, 2019
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/all-categories/Hi-C%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">Hi-C数据分析</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>解密Hi-C数据分析中的分辨率</p>
+<span id="more"></span>
+
+
+<h1 id="table-of-contents">目录</h1>
+<hr>
+<p>Hi-C基于传统的染色质构象捕获技术，在DNA连接时引入生物素标记分子，标记交联的染色质，然后富集带有生物素标记的junction reads,  再结合高通量测序和下游的生物信息学分析，可以在全基因组范围内研究染色质的空间互作关系。</p>
+<p>在Hi-C文库中，我们得到的是互作染色质形成的<strong>junciton reads</strong>, 通过将这些reads 比对到参考基因组之后，可以分析染色质之间的互作。以下图为例：</p>
+<img src="/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/1.png" class="">
+<p>图中蓝色和红色对应的染色质区域有互作，黑色和黄色对应的染色质区域有互作，在对应的Hi-C文库中，我们可以得到如下所示的junction reads</p>
+<img src="/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/2.png" class="">
+<p>将这些reads正确比对到参考基因组上之后，就可以确定对应的染色质区域之间存在互作，而对应的junction reads的数目越多，则代表两个区域交互作用发生的频率越高。</p>
+<img src="/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/3.png" class="">
+<p>对于所有区域的互作信息，通常会用一个交互矩阵interaction matirx来表示，该矩阵是一个方阵，每一行或者列都代表一个染色质区域，方格的颜色代表代表两个区域交互作用的强弱，示意如下：</p>
+<img src="/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/4.png" class="">
+<p>在构建矩阵的过程中，我们首先需要确定每一行代表的染色质区域的范围，互作的片段是通过酶切来得到的, 理论上存在10的11方种唯一的酶切片段。如果想要精确分析所有酶切片段之间的交互，首先需要足够的测序深度，涵盖所有类型的酶切片段，这就要求非常庞大的测序数据量，其次对于如此庞大的交互矩阵，数数据分析阶段对于计算资源的消耗也是一个天文数字。</p>
+<p>为了有效利用Hi-C文库中的信息，科学家提出了binning的概念，将基因组划分为等长的窗口，这样的窗口称之为bin, 利用窗口内reads的分布来研究不同窗口之间的互作关系。这样的处理相比最原始，最直接的染色质互作数据，其分辨率确实是有一定程度的丢失，但是基于全基因组范围，仍然能够挖掘出很多有效信息。</p>
+<p>bin窗口的长度称之为分辨率。如果分辨率为1Mb,  以人类基因组为例，在交互矩阵中会有3000左右的行。bin窗口的长度越小，则基因组区域的划分越细致，对于染色质三维构象的研究的就越精细。</p>
+<p>不同分辨率对于测序量的要求不同，适用的场景也不同。基于不同分辨率的Hi-C数据，陆续发现了A&#x2F;B  compartments, TAD拓扑结构域，染色质环等空间结构。</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/Hi-C/" rel="tag">Hi-C</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/%E5%88%86%E8%BE%A8%E7%8E%87/" rel="tag">分辨率</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-a-b-compartment-ran-se-zhi-qu-shi-jian-jie/"
+                    data-tooltip="A/B compartment:染色质区室简介"
+                    aria-label="上一篇: A/B compartment:染色质区室简介"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-3c-de-yan-sheng-ji-zhu-jian-jie/"
+                    data-tooltip="3C的衍生技术简介"
+                    aria-label="下一篇: 3C的衍生技术简介"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-a-b-compartment-ran-se-zhi-qu-shi-jian-jie/"
+                    data-tooltip="A/B compartment:染色质区室简介"
+                    aria-label="上一篇: A/B compartment:染色质区室简介"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-3c-de-yan-sheng-ji-zhu-jian-jie/"
+                    data-tooltip="3C的衍生技术简介"
+                    aria-label="下一篇: 3C的衍生技术简介"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-jie-mi-hi-c-shu-ju-fen-xi-zhong-de-fen-bian-lu/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

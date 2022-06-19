@@ -1,0 +1,1198 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>GWAS|SAIGE-GENE安装及使用指南 - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"\n\n\n\nGWAS|SAIGE-GENE安装及使用指南\n\n\n1.OverviewThe most current version of SAIGE is version 0.38\nThis tutorial will walk you through\n1.Installing SAIGE\n2.Running SAIGE for：\n\nSingle-variant association tests\nGene-based tests\nConditional analysis\n\n2.Installing SAIGE2.1 Install SAIGE using the conda environment2.1.1 Create a conda environment using (conda environment file) Here is a link to download the conda environment file-environment-RSAIGE.ymlAfter downloading environment-RSAIGE.yml, run following command\nconda env create -f environment-RSAIGE.yml\n\n2.1.2 Activate the conda environment RSAIGEconda activate RSAIGE\nFLAGPATH=`which python | sed &#39;s|/bin/python$||&#39;`\nexport LDFLAGS=&quot;-L$&#123;FLAGPATH&#125;/lib&quot;\nexport CPPFLAGS=&quot;-I$&#123;FLAGPATH&#125;/include&quot;\n\nPlease make sure to set up the LDFLAGS and CPPFLAGS using export (the last two command lines), so libraries can be linked correctly when the SAIGE source code is compiled. Note: Here are the steps to create the conda environment file\n2.1.3 Open R, run following script to install the MetaSKAT R library.install.packages(&#39;MetaSKAT&#39;)\n\n2.1.4 Install SAIGE from the source code.Method 1:src_branch=master\nrepo_src_url=https://github.com/weizhouUMICH/SAIGE\ngit clone --depth 1 -b $src_branch $repo_src_url\n\nR CMD INSTALL --library=path_to_final_SAIGE_library SAIGE\n\nWhen call SAIGE in R, set lib.loc&#x3D;path_to_final_SAIGE_library\n  library(SAIGE, lib.loc&#x3D;path_to_final_SAIGE_library)\nMethod 2:Open R. Run\ndevtools::install_github(&quot;weizhouUMICH/SAIGE&quot;)\n\n2.2 Run SAIGE using a docker imageThe docker image can be pulled\ndocker pull wzhou88/saige:0.38\n\nDockerfile for creating your own docker image for SAIGE\nFunctions can be called\nstep1_fitNULLGLMM.R --help\nstep2_SPAtests.R --help\ncreateSparseGRM.R --help\n\nPrevious versions of SAIGE installation files are here: https://www.dropbox.com/sh/zmlu1llpxd66pjl/AADFqdssvOBjbWZch6Q9zYNaa?dl=0\n3 FlowchartSAIGE and SAIGE-GENE can work for both binary and quantitative traits.\n3.1 SAIGE Flowchart\n3.2 SAIGE-GENE Flowchart\n4 Running SAIGE and SAIGE-GENEScripts are in the folder extdata&#x2F; and command lines are in the file cmd.sh\ncd /extdata/\nless -S cmd.sh\n\nInput files are in the folder extdata&#x2F;input\nOutput files are in the folder extdata&#x2F;output \nTo obtain help information of the scripts that call functions in the SAIGE library\nRscript createSparseGRM.R --help\nRscript step1_fitNULLGLMM.R --help\nRscript step2_SPAtests.R --help\n\nTo obtain help information of functions in the SAIGE library\n#open R\nR\nlibrary(SAIGE)\n?createSparseGRM\n?fitNULLGLMM\n?SPAGMMATtest\n\n4.1 Single variant association testsFor single-variant association tests, sparse GRM and categorical variance ratios are NOT needed. \nRandomly selected markers with MAC &gt;&#x3D; 20 are used to estimate the variance ratio \nStep 1: fitting the null logistic&#x2F;linear mixed model\nFor binary traits, a null logistic mixed model will be fitted (–traitType&#x3D;binary). \nFor quantitative traits, a null linear mixed model will be fitted (–traitType&#x3D;quantitative) and needs to be inverse normalized (–invNormalize&#x3D;TRUE)\n\n#check the help info for step 1\nRscript step1_fitNULLGLMM.R --help\n\n#For Binary traits:\nRscript step1_fitNULLGLMM.R     \\\n        --plinkFile=./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly \\\n        --phenoFile=./input/pheno_1000samples.txt_withdosages_withBothTraitTypes.txt \\\n        --phenoCol=y_binary \\\n        --covarColList=x1,x2 \\\n        --sampleIDColinphenoFile=IID \\\n        --traitType=binary        \\\n        --outputPrefix=./output/example_binary \\\n        --nThreads=4 \\\n        --LOCO=FALSE \\\n        --IsOverwriteVarianceRatioFile ## v0.38. Whether to overwrite the variance ratio file if the file already exists\n\n\n#For Quantitative traits, if not normally distributed, inverse normalization needs to be specified to be TRUE --invNormalize=TRUE\nRscript step1_fitNULLGLMM.R     \\\n        --plinkFile=./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly \\\n        --phenoFile=./input/pheno_1000samples.txt_withdosages_withBothTraitTypes.txt \\\n        --phenoCol=y_quantitative \\\n        --covarColList=x1,x2 \\\n        --sampleIDColinphenoFile=IID \\\n        --traitType=quantitative       \\\n    --invNormalize=TRUE\t\\\n        --outputPrefix=./output/example_quantitative \\\n        --nThreads=4 \\\n        --LOCO=FALSE\t\\\n    --tauInit=1,0\n\nInput files1. Genotype file for constructing the genetic relationship matrix (GRM)\nSAIGE takes the PLINK binary file for the genotypes and assumes the file prefix is the same one for .bed, .bim. and .fam\n./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly.bed\n./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly.bim\n./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly.fam\n\n2.Phenotype file (contains non-genetic covariates if any, such as gender and age)\nThe file can be either space or tab-delimited with a header. It is required that the file contains one column for sample IDs and one column for the phenotype. It may contain columns for non-genetic covariates.\nNote: Current version of SAIGE does not support categorical covariates that have more than two categories\nless -S ./input/pheno_1000samples.txt_withdosages_withBothTraitTypes.txt\n\nOutput files1. model file\n./output/example_quantitative.rda\n\n#open R\nR\n#load the model file in R\nload(&quot;./output/example_quantitative.rda&quot;)\nnames(modglmm)\nmodglmm$theta\n\n#theta: a vector of length 2. The first element is the dispersion parameter estimate and the second one is the variance component parameter estimate\n#coefficients: fixed effect parameter estimates\n#linear.predictors: a vector of length N (N is the sample size) containing linear predictors\n#fitted.values: a vector of length N (N is the sample size) containing fitted mean values on the original scale\n#Y: a vector of length N (N is the sample size) containing final working vector\n#residuals: a vector of length N (N is the sample size) containing residuals on the original scale\n#sampleID: a vector of length N (N is the sample size) containing sample IDs used to fit the null model\n\n2. association result file for the subset of randomly selected markers\nless -S ./output/example_quantitative_30markers.SAIGE.results.txt\n\n3. variance ratio file\nless -S ./output/example_quantitative.varianceRatio.txt\n\nStep 2: performing single-variant association tests\nFor binary traits, saddle point approximation is used to account for case-control imbalance.\nFile formats for dosages&#x2F;genotypes of genetic variants to be tested can be used: VCF, BGEN, SAV\nConditional analysis based summary stats can be performed (–condition) can be performed in Step 2 with dosage&#x2F;genotype input file formats VCF, BGEN and SAV.\nTo query and test a subset of markers\n\nboth variant IDs and range of chromosome positions can be specified for BGEN input (–idstoExcludeFile, –idstoIncludeFile, –rangestoExcludeFile, –rangestoIncludeFile)\n\n\n\nrange chromosome positions can be specified for VCF&#x2F;SAV input (–chrom, –start, –end).\n\n\nFor VCF&#x2F;SAV input, –chrom MUST be specified and the string needs to be exactly the same as in the VCF&#x2F;SAV, such as “01” or “chr1”.\nFor VCF&#x2F;SAV input, –vcfField&#x3D;DS to test dosages and –vcfField&#x3D;GT to test genotypes\nTo drop samples with missing genotypes&#x2F;dosages,–IsDropMissingDosages&#x3D;TRUE, if FALSE, missing genotypes&#x2F;dosages will be mean imputed.\n\nNOTE: this option has not been extensively tested yet. **\n\nsampleFile is used specify a file with sample IDs for bgen file. Please DO NOT include a header in the file. SAIGE versions &gt;&#x3D; 0.38 do not need sampleFile if VCF files are used\n\n#check the help info for step 2\nRscript step2_SPAtests.R --help\n\n#Perform single-variant association tests\n#for binary traits, \n* --IsOutputAFinCaseCtrl=TRUE can be specified to output allele frequencies in cases and controls\n* --IsOutputNinCaseCtrl=TRUE can be specified to output sample sizes of cases and controls for each marker\n* --IsOutputHetHomCountsinCaseCtrl can be specified to output heterozygous and homozygous counts in cases and controls\n\nRscript step2_SPAtests.R\t\\\n        --vcfFile=./input/genotype_10markers.missingness.vcf.gz \\\n        --vcfFileIndex=./input/genotype_10markers.missingness.vcf.gz.tbi \\\n        --vcfField=GT \\\n        --chrom=1 \\\n        --minMAF=0.0001 \\\n        --minMAC=1 \\\n        --sampleFile=./input/sampleIDindosage.txt \\\n        --GMMATmodelFile=./output/example_binary.rda \\\n        --varianceRatioFile=./output/example_binary.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example_binary.SAIGE.vcf.genotype.txt \\\n        --numLinesOutput=2 \\\n        --IsOutputAFinCaseCtrl=TRUE\n\n##drop samples with missing genotypes/dosages\n##--IsDropMissingDosages=TRUE\nRscript step2_SPAtests.R        \\\n        --vcfFile=./input/genotype_10markers.missingness.vcf.gz \\\n        --vcfFileIndex=./input/genotype_10markers.missingness.vcf.gz.tbi \\\n        --vcfField=GT \\\n        --chrom=1 \\\n        --minMAF=0.0001 \\\n        --minMAC=1 \\\n        --sampleFile=./input/sampleIDindosage.txt \\\n        --GMMATmodelFile=./output/example_binary.rda \\\n        --varianceRatioFile=./output/example_binary.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example_binary.SAIGE.vcf.genotype.dropmissing.txt \\\n        --numLinesOutput=2 \\\n        --IsOutputAFinCaseCtrl=TRUE\t\\\n    --IsDropMissingDosages=TRUE    \n\n\n#conditional analysis\n## --condition = Genetic marker ids (**chr:pos_ref/alt for vcf/sav or marker id for bgen**) separated by comma. e.g.chr3:101651171_C/T,chr3:101651186_G/A\n\nRscript step2_SPAtests.R        \\\n        --vcfFile=./input/genotype_10markers.missingness.vcf.gz \\\n        --vcfFileIndex=./input/genotype_10markers.missingness.vcf.gz.tbi \\\n        --vcfField=GT \\\n        --chrom=1 \\\n        --minMAF=0.0001 \\\n        --minMAC=1 \\\n        --sampleFile=./input/sampleIDindosage.txt \\\n        --GMMATmodelFile=./output/example_binary.rda \\\n        --varianceRatioFile=./output/example_binary.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example_binary.SAIGE.vcf.genotype.dropmissing.txt \\\n        --numLinesOutput=2 \\\n        --IsOutputAFinCaseCtrl=TRUE     \\\n    --IsDropMissingDosages=TRUE\t\\\n    --condition=1:4_A/C\n\n#plain text input for dosages (plain text input for dosages is not inputed since 0.36.1)\nRscript step2_SPAtests.R \\\n        --dosageFile=./input/dosage_10markers.txt \\\n        --dosageFileNrowSkip=1 \\\n        --dosageFileNcolSkip=6 \\\n        --dosageFilecolnamesSkip=CHR,SNP,CM,POS,EFFECT_ALLELE,ALT_ALLELE \\\n        --minMAF=0.0001 \\\n        --sampleFile=./input/sampleIDindosage.txt \\\n        --GMMATmodelFile=./output/example.rda \\\n        --varianceRatioFile=./output/example.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example.plainDosage.SAIGE.txt \\\n        --numLinesOutput=2 \\\n        --IsOutputAFinCaseCtrl=TRUE\n\n#bgen for dosages\nRscript step2_SPAtests.R \\\n        --bgenFile=./input/genotype_100markers.bgen \\\n        --bgenFileIndex=./input/genotype_100markers.bgen.bgi \\\n        --minMAF=0.0001 \\\n        --minMAC=1 \\\n        --sampleFile=./input/samplefileforbgen_10000samples.txt \\\n        --GMMATmodelFile=./output/example.rda \\\n        --varianceRatioFile=./output/example.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example.SAIGE.bgen.txt \\\n        --numLinesOutput=2 \\\n        --IsOutputAFinCaseCtrl=TRUE\n\n#VCF containing genotypes (--vcfField=GT)\nRscript step2_SPAtests.R \\\n        --vcfFile=./input/genotype_10markers.vcf.gz \\\n        --vcfFileIndex=./input/genotype_10markers.vcf.gz.tbi \\\n        --vcfField=GT \\\n        --chrom=1 \\\n        --minMAF=0.0001 \\\n        --minMAC=1 \\\n        --sampleFile=./input/sampleIDindosage.txt \\\n        --GMMATmodelFile=./output/example.rda \\\n        --varianceRatioFile=./output/example.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example.SAIGE.vcf.genotype.txt \\\n        --numLinesOutput=2 \\\n        --IsOutputAFinCaseCtrl=TRUE\n\n#VCF containing dosages (--vcfField=DS)\nRscript step2_SPAtests.R \\\n        --vcfFile=./input/dosage_10markers.vcf.gz \\\n        --vcfFileIndex=./input/dosage_10markers.vcf.gz.tbi \\\n        --vcfField=DS \\\n        --chrom=1 \\\n        --minMAF=0.0001 \\\n        --minMAC=1 \\\n        --sampleFile=./input/sampleIDindosage.txt \\\n        --GMMATmodelFile=./output/example.rda \\\n        --varianceRatioFile=./output/example.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example.SAIGE.vcf.dosage.txt \\\n        --numLinesOutput=2 \\\n        --IsOutputAFinCaseCtrl=TRUE\n\n# SAV for dosages\nRscript step2_SPAtests.R        \\\n        --savFile=./input/dosage_10markers.sav  \\\n        --savFileIndex=./input/dosage_10markers.sav.s1r \\\n        --vcfField=DS \\\n        --minMAF=0.0001 \\\n        --minMAC=1 \\\n        --chrom=1 \\\n        --sampleFile=./input/samplefileforbgen_10000samples.txt \\\n        --GMMATmodelFile=./output/example.rda \\\n        --varianceRatioFile=./output/example.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example.SAIGE.sav.txt \\\n        --numLinesOutput=2 \\\n        --IsOutputAFinCaseCtrl=TRUE\n\nInput files1.Dosage file SAIGE supports different formats for dosages: VCF, BCF, BGEN and SAV.\n\nBGEN\n\ngenotype_100markers.bgen\ngenotype_100markers.bgen.bgi\n\n\nVCF containing genotypes\n\nzcat genotype_10markers.vcf.gz | less -S\ngenotype_10markers.vcf.gz.tbi\n\n\nVCF containing dosages\n\nzcat dosage_10markers.vcf.gz | less -S\ndosage_10markers.vcf.gz.tbi\n\n-SAV\ndosage_10markers.sav\ndosage_10markers.sav.s1r\n\n2.Sample file\nThis file contains one column for sample IDs corresponding to the sample order in the dosage file. No header is included. The option was originally for BGEN file that does not contain sample information.\nless -S sampleIDindosage.txt\n\n3.Model file from step 1\n./output/example.rda\n\n4.Variance ratio file from step 1\n./output/example.varianceRatio.txt\n\nOutput fileA file with association test results\nless -S ./output/example.SAIGE.vcf.dosage.txt\n\nNOTE:\n\nAssociation results are with regard to Allele2.\nFor binary traits, the header of the output file: CHR POS SNPID Allele1 Allele2 AC_Allele2 AF_Allele2 imputationInfo N BETA SE Tstat p.value p.value.NA Is.SPA.converge varT varTstar AF.Cases AF.Controls\nFor quantitative traits, the header of the output file: CHR POS SNPID Allele1 Allele2 AC_Allele2 AF_Allele2 imputationInfo N BETA SE Tstat p.value varT varTstar\n\nCHR: chromosome\nPOS: genome position \nSNPID: variant ID\nAllele1: allele 1\nAllele2: allele 2\nAC_Allele2: allele count of allele 2\nAF_Allele2: allele frequency of allele 2\nimputationInfo: imputation info. If not in dosage/genotype input file, will output 1\nN: sample size\nBETA: effect size of allele 2\nSE: standard error of BETA\nTstat: score statistic of allele 2\np.value: p value (with SPA applied for binary traits)\np.value.NA: p value when SPA is not applied (only for binary traits)\nIs.SPA.converge: whether SPA is converged or not (only for binary traits)\nvarT: estimated variance of score statistic with sample relatedness incorporated\nvarTstar: variance of score statistic without sample relatedness incorporated\nAF.Cases: allele frequency of allele 2 in cases (only for binary traits and if --IsOutputAFinCaseCtrl=TRUE)\nAF.Controls: allele frequency of allele 2 in controls (only for binary traits and if --IsOutputAFinCaseCtrl=TRUE)\nTstat_cond, p.value_cond, varT_cond, BETA_cond, SE_cond: summary stats for conditional analysis\n\nAn example with a signal\np.value in Step 2 for the marker is ~4.16 x 10^-7\n\nRscript step1_fitNULLGLMM.R     \\\n        --plinkFile=./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly \\\n        --phenoFile=./input/Prev_0.1_nfam_1000.pheno_positive_pheno.txt \\\n        --phenoCol=y \\\n        --covarColList=x1,x2 \\\n        --sampleIDColinphenoFile=IID \\\n        --traitType=binary        \\\n        --outputPrefix=./output/example_binary_positive_signal \\\n        --nThreads=4    \\\n        --LOCO=FALSE    \\\n        --minMAFforGRM=0.01\n\nRscript step2_SPAtests.R        \\\n        --vcfFile=./input/nfam_1000_MAF0.2_nMarker1_nseed200.vcf.gz \\\n        --vcfFileIndex=./input/nfam_1000_MAF0.2_nMarker1_nseed200.vcf.gz.tbi \\\n        --vcfField=GT \\\n        --chrom=1 \\\n        --minMAF=0.0001 \\\n        --minMAC=1 \\\n        --GMMATmodelFile=./output/example_binary_positive_signal.rda \\\n        --varianceRatioFile=./output/example_binary_positive_signal.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example_binary_positive_signal.assoc.step2.txt \\\n        --numLinesOutput=2 \\\n        --IsOutputAFinCaseCtrl=TRUE\n\n4.2 Region- or gene-based association tests (SAIGE-GENE)Step 0: creating a sparse GRMNote: This step is only needed for region- and gene-based tests (SAIGE-GENE)\nThe sparse GRM only needs to be created once for each data set, e.g. a biobank, and can be used for all different phenotypes as long as all tested samples are included in it.\nRscript createSparseGRM.R\t\\\n    --plinkFile=./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly \\\n    --nThreads=4  \\\n    --outputPrefix=./output/sparseGRM\t\\\n    --numRandomMarkerforSparseKin=2000\t\\\n    --relatednessCutoff=0.125\n\nInput fileGenotype file for constructing the genetic relationship matrix \nSAIGE takes the PLINK binary file for the genotypes and assumes the file prefix is the same one for .bed, .bim. and .fam\nnfam_100_nindep_0_step1_includeMoreRareVariants_poly.bed\nnfam_100_nindep_0_step1_includeMoreRareVariants_poly.bim\nnfam_100_nindep_0_step1_includeMoreRareVariants_poly.fam\n\nOutput files1.a file storing the sparse GRM\nsparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseGRM.mtx\n\nThe sparse GRM file can be opened using the readMM function in the R library Matrix\n2.a file storing IDs of the samples in the sparse GRM\nsparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseGRM.mtx.sampleIDs.txt\n\nStep 1: fitting the null logistic&#x2F;linear mixed model\nIsSparseKin&#x3D;TRUE must be specified for SAIGE-GENE\nstep 1 model result from the single-variant assoc test can be re-used, except that for gene-based tests, variance ratios for multiple MAC categories and a sparse GRM need to be used (IsSparseKin&#x3D;TRUE).\nwith IsSparseKin&#x3D;TRUE, no sparseGRMFile and sparseGRMSampleIDFile are specified (step 0 has not been done beforehand), a sparse GRM will be created based on the relatednessCutoff in this step.\nwith IsSparseKin&#x3D;TRUE, sparseGRMFile and sparseGRMSampleIDFile can be used to specify a pre-calcuated sparse GRM and the sample ids for the sparse GRM (output from step 0). Tested samples would be a subset of samples in the pre-calcuated GRM.\nTo activate the variance ratio estimation based multiple MAC categories, –isCateVarianceRatio&#x3D;TRUE\ncateVarRatioMinMACVecExclude and cateVarRatioMaxMACVecInclude are used to specify the MAC categories\n\n#by default \n --cateVarRatioMinMACVecExclude=0.5,1.5,2.5,3.5,4.5,5.5,10.5,20.5\n --cateVarRatioMaxMACVecInclude=1.5,2.5,3.5,4.5,5.5,10.5,20.5\ncorresponding to\n0.5 &lt; MAC &lt;=  1.5\n1.5 &lt; MAC &lt;=  2.5\n2.5 &lt; MAC &lt;=  3.5\n3.5 &lt; MAC &lt;=  4.5\n4.5 &lt; MAC &lt;=  5.5\n5.5 &lt; MAC &lt;=  10.5\n10.5 &lt; MAC &lt;=  20.5\n20.5 &lt; MAC\n\nRscript step1_fitNULLGLMM.R     \\\n    --plinkFile=./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly \\\n        --phenoFile=./input/pheno_1000samples.txt_withdosages_withBothTraitTypes.txt \\\n        --phenoCol=y_quantitative \\\n        --covarColList=x1,x2 \\\n        --sampleIDColinphenoFile=IID \\\n        --traitType=quantitative       \\\n        --invNormalize=TRUE     \\\n        --outputPrefix=./output/example_quantitative \\\n    --outputPrefix_varRatio=./output/example_quantitative_cate\t\\\n    --sparseGRMFile=./output/example_binary_cate.varianceRatio.txt.sparseGRM.mtx    \\\n        --sparseGRMSampleIDFile=./output/example_binary.varianceRatio.txt.sparseGRM.mtx.sample  \\\n        --nThreads=4 \\\n        --LOCO=FALSE\t\\\n    --skipModelFitting=FALSE \\\n        --IsSparseKin=TRUE      \\\n        --isCateVarianceRatio=TRUE\n\nInput files1.(same as step 1 for single-variant assoc tests and step 0)\nGenotype file for constructing the genetic relationship matrix in the plink format \n2.a file storing the sparse GRM (optional, output by step 0)\nsparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseGRM.mtx\n\nThe sparse GRM file can be opened using the readMM function in the R library Matrix\n3.a file storing IDs of the samples in the sparse GRM (optional, output by step 0)\nsparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseGRM.mtx.sampleIDs.txt\n\nOutput files\nsame as the step 1 output by SAIGE for single-variant association tests\n\n\nmodel file \nassociation result file for the subset of randomly selected markers \nvariance ratio file\n\n\nspecific to SAIGE-GENE\n\n\nsparse Sigma file\n\nsparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseSigma.mtx\n\nNOTE: the file contains the sparse Sigma matrix, which is ** NOT ** the sparse GRM. The sparse Sigma matrix is computed based on the sparse GRM and the results of step 1.\nStep 2: performing the region- or gene-based association tests\nThe command line is the same as the step 2 for single-variant assoc tests, except that a group file is specified (–groupFile)\nEach line is for one gene&#x2F;set of variants. The first element is for gene&#x2F;set name.\nThe rest of the line is for variant ids included in this gene&#x2F;set. For vcf&#x2F;sav, the genetic marker ids are in the format chr:pos_ref&#x2F;alt. For bgen, the genetic marker ids should match the ids in the bgen file. Each element in the line is separated by tab.\nIsSingleVarinGroupTest&#x3D;TRUE is to perform single-variant association tests as well for markers included in the gene-based tests\n–IsOutputBETASEinBurdenTest is to output effect sizes for burden tests (this option is still under development)\nSame as the single-variant association tests, conditional analysis based summary stats can be performed (–condition) can be performed in step 2 with dosage&#x2F;genotype input file formats VCF, BGEN and SAV.\n\nRscript step2_SPAtests.R \\\n        --vcfFile=./input/genotype_10markers.vcf.gz \\\n        --vcfFileIndex=./input/genotype_10markers.vcf.gz.tbi \\\n        --vcfField=GT \\\n        --chrom=1 \\\n    --minMAF=0 \\\n        --minMAC=0.5 \\\n        --maxMAFforGroupTest=0.01       \\\n        --sampleFile=./input/samplelist.txt \\\n        --GMMATmodelFile=./output/example_quantitative.rda \\\n        --varianceRatioFile=./output/example_quantitative_cate.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example_quantitative.SAIGE.gene.txt \\\n        --numLinesOutput=1 \\\n        --groupFile=./input/groupFile_geneBasedtest_simulation.txt    \\\n        --sparseSigmaFile=./output/example_quantitative_cate.varianceRatio.txt_relatednessCutoff_0.125.sparseSigma.mtx       \\\n        --IsSingleVarinGroupTest=TRUE\n\n\n##another example, conditional analysis for gene-based tests\nRscript step2_SPAtests.R \\\n        --vcfFile=./input/seedNumLow_126001_seedNumHigh_127000_nfam_1000_nindep_0.sav \\\n        --vcfFileIndex=./input/seedNumLow_126001_seedNumHigh_127000_nfam_1000_nindep_0.sav.s1r \\\n        --vcfField=DS \\\n        --chrom=chr1 \\\n        --minMAF=0 \\\n        --minMAC=0.5 \\\n        --maxMAFforGroupTest=0.01       \\\n        --sampleFile=./input/samplelist.txt \\\n        --GMMATmodelFile=./output/example_quantitative.rda \\\n        --varianceRatioFile=./output/example_quantitative_cate.varianceRatio.txt \\\n    --SAIGEOutputFile=./output/example_quantitative.SAIGE.gene_conditional.txt \\\n        --numLinesOutput=1 \\\n        --groupFile=./input/groupFile_geneBasedtest.txt    \\\n        --sparseSigmaFile=./output/example_quantitative_cate.varianceRatio.txt_relatednessCutoff_0.125.sparseSigma.mtx       \\\n        --IsOutputAFinCaseCtrl=TRUE     \\\n        --IsSingleVarinGroupTest=TRUE   \\\n    --condition=chr1:32302_A/C \n\n\n##Specify customized weights for markers in the gene- or region-based tests\n* weightsIncludeinGroupFile logical. Whether to specify customized weight for makers in gene- or region-based tests. If TRUE, weights are included in the group file. For vcf/sav, the genetic marker ids and weights are in the format chr:pos_ref/alt;weight. For bgen, the genetic marker ids should match the ids in the bgen filE, e.g. SNPID;weight. Each element in the line is seperated by tab. By default, FALSE\n* weights_for_G2_cond vector of float. weights for conditioning markers for gene- or region-based tests. The length equals to the number of conditioning markers, delimited by comma.\n\nRscript step2_SPAtests.R \\\n        --vcfFile=./input/seedNumLow_126001_seedNumHigh_127000_nfam_1000_nindep_0.sav \\\n        --vcfFileIndex=./input/seedNumLow_126001_seedNumHigh_127000_nfam_1000_nindep_0.sav.s1r \\\n        --vcfField=DS \\\n        --chrom=chr1 \\\n        --minMAF=0 \\\n        --minMAC=0.5 \\\n        --maxMAFforGroupTest=0.01       \\\n        --sampleFile=./input/samplelist.txt \\\n        --GMMATmodelFile=./output/example_binary.rda \\\n        --varianceRatioFile=./output/example_binary_cate_v2.varianceRatio.txt \\\n        --SAIGEOutputFile=./output/example_binary.SAIGE.gene_conditional_withspecifiedWeights.txt \\\n        --numLinesOutput=1 \\\n        --groupFile=./input/groupFile_geneBasedtest_withWeights.txt    \\\n        --sparseSigmaFile=./output/example_binary_cate_v2.varianceRatio.txt_relatednessCutoff_0.125.sparseSigma.mtx       \\\n        --IsOutputAFinCaseCtrl=TRUE     \\\n        --IsSingleVarinGroupTest=TRUE   \\\n        --IsOutputPvalueNAinGroupTestforBinary=TRUE     \\\n        --IsAccountforCasecontrolImbalanceinGroupTest=TRUE      \\\n        --weightsIncludeinGroupFile=TRUE        \\\n        --weights_for_G2_cond=3,1       \\\n        --condition=chr1:32302_A/C,chr1:32304_A/C\n\nInput files\nsame as step 1 input by SAIGE for single-variant association tests\n\n\nDosage file \nSAIGE-GENE can take in VCF, BCF, BGEN, and SAV.\n\nSample file \nThis file contains one column for sample IDs corresponding to the sample order in the dosage file. No header is included.\n\n\nless -S sampleIDindosage.txt\n\n\nModel file from step 1\n\n./output/example.rda\n\n\nVariance ratio file from step 1\n\n./output/example.varianceRatio.txt\n\n\nspecific to SAIGE-GENE\n\n\nGroup file \nEach line is for one gene&#x2F;set of variants. The first element is for gene&#x2F;set name.\n\n\nThe rest of the line is for variant ids included in this gene&#x2F;set. For vcf&#x2F;sav, the genetic marker ids are in the format chr:pos_ref&#x2F;alt. For bgen, the genetic marker ids should match the ids in the bgen file. Each element in the line is separated by tab.** Note that the order of variants in the group file needs to be consistent to variants’ order in the dosage file ** To specify customized weights for variants, set weightsIncludeinGroupFile&#x3D;TRUE and in the group file, for vcf&#x2F;sav, the genetic marker ids and weights are in the format chr:pos_ref&#x2F;alt;weight. For bgen, the genetic marker ids should match the ids in the bgen filE, e.g. SNPID;weight. Each element in the line is seperated by tab.**** If weightsIncludeinGroupFile&#x3D;TRUE, in conditional analysis, weights for conditioning markers need to be specified using the argument weights_for_G2_cond, e.g. weights_for_G2_cond&#x3D;1,3,4. The weights in –weights_for_G2_cond are for markers in –condition, respectively.**\nless -S ./input/groupFile_geneBasedtest.txt\n\n\nsparse Sigma file\n\nsparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseSigma.mtx\n\nOutput files\nA file with region- or gene-based association test results\n\nless -S ./output/example_quantitative.SAIGE.gene_conditional.txt\n\nNOTE:\n  The header of the output file: Gene Pvalue Pvalue_cond Nmarker_MACCate_1 Nmarker_MACCate_2 Nmarker_MACCate_3 Nmarker_MACCate_4 Nmarker_MACCate_5 Nmarker_MACCate_6 Nmarker_MACCate_7 Nmarker_MACCate_8 markerIDs markerAFs Pvalue_Burden Pvalue_SKAT Pvalue_Burden_cond Pvalue_SKAT_cond\nGene : Gene name (as provided in the group file)\nPvalue: p-value of SKAT-O test\nPvalue_cond: conditional p-value of SKAT-O test (if --condition= is specified)\nNmarker_MACCate_n: number of markers in the gene falling in the nth MAC category (The MAC category is corresponding to the one used for the variance ratio estimation). For example, by default, Nmarker_MACCate_1 is the number of singletons\nmarkerIDs: IDs for variants included in the test\nmarkerAFs: allele frequencies for variants included in the test\nPvalue_Burden: p-value of Burden test\nPvalue_SKAT: p-value of SKAT test\nPvalue_Burden_cond: conditional p-value of Burden test (if --condition= is specified)\nPvalue_SKAT_cond: conditional p-value of SKAT test (if --condition= is specified)\nPvalue_SKAT.NA: p-values of SKAT test without accounting for unbalanced case-control ratios for binary traits\nPvalue.NA: p-values of SKAT-O test without accounting for unbalanced case-control ratios for binary traits\nPvalue_Burden.NA: p-values of Burden test without accounting for unbalanced case-control ratios for binary traits\n\n\nA file with single-variant association test results for genetic variants included in the gene-based tests (if –IsSingleVarinGroupTest&#x3D;TRUE)\n\nless -S ./output/example_quantitative.SAIGE.gene_conditional.txt_single\n\nSame as the output by SAIGE for single-variant association tests\n","dateCreated":"2020-06-11T14:37:52+08:00","dateModified":"2020-06-11T14:37:52+08:00","datePublished":"2020-06-11T14:37:52+08:00","description":"","headline":"GWAS|SAIGE-GENE安装及使用指南","image":["saigegene2steps.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/","thumbnailUrl":"saigegene2steps.png"}</script>
+    <meta property="og:type" content="blog">
+<meta property="og:title" content="GWAS|SAIGE-GENE安装及使用指南">
+<meta property="og:url" content="https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://iuu19.github.io/GWAS-SAIGE-GENE%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/SAIGE2step.png">
+<meta property="og:image" content="https://iuu19.github.io/GWAS-SAIGE-GENE%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/saigegene2steps.png">
+<meta property="article:published_time" content="2020-06-11T06:37:52.000Z">
+<meta property="article:modified_time" content="2020-06-11T06:37:52.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iuu19.github.io/GWAS-SAIGE-GENE%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/SAIGE2step.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/saigegene2steps.png"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/saigegene2steps.png"/>
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            GWAS|SAIGE-GENE安装及使用指南
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-06-11T14:37:52+08:00">
+	
+		    6月 11, 2020
+    	
+    </time>
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <font face="times new roman" size=4>
+
+<span id="more"></span>
+
+<p>GWAS|SAIGE-GENE安装及使用指南</p>
+<h1 id="table-of-contents">目录</h1><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-Overview"><span class="toc-text">1.Overview</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-Installing-SAIGE"><span class="toc-text">2.Installing SAIGE</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-Install-SAIGE-using-the-conda-environment"><span class="toc-text">2.1 Install SAIGE using the conda environment</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-1-Create-a-conda-environment-using-conda-environment-file-Here-is-a-link-to-download-the-conda-environment-file-environment-RSAIGE-yml"><span class="toc-text">2.1.1 Create a conda environment using (conda environment file) Here is a link to download the conda environment file-environment-RSAIGE.yml</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-2-Activate-the-conda-environment-RSAIGE"><span class="toc-text">2.1.2 Activate the conda environment RSAIGE</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-3-Open-R-run-following-script-to-install-the-MetaSKAT-R-library"><span class="toc-text">2.1.3 Open R, run following script to install the MetaSKAT R library.</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-4-Install-SAIGE-from-the-source-code"><span class="toc-text">2.1.4 Install SAIGE from the source code.</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Method-1"><span class="toc-text">Method 1:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Method-2"><span class="toc-text">Method 2:</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-Run-SAIGE-using-a-docker-image"><span class="toc-text">2.2 Run SAIGE using a docker image</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-Flowchart"><span class="toc-text">3 Flowchart</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-SAIGE-Flowchart"><span class="toc-text">3.1 SAIGE Flowchart</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-SAIGE-GENE-Flowchart"><span class="toc-text">3.2 SAIGE-GENE Flowchart</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-Running-SAIGE-and-SAIGE-GENE"><span class="toc-text">4 Running SAIGE and SAIGE-GENE</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-Single-variant-association-tests"><span class="toc-text">4.1 Single variant association tests</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-1-fitting-the-null-logistic-x2F-linear-mixed-model"><span class="toc-text">Step 1: fitting the null logistic&#x2F;linear mixed model</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Input-files"><span class="toc-text">Input files</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Output-files"><span class="toc-text">Output files</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-2-performing-single-variant-association-tests"><span class="toc-text">Step 2: performing single-variant association tests</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Input-files-1"><span class="toc-text">Input files</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Output-file"><span class="toc-text">Output file</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#An-example-with-a-signal"><span class="toc-text">An example with a signal</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-Region-or-gene-based-association-tests-SAIGE-GENE"><span class="toc-text">4.2 Region- or gene-based association tests (SAIGE-GENE)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-0-creating-a-sparse-GRM"><span class="toc-text">Step 0: creating a sparse GRM</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Input-file"><span class="toc-text">Input file</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Output-files-1"><span class="toc-text">Output files</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-1-fitting-the-null-logistic-x2F-linear-mixed-model-1"><span class="toc-text">Step 1: fitting the null logistic&#x2F;linear mixed model</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Input-files-2"><span class="toc-text">Input files</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Output-files-2"><span class="toc-text">Output files</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Step-2-performing-the-region-or-gene-based-association-tests"><span class="toc-text">Step 2: performing the region- or gene-based association tests</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Input-files-3"><span class="toc-text">Input files</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Output-files-3"><span class="toc-text">Output files</span></a></li></ol></li></ol></li></ol></li></ol>
+<hr>
+<h1 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1.Overview"></a>1.Overview</h1><p>The most current version of SAIGE is version 0.38</p>
+<p>This tutorial will walk you through</p>
+<p>1.Installing SAIGE</p>
+<p>2.Running SAIGE for：</p>
+<ul>
+<li>Single-variant association tests</li>
+<li>Gene-based tests</li>
+<li>Conditional analysis</li>
+</ul>
+<h1 id="2-Installing-SAIGE"><a href="#2-Installing-SAIGE" class="headerlink" title="2.Installing SAIGE"></a>2.Installing SAIGE</h1><h2 id="2-1-Install-SAIGE-using-the-conda-environment"><a href="#2-1-Install-SAIGE-using-the-conda-environment" class="headerlink" title="2.1 Install SAIGE using the conda environment"></a>2.1 Install SAIGE using the conda environment</h2><h3 id="2-1-1-Create-a-conda-environment-using-conda-environment-file-Here-is-a-link-to-download-the-conda-environment-file-environment-RSAIGE-yml"><a href="#2-1-1-Create-a-conda-environment-using-conda-environment-file-Here-is-a-link-to-download-the-conda-environment-file-environment-RSAIGE-yml" class="headerlink" title="2.1.1 Create a conda environment using (conda environment file) Here is a link to download the conda environment file-environment-RSAIGE.yml"></a>2.1.1 Create a conda environment using (conda environment file) Here is a link to download the conda environment file-<strong><a target="_blank" rel="noopener" href="https://raw.githubusercontent.com/weizhouUMICH/SAIGE/master/conda_env/environment-RSAIGE.yml">environment-RSAIGE.yml</a></strong></h3><p>After downloading <code>environment-RSAIGE.yml</code>, run following command</p>
+<pre><code>conda env create -f environment-RSAIGE.yml
+</code></pre>
+<h3 id="2-1-2-Activate-the-conda-environment-RSAIGE"><a href="#2-1-2-Activate-the-conda-environment-RSAIGE" class="headerlink" title="2.1.2 Activate the conda environment RSAIGE"></a>2.1.2 Activate the conda environment RSAIGE</h3><pre><code>conda activate RSAIGE
+FLAGPATH=`which python | sed &#39;s|/bin/python$||&#39;`
+export LDFLAGS=&quot;-L$&#123;FLAGPATH&#125;/lib&quot;
+export CPPFLAGS=&quot;-I$&#123;FLAGPATH&#125;/include&quot;
+</code></pre>
+<p>Please make sure to set up the <code>LDFLAGS</code> and <code>CPPFLAGS</code> using export (the last two command lines), so libraries can be linked correctly when the SAIGE source code is compiled. Note: <strong>Here are the steps to <a target="_blank" rel="noopener" href="https://github.com/weizhouUMICH/SAIGE/blob/master/conda_env/createCondaEnvSAIGE_steps.txt">create the conda environment file</a></strong></p>
+<h3 id="2-1-3-Open-R-run-following-script-to-install-the-MetaSKAT-R-library"><a href="#2-1-3-Open-R-run-following-script-to-install-the-MetaSKAT-R-library" class="headerlink" title="2.1.3 Open R, run following script to install the MetaSKAT R library."></a>2.1.3 Open <strong>R</strong>, run following script to install the <strong>MetaSKAT</strong> R library.</h3><pre><code>install.packages(&#39;MetaSKAT&#39;)
+</code></pre>
+<h3 id="2-1-4-Install-SAIGE-from-the-source-code"><a href="#2-1-4-Install-SAIGE-from-the-source-code" class="headerlink" title="2.1.4 Install SAIGE from the source code."></a>2.1.4 Install SAIGE from the source code.</h3><h4 id="Method-1"><a href="#Method-1" class="headerlink" title="Method 1:"></a>Method 1:</h4><pre><code>src_branch=master
+repo_src_url=https://github.com/weizhouUMICH/SAIGE
+git clone --depth 1 -b $src_branch $repo_src_url
+
+R CMD INSTALL --library=path_to_final_SAIGE_library SAIGE
+</code></pre>
+<p>When call SAIGE in R, set lib.loc&#x3D;path_to_final_SAIGE_library</p>
+<p>  library(SAIGE, lib.loc&#x3D;path_to_final_SAIGE_library)</p>
+<h4 id="Method-2"><a href="#Method-2" class="headerlink" title="Method 2:"></a>Method 2:</h4><p>Open R. Run</p>
+<pre><code>devtools::install_github(&quot;weizhouUMICH/SAIGE&quot;)
+</code></pre>
+<h2 id="2-2-Run-SAIGE-using-a-docker-image"><a href="#2-2-Run-SAIGE-using-a-docker-image" class="headerlink" title="2.2 Run SAIGE using a docker image"></a>2.2 Run SAIGE using a docker image</h2><p>The docker image can be pulled</p>
+<pre><code>docker pull wzhou88/saige:0.38
+</code></pre>
+<p><a target="_blank" rel="noopener" href="https://github.com/weizhouUMICH/Docker/tree/master/SAIGE">Dockerfile for creating your own docker image for SAIGE</a></p>
+<p>Functions can be called</p>
+<pre><code>step1_fitNULLGLMM.R --help
+step2_SPAtests.R --help
+createSparseGRM.R --help
+</code></pre>
+<p>Previous versions of SAIGE installation files are here: <a target="_blank" rel="noopener" href="https://www.dropbox.com/sh/zmlu1llpxd66pjl/AADFqdssvOBjbWZch6Q9zYNaa?dl=0">https://www.dropbox.com/sh/zmlu1llpxd66pjl/AADFqdssvOBjbWZch6Q9zYNaa?dl=0</a></p>
+<h1 id="3-Flowchart"><a href="#3-Flowchart" class="headerlink" title="3 Flowchart"></a>3 Flowchart</h1><p>SAIGE and SAIGE-GENE can work for both binary and quantitative traits.</p>
+<h2 id="3-1-SAIGE-Flowchart"><a href="#3-1-SAIGE-Flowchart" class="headerlink" title="3.1 SAIGE Flowchart"></a>3.1 SAIGE Flowchart</h2><p><img src="/GWAS-SAIGE-GENE%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/SAIGE2step.png" alt="SAIGE Flowchart"></p>
+<h2 id="3-2-SAIGE-GENE-Flowchart"><a href="#3-2-SAIGE-GENE-Flowchart" class="headerlink" title="3.2 SAIGE-GENE Flowchart"></a>3.2 SAIGE-GENE Flowchart</h2><p><img src="/GWAS-SAIGE-GENE%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/saigegene2steps.png" alt="SAIGE-GENE Flowchart"></p>
+<h1 id="4-Running-SAIGE-and-SAIGE-GENE"><a href="#4-Running-SAIGE-and-SAIGE-GENE" class="headerlink" title="4 Running SAIGE and SAIGE-GENE"></a>4 Running SAIGE and SAIGE-GENE</h1><p>Scripts are in the folder extdata&#x2F; and command lines are in the file cmd.sh</p>
+<pre><code>cd /extdata/
+less -S cmd.sh
+</code></pre>
+<p>Input files are in the folder <strong>extdata&#x2F;input</strong></p>
+<p>Output files are in the folder <strong>extdata&#x2F;output</strong> </p>
+<p>To obtain help information of the scripts that call functions in the SAIGE library</p>
+<pre><code>Rscript createSparseGRM.R --help
+Rscript step1_fitNULLGLMM.R --help
+Rscript step2_SPAtests.R --help
+</code></pre>
+<p>To obtain help information of functions in the SAIGE library</p>
+<pre><code>#open R
+R
+library(SAIGE)
+?createSparseGRM
+?fitNULLGLMM
+?SPAGMMATtest
+</code></pre>
+<h2 id="4-1-Single-variant-association-tests"><a href="#4-1-Single-variant-association-tests" class="headerlink" title="4.1 Single variant association tests"></a>4.1 Single variant association tests</h2><p>For single-variant association tests, sparse GRM and categorical variance ratios are <strong>NOT</strong> needed. </p>
+<p>Randomly selected markers with <strong>MAC &gt;&#x3D; 20</strong> are used to estimate the variance ratio </p>
+<h3 id="Step-1-fitting-the-null-logistic-x2F-linear-mixed-model"><a href="#Step-1-fitting-the-null-logistic-x2F-linear-mixed-model" class="headerlink" title="Step 1: fitting the null logistic&#x2F;linear mixed model"></a>Step 1: fitting the null logistic&#x2F;linear mixed model</h3><ul>
+<li>For <strong>binary traits</strong>, a null logistic mixed model will be fitted (<em><strong>–traitType&#x3D;binary</strong></em>). </li>
+<li>For <strong>quantitative traits</strong>, a null linear mixed model will be fitted (<em><strong>–traitType&#x3D;quantitative</strong></em>) and needs to be inverse normalized (<em><strong>–invNormalize&#x3D;TRUE</strong></em>)</li>
+</ul>
+<pre><code>#check the help info for step 1
+Rscript step1_fitNULLGLMM.R --help
+</code></pre>
+<pre><code>#For Binary traits:
+Rscript step1_fitNULLGLMM.R     \
+        --plinkFile=./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly \
+        --phenoFile=./input/pheno_1000samples.txt_withdosages_withBothTraitTypes.txt \
+        --phenoCol=y_binary \
+        --covarColList=x1,x2 \
+        --sampleIDColinphenoFile=IID \
+        --traitType=binary        \
+        --outputPrefix=./output/example_binary \
+        --nThreads=4 \
+        --LOCO=FALSE \
+        --IsOverwriteVarianceRatioFile ## v0.38. Whether to overwrite the variance ratio file if the file already exists
+
+
+#For Quantitative traits, if not normally distributed, inverse normalization needs to be specified to be TRUE --invNormalize=TRUE
+Rscript step1_fitNULLGLMM.R     \
+        --plinkFile=./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly \
+        --phenoFile=./input/pheno_1000samples.txt_withdosages_withBothTraitTypes.txt \
+        --phenoCol=y_quantitative \
+        --covarColList=x1,x2 \
+        --sampleIDColinphenoFile=IID \
+        --traitType=quantitative       \
+    --invNormalize=TRUE	\
+        --outputPrefix=./output/example_quantitative \
+        --nThreads=4 \
+        --LOCO=FALSE	\
+    --tauInit=1,0
+</code></pre>
+<h4 id="Input-files"><a href="#Input-files" class="headerlink" title="Input files"></a>Input files</h4><p><strong>1. Genotype file for constructing the <code>genetic relationship matrix (GRM)</code></strong></p>
+<p>SAIGE takes the PLINK binary file for the genotypes and assumes the file prefix is the same one for <strong>.bed, .bim. and .fam</strong></p>
+<pre><code>./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly.bed
+./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly.bim
+./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly.fam
+</code></pre>
+<p><strong>2.Phenotype file (contains non-genetic covariates if any, such as gender and age)</strong></p>
+<p>The file can be either space or tab-delimited with a header. It is required that the file contains one column for sample IDs and one column for the phenotype. It may contain columns for non-genetic covariates.</p>
+<p><strong>Note:</strong> Current version of SAIGE does not support categorical covariates that have more than two categories</p>
+<pre><code>less -S ./input/pheno_1000samples.txt_withdosages_withBothTraitTypes.txt
+</code></pre>
+<h4 id="Output-files"><a href="#Output-files" class="headerlink" title="Output files"></a>Output files</h4><p><strong>1. model file</strong></p>
+<pre><code>./output/example_quantitative.rda
+</code></pre>
+<pre><code>#open R
+R
+#load the model file in R
+load(&quot;./output/example_quantitative.rda&quot;)
+names(modglmm)
+modglmm$theta
+
+#theta: a vector of length 2. The first element is the dispersion parameter estimate and the second one is the variance component parameter estimate
+#coefficients: fixed effect parameter estimates
+#linear.predictors: a vector of length N (N is the sample size) containing linear predictors
+#fitted.values: a vector of length N (N is the sample size) containing fitted mean values on the original scale
+#Y: a vector of length N (N is the sample size) containing final working vector
+#residuals: a vector of length N (N is the sample size) containing residuals on the original scale
+#sampleID: a vector of length N (N is the sample size) containing sample IDs used to fit the null model
+</code></pre>
+<p><strong>2. association result file for the subset of randomly selected markers</strong></p>
+<pre><code>less -S ./output/example_quantitative_30markers.SAIGE.results.txt
+</code></pre>
+<p><strong>3. variance ratio file</strong></p>
+<pre><code>less -S ./output/example_quantitative.varianceRatio.txt
+</code></pre>
+<h3 id="Step-2-performing-single-variant-association-tests"><a href="#Step-2-performing-single-variant-association-tests" class="headerlink" title="Step 2: performing single-variant association tests"></a>Step 2: performing single-variant association tests</h3><ul>
+<li>For <strong>binary traits</strong>, saddle point approximation is used to account for case-control imbalance.</li>
+<li>File formats for dosages&#x2F;genotypes of genetic variants to be tested can be used: VCF, BGEN, SAV</li>
+<li>Conditional analysis based summary stats can be performed (<em><strong>–condition</strong></em>) can be performed in Step 2 with dosage&#x2F;genotype input file formats <strong>VCF, BGEN and SAV</strong>.</li>
+<li>To query and test a subset of markers</li>
+<li><ul>
+<li>both variant IDs and range of chromosome positions can be specified for BGEN input (<em>–idstoExcludeFile, –idstoIncludeFile, –rangestoExcludeFile, –rangestoIncludeFile</em>)</li>
+</ul>
+</li>
+<li><ul>
+<li>range chromosome positions can be specified for VCF&#x2F;SAV input (<em>–chrom, –start, –end</em>).</li>
+</ul>
+</li>
+<li>For VCF&#x2F;SAV input, <em>–chrom</em> MUST be specified and the string needs to be exactly the same as in the VCF&#x2F;SAV, such as <strong>“01” or “chr1”</strong>.</li>
+<li>For VCF&#x2F;SAV input, <em>–vcfField&#x3D;DS</em> to test dosages and <em>–vcfField&#x3D;GT</em> to test genotypes</li>
+<li>To drop samples with <strong>missing genotypes&#x2F;dosages</strong>,<em>–IsDropMissingDosages&#x3D;TRUE</em>, if FALSE, missing genotypes&#x2F;dosages will be mean imputed.</li>
+</ul>
+<p><strong>NOTE</strong>: this option has not been extensively tested yet. **</p>
+<ul>
+<li>sampleFile is used specify a file with sample IDs for bgen file. Please DO NOT include a header in the file. SAIGE versions &gt;&#x3D; 0.38 do not need sampleFile if VCF files are used</li>
+</ul>
+<pre><code>#check the help info for step 2
+Rscript step2_SPAtests.R --help
+</code></pre>
+<pre><code>#Perform single-variant association tests
+#for binary traits, 
+* --IsOutputAFinCaseCtrl=TRUE can be specified to output allele frequencies in cases and controls
+* --IsOutputNinCaseCtrl=TRUE can be specified to output sample sizes of cases and controls for each marker
+* --IsOutputHetHomCountsinCaseCtrl can be specified to output heterozygous and homozygous counts in cases and controls
+
+Rscript step2_SPAtests.R	\
+        --vcfFile=./input/genotype_10markers.missingness.vcf.gz \
+        --vcfFileIndex=./input/genotype_10markers.missingness.vcf.gz.tbi \
+        --vcfField=GT \
+        --chrom=1 \
+        --minMAF=0.0001 \
+        --minMAC=1 \
+        --sampleFile=./input/sampleIDindosage.txt \
+        --GMMATmodelFile=./output/example_binary.rda \
+        --varianceRatioFile=./output/example_binary.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example_binary.SAIGE.vcf.genotype.txt \
+        --numLinesOutput=2 \
+        --IsOutputAFinCaseCtrl=TRUE
+
+##drop samples with missing genotypes/dosages
+##--IsDropMissingDosages=TRUE
+Rscript step2_SPAtests.R        \
+        --vcfFile=./input/genotype_10markers.missingness.vcf.gz \
+        --vcfFileIndex=./input/genotype_10markers.missingness.vcf.gz.tbi \
+        --vcfField=GT \
+        --chrom=1 \
+        --minMAF=0.0001 \
+        --minMAC=1 \
+        --sampleFile=./input/sampleIDindosage.txt \
+        --GMMATmodelFile=./output/example_binary.rda \
+        --varianceRatioFile=./output/example_binary.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example_binary.SAIGE.vcf.genotype.dropmissing.txt \
+        --numLinesOutput=2 \
+        --IsOutputAFinCaseCtrl=TRUE	\
+    --IsDropMissingDosages=TRUE    
+
+
+#conditional analysis
+## --condition = Genetic marker ids (**chr:pos_ref/alt for vcf/sav or marker id for bgen**) separated by comma. e.g.chr3:101651171_C/T,chr3:101651186_G/A
+
+Rscript step2_SPAtests.R        \
+        --vcfFile=./input/genotype_10markers.missingness.vcf.gz \
+        --vcfFileIndex=./input/genotype_10markers.missingness.vcf.gz.tbi \
+        --vcfField=GT \
+        --chrom=1 \
+        --minMAF=0.0001 \
+        --minMAC=1 \
+        --sampleFile=./input/sampleIDindosage.txt \
+        --GMMATmodelFile=./output/example_binary.rda \
+        --varianceRatioFile=./output/example_binary.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example_binary.SAIGE.vcf.genotype.dropmissing.txt \
+        --numLinesOutput=2 \
+        --IsOutputAFinCaseCtrl=TRUE     \
+    --IsDropMissingDosages=TRUE	\
+    --condition=1:4_A/C
+
+#plain text input for dosages (plain text input for dosages is not inputed since 0.36.1)
+Rscript step2_SPAtests.R \
+        --dosageFile=./input/dosage_10markers.txt \
+        --dosageFileNrowSkip=1 \
+        --dosageFileNcolSkip=6 \
+        --dosageFilecolnamesSkip=CHR,SNP,CM,POS,EFFECT_ALLELE,ALT_ALLELE \
+        --minMAF=0.0001 \
+        --sampleFile=./input/sampleIDindosage.txt \
+        --GMMATmodelFile=./output/example.rda \
+        --varianceRatioFile=./output/example.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example.plainDosage.SAIGE.txt \
+        --numLinesOutput=2 \
+        --IsOutputAFinCaseCtrl=TRUE
+
+#bgen for dosages
+Rscript step2_SPAtests.R \
+        --bgenFile=./input/genotype_100markers.bgen \
+        --bgenFileIndex=./input/genotype_100markers.bgen.bgi \
+        --minMAF=0.0001 \
+        --minMAC=1 \
+        --sampleFile=./input/samplefileforbgen_10000samples.txt \
+        --GMMATmodelFile=./output/example.rda \
+        --varianceRatioFile=./output/example.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example.SAIGE.bgen.txt \
+        --numLinesOutput=2 \
+        --IsOutputAFinCaseCtrl=TRUE
+
+#VCF containing genotypes (--vcfField=GT)
+Rscript step2_SPAtests.R \
+        --vcfFile=./input/genotype_10markers.vcf.gz \
+        --vcfFileIndex=./input/genotype_10markers.vcf.gz.tbi \
+        --vcfField=GT \
+        --chrom=1 \
+        --minMAF=0.0001 \
+        --minMAC=1 \
+        --sampleFile=./input/sampleIDindosage.txt \
+        --GMMATmodelFile=./output/example.rda \
+        --varianceRatioFile=./output/example.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example.SAIGE.vcf.genotype.txt \
+        --numLinesOutput=2 \
+        --IsOutputAFinCaseCtrl=TRUE
+
+#VCF containing dosages (--vcfField=DS)
+Rscript step2_SPAtests.R \
+        --vcfFile=./input/dosage_10markers.vcf.gz \
+        --vcfFileIndex=./input/dosage_10markers.vcf.gz.tbi \
+        --vcfField=DS \
+        --chrom=1 \
+        --minMAF=0.0001 \
+        --minMAC=1 \
+        --sampleFile=./input/sampleIDindosage.txt \
+        --GMMATmodelFile=./output/example.rda \
+        --varianceRatioFile=./output/example.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example.SAIGE.vcf.dosage.txt \
+        --numLinesOutput=2 \
+        --IsOutputAFinCaseCtrl=TRUE
+
+# SAV for dosages
+Rscript step2_SPAtests.R        \
+        --savFile=./input/dosage_10markers.sav  \
+        --savFileIndex=./input/dosage_10markers.sav.s1r \
+        --vcfField=DS \
+        --minMAF=0.0001 \
+        --minMAC=1 \
+        --chrom=1 \
+        --sampleFile=./input/samplefileforbgen_10000samples.txt \
+        --GMMATmodelFile=./output/example.rda \
+        --varianceRatioFile=./output/example.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example.SAIGE.sav.txt \
+        --numLinesOutput=2 \
+        --IsOutputAFinCaseCtrl=TRUE
+</code></pre>
+<h4 id="Input-files-1"><a href="#Input-files-1" class="headerlink" title="Input files"></a>Input files</h4><p>1.Dosage file SAIGE supports different formats for dosages: <strong>VCF, BCF, BGEN and SAV</strong>.</p>
+<ul>
+<li>BGEN</li>
+</ul>
+<pre><code>genotype_100markers.bgen
+genotype_100markers.bgen.bgi
+</code></pre>
+<ul>
+<li>VCF containing genotypes</li>
+</ul>
+<pre><code>zcat genotype_10markers.vcf.gz | less -S
+genotype_10markers.vcf.gz.tbi
+</code></pre>
+<ul>
+<li>VCF containing dosages</li>
+</ul>
+<pre><code>zcat dosage_10markers.vcf.gz | less -S
+dosage_10markers.vcf.gz.tbi
+</code></pre>
+<p>-SAV</p>
+<pre><code>dosage_10markers.sav
+dosage_10markers.sav.s1r
+</code></pre>
+<p>2.Sample file</p>
+<p>This file contains one column for sample IDs corresponding to the sample order in the dosage file. <strong>No header is included</strong>. The option was originally for BGEN file that does not contain sample information.</p>
+<pre><code>less -S sampleIDindosage.txt
+</code></pre>
+<p>3.Model file from step 1</p>
+<pre><code>./output/example.rda
+</code></pre>
+<p>4.Variance ratio file from step 1</p>
+<pre><code>./output/example.varianceRatio.txt
+</code></pre>
+<h4 id="Output-file"><a href="#Output-file" class="headerlink" title="Output file"></a>Output file</h4><p>A file with association test results</p>
+<pre><code>less -S ./output/example.SAIGE.vcf.dosage.txt
+</code></pre>
+<p><strong>NOTE:</strong></p>
+<ul>
+<li>Association results are with regard to Allele2.</li>
+<li>For binary traits, the header of the output file: <code>CHR POS SNPID Allele1 Allele2 AC_Allele2 AF_Allele2 imputationInfo N BETA SE Tstat p.value p.value.NA Is.SPA.converge varT varTstar AF.Cases AF.Controls</code></li>
+<li>For quantitative traits, the header of the output file: <code>CHR POS SNPID Allele1 Allele2 AC_Allele2 AF_Allele2 imputationInfo N BETA SE Tstat p.value varT varTstar</code></li>
+</ul>
+<pre><code>CHR: chromosome
+POS: genome position 
+SNPID: variant ID
+Allele1: allele 1
+Allele2: allele 2
+AC_Allele2: allele count of allele 2
+AF_Allele2: allele frequency of allele 2
+imputationInfo: imputation info. If not in dosage/genotype input file, will output 1
+N: sample size
+BETA: effect size of allele 2
+SE: standard error of BETA
+Tstat: score statistic of allele 2
+p.value: p value (with SPA applied for binary traits)
+p.value.NA: p value when SPA is not applied (only for binary traits)
+Is.SPA.converge: whether SPA is converged or not (only for binary traits)
+varT: estimated variance of score statistic with sample relatedness incorporated
+varTstar: variance of score statistic without sample relatedness incorporated
+AF.Cases: allele frequency of allele 2 in cases (only for binary traits and if --IsOutputAFinCaseCtrl=TRUE)
+AF.Controls: allele frequency of allele 2 in controls (only for binary traits and if --IsOutputAFinCaseCtrl=TRUE)
+Tstat_cond, p.value_cond, varT_cond, BETA_cond, SE_cond: summary stats for conditional analysis
+</code></pre>
+<h4 id="An-example-with-a-signal"><a href="#An-example-with-a-signal" class="headerlink" title="An example with a signal"></a>An example with a signal</h4><ul>
+<li>p.value in Step 2 for the marker is ~4.16 x 10^-7</li>
+</ul>
+<pre><code>Rscript step1_fitNULLGLMM.R     \
+        --plinkFile=./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly \
+        --phenoFile=./input/Prev_0.1_nfam_1000.pheno_positive_pheno.txt \
+        --phenoCol=y \
+        --covarColList=x1,x2 \
+        --sampleIDColinphenoFile=IID \
+        --traitType=binary        \
+        --outputPrefix=./output/example_binary_positive_signal \
+        --nThreads=4    \
+        --LOCO=FALSE    \
+        --minMAFforGRM=0.01
+
+Rscript step2_SPAtests.R        \
+        --vcfFile=./input/nfam_1000_MAF0.2_nMarker1_nseed200.vcf.gz \
+        --vcfFileIndex=./input/nfam_1000_MAF0.2_nMarker1_nseed200.vcf.gz.tbi \
+        --vcfField=GT \
+        --chrom=1 \
+        --minMAF=0.0001 \
+        --minMAC=1 \
+        --GMMATmodelFile=./output/example_binary_positive_signal.rda \
+        --varianceRatioFile=./output/example_binary_positive_signal.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example_binary_positive_signal.assoc.step2.txt \
+        --numLinesOutput=2 \
+        --IsOutputAFinCaseCtrl=TRUE
+</code></pre>
+<h2 id="4-2-Region-or-gene-based-association-tests-SAIGE-GENE"><a href="#4-2-Region-or-gene-based-association-tests-SAIGE-GENE" class="headerlink" title="4.2 Region- or gene-based association tests (SAIGE-GENE)"></a>4.2 Region- or gene-based association tests (SAIGE-GENE)</h2><h3 id="Step-0-creating-a-sparse-GRM"><a href="#Step-0-creating-a-sparse-GRM" class="headerlink" title="Step 0: creating a sparse GRM"></a>Step 0: creating a sparse GRM</h3><p><strong>Note</strong>: This step is only needed for region- and gene-based tests (SAIGE-GENE)</p>
+<p>The sparse GRM only needs to be created once for each data set, e.g. a biobank, and can be used for all different phenotypes as long as all tested samples are included in it.</p>
+<pre><code>Rscript createSparseGRM.R	\
+    --plinkFile=./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly \
+    --nThreads=4  \
+    --outputPrefix=./output/sparseGRM	\
+    --numRandomMarkerforSparseKin=2000	\
+    --relatednessCutoff=0.125
+</code></pre>
+<h4 id="Input-file"><a href="#Input-file" class="headerlink" title="Input file"></a>Input file</h4><p><strong>Genotype file</strong> for constructing the genetic relationship matrix </p>
+<p>SAIGE takes the PLINK binary file for the genotypes and assumes the file prefix is the same one for <strong>.bed, .bim. and .fam</strong></p>
+<pre><code>nfam_100_nindep_0_step1_includeMoreRareVariants_poly.bed
+nfam_100_nindep_0_step1_includeMoreRareVariants_poly.bim
+nfam_100_nindep_0_step1_includeMoreRareVariants_poly.fam
+</code></pre>
+<h4 id="Output-files-1"><a href="#Output-files-1" class="headerlink" title="Output files"></a>Output files</h4><p>1.a file storing the sparse GRM</p>
+<pre><code>sparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseGRM.mtx
+</code></pre>
+<p>The sparse GRM file can be opened using the readMM function in the R library Matrix</p>
+<p>2.a file storing IDs of the samples in the sparse GRM</p>
+<pre><code>sparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseGRM.mtx.sampleIDs.txt
+</code></pre>
+<h3 id="Step-1-fitting-the-null-logistic-x2F-linear-mixed-model-1"><a href="#Step-1-fitting-the-null-logistic-x2F-linear-mixed-model-1" class="headerlink" title="Step 1: fitting the null logistic&#x2F;linear mixed model"></a>Step 1: fitting the null logistic&#x2F;linear mixed model</h3><ul>
+<li><em><strong>IsSparseKin&#x3D;TRUE</strong></em> must be specified for SAIGE-GENE</li>
+<li>step 1 model result from the single-variant assoc test can be re-used, except that for gene-based tests, variance ratios for multiple MAC categories and a sparse GRM need to be used (<em>IsSparseKin&#x3D;TRUE</em>).</li>
+<li>with <em><strong>IsSparseKin&#x3D;TRUE</strong></em>, no sparseGRMFile and sparseGRMSampleIDFile are specified (step 0 has not been done beforehand), a sparse GRM will be created based on the relatednessCutoff in this step.</li>
+<li>with <em><strong>IsSparseKin&#x3D;TRUE</strong></em>, sparseGRMFile and sparseGRMSampleIDFile can be used to specify a pre-calcuated sparse GRM and the sample ids for the sparse GRM (output from step 0). Tested samples would be a subset of samples in the pre-calcuated GRM.</li>
+<li>To activate the variance ratio estimation based multiple MAC categories, <em><strong>–isCateVarianceRatio&#x3D;TRUE</strong></em></li>
+<li><em><strong>cateVarRatioMinMACVecExclude</strong></em> and <em><strong>cateVarRatioMaxMACVecInclude</strong></em> are used to specify the MAC categories</li>
+</ul>
+<pre><code>#by default 
+ --cateVarRatioMinMACVecExclude=0.5,1.5,2.5,3.5,4.5,5.5,10.5,20.5
+ --cateVarRatioMaxMACVecInclude=1.5,2.5,3.5,4.5,5.5,10.5,20.5
+corresponding to
+0.5 &lt; MAC &lt;=  1.5
+1.5 &lt; MAC &lt;=  2.5
+2.5 &lt; MAC &lt;=  3.5
+3.5 &lt; MAC &lt;=  4.5
+4.5 &lt; MAC &lt;=  5.5
+5.5 &lt; MAC &lt;=  10.5
+10.5 &lt; MAC &lt;=  20.5
+20.5 &lt; MAC
+</code></pre>
+<pre><code>Rscript step1_fitNULLGLMM.R     \
+    --plinkFile=./input/nfam_100_nindep_0_step1_includeMoreRareVariants_poly \
+        --phenoFile=./input/pheno_1000samples.txt_withdosages_withBothTraitTypes.txt \
+        --phenoCol=y_quantitative \
+        --covarColList=x1,x2 \
+        --sampleIDColinphenoFile=IID \
+        --traitType=quantitative       \
+        --invNormalize=TRUE     \
+        --outputPrefix=./output/example_quantitative \
+    --outputPrefix_varRatio=./output/example_quantitative_cate	\
+    --sparseGRMFile=./output/example_binary_cate.varianceRatio.txt.sparseGRM.mtx    \
+        --sparseGRMSampleIDFile=./output/example_binary.varianceRatio.txt.sparseGRM.mtx.sample  \
+        --nThreads=4 \
+        --LOCO=FALSE	\
+    --skipModelFitting=FALSE \
+        --IsSparseKin=TRUE      \
+        --isCateVarianceRatio=TRUE
+</code></pre>
+<h4 id="Input-files-2"><a href="#Input-files-2" class="headerlink" title="Input files"></a>Input files</h4><p>1.(same as step 1 for single-variant assoc tests and step 0)</p>
+<p>Genotype file for constructing the genetic relationship matrix in the plink format </p>
+<p>2.a file storing the sparse GRM (optional, output by step 0)</p>
+<pre><code>sparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseGRM.mtx
+</code></pre>
+<p>The sparse GRM file can be opened using the readMM function in the R library Matrix</p>
+<p>3.a file storing IDs of the samples in the sparse GRM (optional, output by step 0)</p>
+<pre><code>sparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseGRM.mtx.sampleIDs.txt
+</code></pre>
+<h4 id="Output-files-2"><a href="#Output-files-2" class="headerlink" title="Output files"></a>Output files</h4><ul>
+<li>same as the step 1 output by SAIGE for single-variant association tests</li>
+</ul>
+<ol>
+<li>model file </li>
+<li>association result file for the subset of randomly selected markers </li>
+<li>variance ratio file</li>
+</ol>
+<ul>
+<li>specific to SAIGE-GENE</li>
+</ul>
+<ol start="4">
+<li>sparse Sigma file</li>
+</ol>
+<pre><code>sparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseSigma.mtx
+</code></pre>
+<p><strong>NOTE</strong>: the file contains the sparse Sigma matrix, which is ** NOT ** the sparse GRM. The sparse Sigma matrix is computed based on the sparse GRM and the results of step 1.</p>
+<h3 id="Step-2-performing-the-region-or-gene-based-association-tests"><a href="#Step-2-performing-the-region-or-gene-based-association-tests" class="headerlink" title="Step 2: performing the region- or gene-based association tests"></a>Step 2: performing the region- or gene-based association tests</h3><ul>
+<li>The command line is the same as the step 2 for single-variant assoc tests, except that a group file is specified (–groupFile)</li>
+<li>Each line is for one gene&#x2F;set of variants. The first element is for gene&#x2F;set name.</li>
+<li>The rest of the line is for variant ids included in this gene&#x2F;set. For vcf&#x2F;sav, the genetic marker ids are in the format chr:pos_ref&#x2F;alt. For bgen, the genetic marker ids should match the ids in the bgen file. Each element in the line is separated by tab.</li>
+<li>IsSingleVarinGroupTest&#x3D;TRUE is to perform single-variant association tests as well for markers included in the gene-based tests</li>
+<li>–IsOutputBETASEinBurdenTest is to output effect sizes for burden tests (this option is still under development)</li>
+<li>Same as the single-variant association tests, conditional analysis based summary stats can be performed (–condition) can be performed in step 2 with dosage&#x2F;genotype input file formats VCF, BGEN and SAV.</li>
+</ul>
+<pre><code>Rscript step2_SPAtests.R \
+        --vcfFile=./input/genotype_10markers.vcf.gz \
+        --vcfFileIndex=./input/genotype_10markers.vcf.gz.tbi \
+        --vcfField=GT \
+        --chrom=1 \
+    --minMAF=0 \
+        --minMAC=0.5 \
+        --maxMAFforGroupTest=0.01       \
+        --sampleFile=./input/samplelist.txt \
+        --GMMATmodelFile=./output/example_quantitative.rda \
+        --varianceRatioFile=./output/example_quantitative_cate.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example_quantitative.SAIGE.gene.txt \
+        --numLinesOutput=1 \
+        --groupFile=./input/groupFile_geneBasedtest_simulation.txt    \
+        --sparseSigmaFile=./output/example_quantitative_cate.varianceRatio.txt_relatednessCutoff_0.125.sparseSigma.mtx       \
+        --IsSingleVarinGroupTest=TRUE
+
+
+##another example, conditional analysis for gene-based tests
+Rscript step2_SPAtests.R \
+        --vcfFile=./input/seedNumLow_126001_seedNumHigh_127000_nfam_1000_nindep_0.sav \
+        --vcfFileIndex=./input/seedNumLow_126001_seedNumHigh_127000_nfam_1000_nindep_0.sav.s1r \
+        --vcfField=DS \
+        --chrom=chr1 \
+        --minMAF=0 \
+        --minMAC=0.5 \
+        --maxMAFforGroupTest=0.01       \
+        --sampleFile=./input/samplelist.txt \
+        --GMMATmodelFile=./output/example_quantitative.rda \
+        --varianceRatioFile=./output/example_quantitative_cate.varianceRatio.txt \
+    --SAIGEOutputFile=./output/example_quantitative.SAIGE.gene_conditional.txt \
+        --numLinesOutput=1 \
+        --groupFile=./input/groupFile_geneBasedtest.txt    \
+        --sparseSigmaFile=./output/example_quantitative_cate.varianceRatio.txt_relatednessCutoff_0.125.sparseSigma.mtx       \
+        --IsOutputAFinCaseCtrl=TRUE     \
+        --IsSingleVarinGroupTest=TRUE   \
+    --condition=chr1:32302_A/C 
+
+
+##Specify customized weights for markers in the gene- or region-based tests
+* weightsIncludeinGroupFile logical. Whether to specify customized weight for makers in gene- or region-based tests. If TRUE, weights are included in the group file. For vcf/sav, the genetic marker ids and weights are in the format chr:pos_ref/alt;weight. For bgen, the genetic marker ids should match the ids in the bgen filE, e.g. SNPID;weight. Each element in the line is seperated by tab. By default, FALSE
+* weights_for_G2_cond vector of float. weights for conditioning markers for gene- or region-based tests. The length equals to the number of conditioning markers, delimited by comma.
+
+Rscript step2_SPAtests.R \
+        --vcfFile=./input/seedNumLow_126001_seedNumHigh_127000_nfam_1000_nindep_0.sav \
+        --vcfFileIndex=./input/seedNumLow_126001_seedNumHigh_127000_nfam_1000_nindep_0.sav.s1r \
+        --vcfField=DS \
+        --chrom=chr1 \
+        --minMAF=0 \
+        --minMAC=0.5 \
+        --maxMAFforGroupTest=0.01       \
+        --sampleFile=./input/samplelist.txt \
+        --GMMATmodelFile=./output/example_binary.rda \
+        --varianceRatioFile=./output/example_binary_cate_v2.varianceRatio.txt \
+        --SAIGEOutputFile=./output/example_binary.SAIGE.gene_conditional_withspecifiedWeights.txt \
+        --numLinesOutput=1 \
+        --groupFile=./input/groupFile_geneBasedtest_withWeights.txt    \
+        --sparseSigmaFile=./output/example_binary_cate_v2.varianceRatio.txt_relatednessCutoff_0.125.sparseSigma.mtx       \
+        --IsOutputAFinCaseCtrl=TRUE     \
+        --IsSingleVarinGroupTest=TRUE   \
+        --IsOutputPvalueNAinGroupTestforBinary=TRUE     \
+        --IsAccountforCasecontrolImbalanceinGroupTest=TRUE      \
+        --weightsIncludeinGroupFile=TRUE        \
+        --weights_for_G2_cond=3,1       \
+        --condition=chr1:32302_A/C,chr1:32304_A/C
+</code></pre>
+<h4 id="Input-files-3"><a href="#Input-files-3" class="headerlink" title="Input files"></a>Input files</h4><ul>
+<li>same as step 1 input by SAIGE for single-variant association tests</li>
+</ul>
+<ol>
+<li><p>Dosage file </p>
+<p>SAIGE-GENE can take in VCF, BCF, BGEN, and SAV.</p>
+</li>
+<li><p>Sample file </p>
+<p>This file contains one column for sample IDs corresponding to the sample order in the dosage file. <strong>No header is included</strong>.</p>
+</li>
+</ol>
+<pre><code>less -S sampleIDindosage.txt
+</code></pre>
+<ol start="3">
+<li>Model file from step 1</li>
+</ol>
+<pre><code>./output/example.rda
+</code></pre>
+<ol start="4">
+<li>Variance ratio file from step 1</li>
+</ol>
+<pre><code>./output/example.varianceRatio.txt
+</code></pre>
+<ul>
+<li>specific to SAIGE-GENE</li>
+</ul>
+<ol start="5">
+<li><p>Group file </p>
+<p>Each line is for one gene&#x2F;set of variants. The first element is for gene&#x2F;set name.</p>
+</li>
+</ol>
+<p>The rest of the line is for variant ids included in this gene&#x2F;set. For vcf&#x2F;sav, the genetic marker ids are in the format chr:pos_ref&#x2F;alt. For bgen, the genetic marker ids should match the ids in the bgen file. Each element in the line is separated by tab.<br>** Note that the order of variants in the group file needs to be consistent to variants’ order in the dosage file ** To specify customized weights for variants, set weightsIncludeinGroupFile&#x3D;TRUE and in the group file, for vcf&#x2F;sav, the genetic marker ids and weights are in the format chr:pos_ref&#x2F;alt;weight. For bgen, the genetic marker ids should match the ids in the bgen filE, e.g. SNPID;weight. Each element in the line is seperated by tab.**<br>** If weightsIncludeinGroupFile&#x3D;TRUE, in conditional analysis, weights for conditioning markers need to be specified using the argument weights_for_G2_cond, e.g. weights_for_G2_cond&#x3D;1,3,4. The weights in –weights_for_G2_cond are for markers in –condition, respectively.**</p>
+<pre><code>less -S ./input/groupFile_geneBasedtest.txt
+</code></pre>
+<ol start="6">
+<li>sparse Sigma file</li>
+</ol>
+<pre><code>sparseGRM_relatednessCutoff_0.125_1000_randomMarkersUsed.sparseSigma.mtx
+</code></pre>
+<h4 id="Output-files-3"><a href="#Output-files-3" class="headerlink" title="Output files"></a>Output files</h4><ol>
+<li>A file with region- or gene-based association test results</li>
+</ol>
+<pre><code>less -S ./output/example_quantitative.SAIGE.gene_conditional.txt
+</code></pre>
+<p><strong>NOTE:</strong></p>
+<p>  The header of the output file: <code>Gene Pvalue Pvalue_cond Nmarker_MACCate_1 Nmarker_MACCate_2 Nmarker_MACCate_3 Nmarker_MACCate_4 Nmarker_MACCate_5 Nmarker_MACCate_6 Nmarker_MACCate_7 Nmarker_MACCate_8 markerIDs markerAFs Pvalue_Burden Pvalue_SKAT Pvalue_Burden_cond Pvalue_SKAT_cond</code></p>
+<pre><code>Gene : Gene name (as provided in the group file)
+Pvalue: p-value of SKAT-O test
+Pvalue_cond: conditional p-value of SKAT-O test (if --condition= is specified)
+Nmarker_MACCate_n: number of markers in the gene falling in the nth MAC category (The MAC category is corresponding to the one used for the variance ratio estimation). For example, by default, Nmarker_MACCate_1 is the number of singletons
+markerIDs: IDs for variants included in the test
+markerAFs: allele frequencies for variants included in the test
+Pvalue_Burden: p-value of Burden test
+Pvalue_SKAT: p-value of SKAT test
+Pvalue_Burden_cond: conditional p-value of Burden test (if --condition= is specified)
+Pvalue_SKAT_cond: conditional p-value of SKAT test (if --condition= is specified)
+Pvalue_SKAT.NA: p-values of SKAT test without accounting for unbalanced case-control ratios for binary traits
+Pvalue.NA: p-values of SKAT-O test without accounting for unbalanced case-control ratios for binary traits
+Pvalue_Burden.NA: p-values of Burden test without accounting for unbalanced case-control ratios for binary traits
+</code></pre>
+<ol start="2">
+<li>A file with single-variant association test results for genetic variants included in the gene-based tests (if –IsSingleVarinGroupTest&#x3D;TRUE)</li>
+</ol>
+<pre><code>less -S ./output/example_quantitative.SAIGE.gene_conditional.txt_single
+</code></pre>
+<p>Same as the output by SAIGE for single-variant association tests</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-06-12-mirna-shu-ju-ku-mirna-ba-ji-yin-yu-ce/"
+                    data-tooltip="miRNA数据库|miRNA靶基因预测"
+                    aria-label="上一篇: miRNA数据库|miRNA靶基因预测"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-06-10-linux-ji-chu-anaconda-an-zhuang-ji-conda-shi-yong-jiao-cheng/"
+                    data-tooltip="linux基础|Anaconda安装及Conda使用教程"
+                    aria-label="下一篇: linux基础|Anaconda安装及Conda使用教程"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-06-12-mirna-shu-ju-ku-mirna-ba-ji-yin-yu-ce/"
+                    data-tooltip="miRNA数据库|miRNA靶基因预测"
+                    aria-label="上一篇: miRNA数据库|miRNA靶基因预测"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-06-10-linux-ji-chu-anaconda-an-zhuang-ji-conda-shi-yong-jiao-cheng/"
+                    data-tooltip="linux基础|Anaconda安装及Conda使用教程"
+                    aria-label="下一篇: linux基础|Anaconda安装及Conda使用教程"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

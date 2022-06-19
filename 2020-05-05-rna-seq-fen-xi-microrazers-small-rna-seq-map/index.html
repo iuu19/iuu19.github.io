@@ -1,0 +1,666 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>RNA-Seq分析|MicroRazerS-small RNA-seq map - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"\n\nMicroRazerS - Rapid Alignment of Small RNA-seq Reads\n\n\n\n\n\n\n\n\n 1. OverviewMicroRazerS is a tool for mapping millions of short reads obtained from smallRNA sequencing onto a reference genome. MicroRazerS searches for the longestperfect prefix match of each read where the minimum prefix match length (theseed length) can currently be varied between 14 and 22. Optionally, onemismatch can be tolerated in the seed. MicroRazerS guarantees to find allmatches and reports a configurable maximum number of equally-best matches.Perfect matches are given preference over matches containing mismatches, evenif this means mapping a shorter prefix.Similar to RazerS, MicroRazerS uses a k-mer index of all reads and countscommon k-mers of reads and the reference genome in parallelograms. InMicroRazerS, this index is built over the first seedlength many bases of eachread only. Each parallelogram with a k-mer count above a certain thresholdtriggers a verification. On success, the genomic subsequence and the readnumber are stored and later written to the output file.\n 2. InstallationMicroRazerS is distributed with SeqAn - The C++ Sequence Analysis Library. To build MicroRazerS do the following:\n\nDownload the latest snapshot of SeqAn\nUnzip it to a directory of your choice (e.g. snapshot)\ncd snapshot&#x2F;apps\nmake micro_razers\ncd micro_razers\n.&#x2F;micro_razers –help\n\nAlternatively you can check out the latest Git version of MicroRazerS and SeqAnwith:\n\ngit clone https://github.com/seqan/seqan.git\nmkdir seqan&#x2F;buld; cd seqan&#x2F;build\ncmake .. -DCMAKE_BUILD_TYPE&#x3D;Release\nmake micro_razers\n.&#x2F;bin&#x2F;micro_razers –help\n\nOn success, an executable file micro_razers was built and a brief usagedescription was dumped.\n 3. UsageTo get a short usage description of MicroRazerS, you can execute micro_razers -h ormicro_razers --help.\nUsage: micro_razers [OPTION]…  \nMicroRazerS expects the names of two DNA (multi-)Fasta files. The first containsa reference genome and the second contains the reads that should bemapped against the reference. Without any additional parameters MicroRazerSwould map all reads against both strands of the reference genome requiring a perfectprefix seed match of length &gt;&#x3D; 16. The up tp 100 equally best (longest) matcheswould then be dumped in the default output file, the read file name extended by thesuffix .result.\nThe default behaviour can be modified by adding the following options tothe command line:\n  3.1. Main Options  [ -sL NUM ],  [ –seed-length NUM ]\n  Seed length parameter. Minimum length of prefix match.\n  [ -sE ],  [ –seed-error ]\n  Allow for one mismatch in the prefix seed.\n  [ -f ],  [ –forward ]\n  Only map reads against the positive&#x2F;forward strand of the genome. By  default, both strands are scanned.\n  [ -r ],  [ –reverse ]\n  Only map reads against the negative&#x2F;reverse-complement strand of the  genome. By default, both strands are scanned.\n  [ -m NUM ],  [ –max-hits NUM ]\n  Output at most NUM of the best matches.\n  [ -o FILE ],  [ –output FILE ]\n  Change the output filename to FILE. By default, this is the read file  name extended by the suffix “.result”.\n  [ -mN ],  [ –match-N ]\n  By default, ‘N’ characters in read or genome sequences equal to nothing,  not even to another ‘N’. They are considered as errors. By activating this  option, ‘N’ equals to every other character and produces no mismatch in  the verification process. The filtration is not affected by this option.\n  [ -pa ],  [ –purge-ambiguous ]\n  Omit reads with more than #max-hits many equally-best matches.\n  [ -v ],  [ –verbose ]\n  Verbose. Print extra information and running times.\n  [ -vv ],  [ –vverbose ]\n  Very verbose. Like -v, but also print filtering statistics like true and  false positives (TP&#x2F;FP).\n  [ -V ],  [ –version ]\n  Print version information.\n  [ -h ],  [ –help ]\n  Print a brief usage summary.\n 3.2. Output Format Options  [ -of NUM ],  [ –outputFormat ]\n  Specify the desired output format:  NUM &#x3D; 0   &#x3D;&gt; MicroRazerS default format  NUM &#x3D; 1   &#x3D;&gt; SAM format\n  [ -a ],  [ –alignment ]\n  Dump the alignment for each match in the “.result” file, only possible for  -of 0, i.e. MicroRazerS default output format. The alignment is written  directly after the match and has the following format:  #Read:   CAGGAGATAAGCTGGATCTTT  #Genome: CAGGAGATAAGCTGGATCTTT\n  [ -gn NUM ],  [ –genome-naming NUM ]\n  Select how genomes are named in the output file. If NUM is 0, the Fasta  ids of the genome sequences are used (default). If NUM is 1, the genome  sequences are enumerated beginning with 1.\n  [ -rn NUM ],  [ –read-naming NUM ]\n  Select how reads are named in the output file. If NUM is 0, the Fasta ids  of the reads are used (default). If NUM is 1, the reads are enumerated  beginning with 1. If NUM is 2, the read sequence itself is used.\n  [ -so NUM ],  [ –sort-order NUM ]\n  Select how matches are ordered in the output file.  If NUM is 0, matches are sorted primarily by the read number and  secondarily by their position in the genome sequence (default).  If NUM is 1, matches are sorted primarily by their position in the genome  sequence and secondarily by the read number.\n  [ -pf NUM ],  [ –position-format NUM ]\n  Select how positions are stored in the output file (only relevant for  MicroRazerS default output format, i.e. -of 0).  If NUM is 0, the gap space is used, i.e. gaps around characters are  enumerated beginning with 0 and the beginning and end position is the  postion of the gap before and after a match (default).  If NUM is 1, the position space is used, i.e. characters are enumerated  beginning with 1 and the beginning and end position is the postion of the  first and last character involved in a match.\n  Example: Consider the string CONCAT. The beginning and end positions  of the substring CAT are (3,6) in gap space and (4,6) in position space.\n 4. Output Format 4.1. Default Output FormatThe default output file is a text file whose lines represent matches. A lineconsists of different tab-separated match values. In the following format:\nRName 0 RLength GStrand GName GBegin GEnd PercID MatchLen\nMatch value description:\n  RName        Name of the read sequence (see –read-naming)  RLength      Length of the read  GStrand      ‘F’&#x3D;forward strand or ‘R’&#x3D;reverse strand  GName        Name of the genome sequence (see –genome-naming)  GBegin       Beginning position in the genome sequence  GEnd         End position in the genome sequence  PercID       Percent sequence identity within matched prefix  MatchLen     Length of prefix match\nFor matches on the reverse strand, GBegin and GEnd are positions on therelated forward strand.\n 4.2. SAM Output FormatIf -of 1 is specified, the resulting matches will be written out in SAMformat. For a full specification of the SAM format please seehttp://samtools.sourceforge.net.\nMicroRazerS assigns each read with multiple best matches a mapping qualityof “0”. If only one best match was found, it will receive a “255” in themapping quality column. Column 12 informs about the sequence identity inthe matched part of the read, e.g. AS:i:100 means that the read match has100% sequence identity, i.e. does not contain any mismatches. Unmappedread suffixes will be given as soft-clipped sequence in the Cigar string.For example, a 30bp read with a 22bp prefix match will have the Cigar string“22M8S”, or “8S22M” if it matches the reverse strand.\n5. Examplemicro_razers -m 20 -pa -sL 18\n\n","dateCreated":"2020-05-05T16:12:43+08:00","dateModified":"2020-05-05T16:12:43+08:00","datePublished":"2020-05-05T16:12:43+08:00","description":"\n\nMicroRazerS - Rapid Alignment of Small RNA-seq Reads","headline":"RNA-Seq分析|MicroRazerS-small RNA-seq map","image":["1.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/","thumbnailUrl":"1.png"}</script>
+    <meta name="description" content="MicroRazerS - Rapid Alignment of Small RNA-seq Reads">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="RNA-Seq分析|MicroRazerS-small RNA-seq map">
+<meta property="og:url" content="https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:description" content="MicroRazerS - Rapid Alignment of Small RNA-seq Reads">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/1.png">
+<meta property="article:published_time" content="2020-05-05T08:12:43.000Z">
+<meta property="article:modified_time" content="2020-05-05T08:12:43.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/1.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/1.png"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/1.png"/>
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            RNA-Seq分析|MicroRazerS-small RNA-seq map
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-05-05T16:12:43+08:00">
+	
+		    5月 05, 2020
+    	
+    </time>
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <font face="times new roman" size=4>
+
+<p><strong>MicroRazerS - Rapid Alignment of Small RNA-seq Reads</strong></p>
+<span id="more"></span>
+
+
+<h1 id="table-of-contents">目录</h1><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-Overview"><span class="toc-text"> 1. Overview</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-Installation"><span class="toc-text"> 2. Installation</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-Usage"><span class="toc-text"> 3. Usage</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-Main-Options"><span class="toc-text">  3.1. Main Options</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-Output-Format-Options"><span class="toc-text"> 3.2. Output Format Options</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#4-Output-Format"><span class="toc-text"> 4. Output Format</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-Default-Output-Format"><span class="toc-text"> 4.1. Default Output Format</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-SAM-Output-Format"><span class="toc-text"> 4.2. SAM Output Format</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Example"><span class="toc-text">5. Example</span></a></li></ol></li></ol>
+<hr>
+<img src="/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/1.png" class="">
+
+<hr>
+<h1 id="1-Overview"><a href="#1-Overview" class="headerlink" title=" 1. Overview"></a><font color=BlueViolet> 1. Overview</font></h1><p><a target="_blank" rel="noopener" href="http://www.seqan.de/projects/microRazers.html"><strong>MicroRazerS</strong></a> is a tool for mapping millions of short reads obtained from small<br>RNA sequencing onto a reference genome. MicroRazerS searches for the longest<br>perfect prefix match of each read where the minimum prefix match length (the<br>seed length) can currently be varied between 14 and 22. Optionally, one<br>mismatch can be tolerated in the seed. MicroRazerS guarantees to find all<br>matches and reports a configurable maximum number of equally-best matches.<br>Perfect matches are given preference over matches containing mismatches, even<br>if this means mapping a shorter prefix.<br>Similar to RazerS, MicroRazerS uses a k-mer index of all reads and counts<br>common k-mers of reads and the reference genome in parallelograms. In<br>MicroRazerS, this index is built over the first seedlength many bases of each<br>read only. Each parallelogram with a k-mer count above a certain threshold<br>triggers a verification. On success, the genomic subsequence and the read<br>number are stored and later written to the output file.</p>
+<h1 id="2-Installation"><a href="#2-Installation" class="headerlink" title=" 2. Installation"></a><font color=BlueViolet> 2. Installation</font></h1><p><strong>MicroRazerS</strong> is distributed with <a target="_blank" rel="noopener" href="http://www.seqan.de/">SeqAn - The C++ Sequence Analysis Library</a>. To build <strong>MicroRazerS</strong> do the following:</p>
+<ol>
+<li>Download the latest snapshot of SeqAn</li>
+<li>Unzip it to a directory of your choice (e.g. snapshot)</li>
+<li>cd snapshot&#x2F;apps</li>
+<li>make micro_razers</li>
+<li>cd micro_razers</li>
+<li>.&#x2F;micro_razers –help</li>
+</ol>
+<p>Alternatively you can check out the latest <code>Git</code> version of <strong>MicroRazerS</strong> and <strong>SeqAn</strong><br>with:</p>
+<ol>
+<li>git clone <a target="_blank" rel="noopener" href="https://github.com/seqan/seqan.git">https://github.com/seqan/seqan.git</a></li>
+<li>mkdir seqan&#x2F;buld; cd seqan&#x2F;build</li>
+<li>cmake .. -DCMAKE_BUILD_TYPE&#x3D;Release</li>
+<li>make micro_razers</li>
+<li>.&#x2F;bin&#x2F;micro_razers –help</li>
+</ol>
+<p>On success, an executable file micro_razers was built and a brief usage<br>description was dumped.</p>
+<h1 id="3-Usage"><a href="#3-Usage" class="headerlink" title=" 3. Usage"></a><font color=BlueViolet> 3. Usage</font></h1><p>To get a short usage description of MicroRazerS, you can execute <code>micro_razers -h</code> or<br><code>micro_razers --help</code>.</p>
+<p><strong>Usage</strong>: micro_razers [OPTION]… <GENOME FILE> <READS FILE></p>
+<p>MicroRazerS expects the names of two DNA (multi-)Fasta files. The first contains<br>a reference genome and the second contains the reads that should be<br>mapped against the reference. Without any additional parameters MicroRazerS<br>would map all reads against both strands of the reference genome requiring a perfect<br>prefix seed match of length &gt;&#x3D; 16. The up tp 100 equally best (longest) matches<br>would then be dumped in the default output file, the read file name extended by the<br>suffix <font color=Blue><code>.result</code></font>.</p>
+<p>The default behaviour can be modified by adding the following options to<br>the command line:</p>
+<h2 id="3-1-Main-Options"><a href="#3-1-Main-Options" class="headerlink" title="  3.1. Main Options"></a><font color=BlueViolet>  3.1. Main Options</font></h2><p>  [ -sL NUM ],  [ –seed-length NUM ]</p>
+<p>  Seed length parameter. Minimum length of prefix match.</p>
+<p>  [ -sE ],  [ –seed-error ]</p>
+<p>  Allow for one mismatch in the prefix seed.</p>
+<p>  [ -f ],  [ –forward ]</p>
+<p>  Only map reads against the positive&#x2F;forward strand of the genome. By<br>  default, both strands are scanned.</p>
+<p>  [ -r ],  [ –reverse ]</p>
+<p>  Only map reads against the negative&#x2F;reverse-complement strand of the<br>  genome. By default, both strands are scanned.</p>
+<p>  [ -m NUM ],  [ –max-hits NUM ]</p>
+<p>  Output at most NUM of the best matches.</p>
+<p>  [ -o FILE ],  [ –output FILE ]</p>
+<p>  Change the output filename to FILE. By default, this is the read file<br>  name extended by the suffix “.result”.</p>
+<p>  [ -mN ],  [ –match-N ]</p>
+<p>  By default, ‘N’ characters in read or genome sequences equal to nothing,<br>  not even to another ‘N’. They are considered as errors. By activating this<br>  option, ‘N’ equals to every other character and produces no mismatch in<br>  the verification process. The filtration is not affected by this option.</p>
+<p>  [ -pa ],  [ –purge-ambiguous ]</p>
+<p>  Omit reads with more than #max-hits many equally-best matches.</p>
+<p>  [ -v ],  [ –verbose ]</p>
+<p>  Verbose. Print extra information and running times.</p>
+<p>  [ -vv ],  [ –vverbose ]</p>
+<p>  Very verbose. Like -v, but also print filtering statistics like true and<br>  false positives (TP&#x2F;FP).</p>
+<p>  [ -V ],  [ –version ]</p>
+<p>  Print version information.</p>
+<p>  [ -h ],  [ –help ]</p>
+<p>  Print a brief usage summary.</p>
+<h2 id="3-2-Output-Format-Options"><a href="#3-2-Output-Format-Options" class="headerlink" title=" 3.2. Output Format Options"></a><font color=BlueViolet> 3.2. Output Format Options</font></h2><p>  [ -of NUM ],  [ –outputFormat ]</p>
+<p>  Specify the desired output format:<br>  NUM &#x3D; 0   &#x3D;&gt; MicroRazerS default format<br>  NUM &#x3D; 1   &#x3D;&gt; SAM format</p>
+<p>  [ -a ],  [ –alignment ]</p>
+<p>  Dump the alignment for each match in the “.result” file, only possible for<br>  -of 0, i.e. MicroRazerS default output format. The alignment is written<br>  directly after the match and has the following format:<br>  #Read:   CAGGAGATAAGCTGGATCTTT<br>  #Genome: CAGGAGATAAGCTGGATCTTT</p>
+<p>  [ -gn NUM ],  [ –genome-naming NUM ]</p>
+<p>  Select how genomes are named in the output file. If NUM is 0, the Fasta<br>  ids of the genome sequences are used (default). If NUM is 1, the genome<br>  sequences are enumerated beginning with 1.</p>
+<p>  [ -rn NUM ],  [ –read-naming NUM ]</p>
+<p>  Select how reads are named in the output file. If NUM is 0, the Fasta ids<br>  of the reads are used (default). If NUM is 1, the reads are enumerated<br>  beginning with 1. If NUM is 2, the read sequence itself is used.</p>
+<p>  [ -so NUM ],  [ –sort-order NUM ]</p>
+<p>  Select how matches are ordered in the output file.<br>  If NUM is 0, matches are sorted primarily by the read number and<br>  secondarily by their position in the genome sequence (default).<br>  If NUM is 1, matches are sorted primarily by their position in the genome<br>  sequence and secondarily by the read number.</p>
+<p>  [ -pf NUM ],  [ –position-format NUM ]</p>
+<p>  Select how positions are stored in the output file (only relevant for<br>  MicroRazerS default output format, i.e. -of 0).<br>  If NUM is 0, the gap space is used, i.e. gaps around characters are<br>  enumerated beginning with 0 and the beginning and end position is the<br>  postion of the gap before and after a match (default).<br>  If NUM is 1, the position space is used, i.e. characters are enumerated<br>  beginning with 1 and the beginning and end position is the postion of the<br>  first and last character involved in a match.</p>
+<p>  Example: Consider the string CONCAT. The beginning and end positions<br>  of the substring CAT are (3,6) in gap space and (4,6) in position space.</p>
+<h1 id="4-Output-Format"><a href="#4-Output-Format" class="headerlink" title=" 4. Output Format"></a><font color=BlueViolet> 4. Output Format</font></h1><h2 id="4-1-Default-Output-Format"><a href="#4-1-Default-Output-Format" class="headerlink" title=" 4.1. Default Output Format"></a><font color=BlueViolet> 4.1. Default Output Format</font></h2><p>The default output file is a text file whose lines represent matches. A line<br>consists of different tab-separated match values. In the following format:</p>
+<p>RName 0 RLength GStrand GName GBegin GEnd PercID MatchLen</p>
+<p>Match value description:</p>
+<p>  RName        Name of the read sequence (see –read-naming)<br>  RLength      Length of the read<br>  GStrand      ‘F’&#x3D;forward strand or ‘R’&#x3D;reverse strand<br>  GName        Name of the genome sequence (see –genome-naming)<br>  GBegin       Beginning position in the genome sequence<br>  GEnd         End position in the genome sequence<br>  PercID       Percent sequence identity within matched prefix<br>  MatchLen     Length of prefix match</p>
+<p>For matches on the reverse strand, GBegin and GEnd are positions on the<br>related forward strand.</p>
+<h2 id="4-2-SAM-Output-Format"><a href="#4-2-SAM-Output-Format" class="headerlink" title=" 4.2. SAM Output Format"></a><font color=BlueViolet> 4.2. SAM Output Format</font></h2><p>If -of 1 is specified, the resulting matches will be written out in SAM<br>format. For a full specification of the SAM format please see<br><a target="_blank" rel="noopener" href="http://samtools.sourceforge.net/">http://samtools.sourceforge.net</a>.</p>
+<p>MicroRazerS assigns each read with multiple best matches a mapping quality<br>of “0”. If only one best match was found, it will receive a “255” in the<br>mapping quality column. Column 12 informs about the sequence identity in<br>the matched part of the read, e.g. AS:i:100 means that the read match has<br>100% sequence identity, i.e. does not contain any mismatches. Unmapped<br>read suffixes will be given as soft-clipped sequence in the Cigar string.<br>For example, a 30bp read with a 22bp prefix match will have the Cigar string<br>“22M8S”, or “8S22M” if it matches the reverse strand.</p>
+<h2 id="5-Example"><a href="#5-Example" class="headerlink" title="5. Example"></a><font color=BlueViolet>5. Example</font></h2><pre><code>micro_razers -m 20 -pa -sL 18
+</code></pre>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-05-09-hui-tu-su-cai-xin-hao-tong-lu-hui-zhi-gong-ju/"
+                    data-tooltip="绘图素材|信号通路绘制工具"
+                    aria-label="上一篇: 绘图素材|信号通路绘制工具"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-05-02-srnanalyzer/"
+                    data-tooltip="sRNAnalyzer"
+                    aria-label="下一篇: sRNAnalyzer"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-05-09-hui-tu-su-cai-xin-hao-tong-lu-hui-zhi-gong-ju/"
+                    data-tooltip="绘图素材|信号通路绘制工具"
+                    aria-label="上一篇: 绘图素材|信号通路绘制工具"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-05-02-srnanalyzer/"
+                    data-tooltip="sRNAnalyzer"
+                    aria-label="下一篇: sRNAnalyzer"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

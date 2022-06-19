@@ -6,7 +6,7 @@
   <link href="https://iuu19.github.io/atom.xml" rel="self"/>
   
   <link href="https://iuu19.github.io/"/>
-  <updated>2022-06-19T14:09:10.000Z</updated>
+  <updated>2020-06-24T13:25:22.000Z</updated>
   <id>https://iuu19.github.io/</id>
   
   <author>
@@ -17,23 +17,353 @@
   <generator uri="https://hexo.io/">Hexo</generator>
   
   <entry>
-    <title>good evening</title>
-    <link href="https://iuu19.github.io/2022-06-19-good-evening/"/>
-    <id>https://iuu19.github.io/2022-06-19-good-evening/</id>
-    <published>2022-06-19T14:09:10.000Z</published>
-    <updated>2022-06-19T14:09:10.000Z</updated>
+    <title>Ancestry祖源分析|LASER</title>
+    <link href="https://iuu19.github.io/2020-06-24-ancestry-zu-yuan-fen-xi-laser/"/>
+    <id>https://iuu19.github.io/2020-06-24-ancestry-zu-yuan-fen-xi-laser/</id>
+    <published>2020-06-24T13:25:22.000Z</published>
+    <updated>2020-06-24T13:25:22.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;times new roman&quot; size=4&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Ancestry祖源分析|peddy</title>
+    <link href="https://iuu19.github.io/2020-06-23-ancestry-zu-yuan-fen-xi-peddy/"/>
+    <id>https://iuu19.github.io/2020-06-23-ancestry-zu-yuan-fen-xi-peddy/</id>
+    <published>2020-06-23T15:40:10.000Z</published>
+    <updated>2020-06-23T15:40:10.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;times new roman&quot; size=4&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>GWAS|Rvtests安装及使用教程</title>
+    <link href="https://iuu19.github.io/2020-06-20-gwas-rvtests-an-zhuang-ji-shi-yong-jiao-cheng/"/>
+    <id>https://iuu19.github.io/2020-06-20-gwas-rvtests-an-zhuang-ji-shi-yong-jiao-cheng/</id>
+    <published>2020-06-20T14:48:21.000Z</published>
+    <updated>2020-06-20T14:48:21.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;times new roman&quot; size=4&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>GWAS|EPACTS安装及使用</title>
+    <link href="https://iuu19.github.io/2020-06-15-gwas-epacts-an-zhuang-ji-shi-yong-jiao-cheng/"/>
+    <id>https://iuu19.github.io/2020-06-15-gwas-epacts-an-zhuang-ji-shi-yong-jiao-cheng/</id>
+    <published>2020-06-15T10:30:50.000Z</published>
+    <updated>2020-06-15T10:30:50.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;times new roman&quot; size=4&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>GWAS|GMMAT安装及使用指南</title>
+    <link href="https://iuu19.github.io/2020-06-13-gwas-gmmat-an-zhuang-ji-shi-yong-jiao-cheng/"/>
+    <id>https://iuu19.github.io/2020-06-13-gwas-gmmat-an-zhuang-ji-shi-yong-jiao-cheng/</id>
+    <published>2020-06-13T05:52:45.000Z</published>
+    <updated>2020-06-13T05:52:45.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;times new roman&quot; size=4&gt;</summary>
+    
+    
+    
+    <category term="GWAS" scheme="https://iuu19.github.io/all-categories/GWAS/"/>
+    
+    
+    <category term="GWAS" scheme="https://iuu19.github.io/all-tags/GWAS/"/>
+    
+    <category term="GMMAT" scheme="https://iuu19.github.io/all-tags/GMMAT/"/>
+    
+    <category term="SMMAT" scheme="https://iuu19.github.io/all-tags/SMMAT/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>miRNA数据库|miRNA靶基因预测</title>
+    <link href="https://iuu19.github.io/2020-06-12-mirna-shu-ju-ku-mirna-ba-ji-yin-yu-ce/"/>
+    <id>https://iuu19.github.io/2020-06-12-mirna-shu-ju-ku-mirna-ba-ji-yin-yu-ce/</id>
+    <published>2020-06-12T14:48:40.000Z</published>
+    <updated>2020-06-12T14:48:40.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;times new roman&quot; size=4&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>GWAS|SAIGE-GENE安装及使用指南</title>
+    <link href="https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/"/>
+    <id>https://iuu19.github.io/2020-06-11-gwas-saige-gene-an-zhuang-ji-shi-yong-jiao-cheng/</id>
+    <published>2020-06-11T06:37:52.000Z</published>
+    <updated>2020-06-11T06:37:52.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;times new roman&quot; size=4&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>linux基础|Anaconda安装及Conda使用教程</title>
+    <link href="https://iuu19.github.io/2020-06-10-linux-ji-chu-anaconda-an-zhuang-ji-conda-shi-yong-jiao-cheng/"/>
+    <id>https://iuu19.github.io/2020-06-10-linux-ji-chu-anaconda-an-zhuang-ji-conda-shi-yong-jiao-cheng/</id>
+    <published>2020-06-10T00:27:34.000Z</published>
+    <updated>2020-06-10T00:27:34.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;times new roman&quot; size=4&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>WGCNA最佳实战</title>
+    <link href="https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"/>
+    <id>https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/</id>
+    <published>2020-06-06T15:09:26.000Z</published>
+    <updated>2020-06-06T15:09:26.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;宋体&quot; size=4&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>绘图素材|信号通路绘制工具</title>
+    <link href="https://iuu19.github.io/2020-05-09-hui-tu-su-cai-xin-hao-tong-lu-hui-zhi-gong-ju/"/>
+    <id>https://iuu19.github.io/2020-05-09-hui-tu-su-cai-xin-hao-tong-lu-hui-zhi-gong-ju/</id>
+    <published>2020-05-09T15:06:59.000Z</published>
+    <updated>2020-05-09T15:06:59.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;times new roman&quot; size=4&gt;
+
+&lt;p&gt;&lt;strong&gt;绘图素材|信号通路绘制工具&lt;/strong&gt;&lt;/p&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>RNA-Seq分析|MicroRazerS-small RNA-seq map</title>
+    <link href="https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"/>
+    <id>https://iuu19.github.io/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/</id>
+    <published>2020-05-05T08:12:43.000Z</published>
+    <updated>2020-05-05T08:12:43.000Z</updated>
+    
+    
+    <summary type="html">&lt;font face=&quot;times new roman&quot; size=4&gt;
+
+&lt;p&gt;&lt;strong&gt;MicroRazerS - Rapid Alignment of Small RNA-seq Reads&lt;/strong&gt;&lt;/p&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>sRNAnalyzer</title>
+    <link href="https://iuu19.github.io/2020-05-02-srnanalyzer/"/>
+    <id>https://iuu19.github.io/2020-05-02-srnanalyzer/</id>
+    <published>2020-05-02T15:49:27.000Z</published>
+    <updated>2020-05-02T15:49:27.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;sRNAnalyzer–A pipeline for small RNA sequencing data analysis&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="RNA-seq" scheme="https://iuu19.github.io/all-categories/RNA-seq/"/>
+    
+    
+    <category term="small RNA-seq" scheme="https://iuu19.github.io/all-tags/small-RNA-seq/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>使用Aspera高速下载SRA数据</title>
+    <link href="https://iuu19.github.io/2020-04-21-shi-yong-aspera-gao-su-xia-zai-sra-shu-ju/"/>
+    <id>https://iuu19.github.io/2020-04-21-shi-yong-aspera-gao-su-xia-zai-sra-shu-ju/</id>
+    <published>2020-04-21T14:12:38.000Z</published>
+    <updated>2020-04-21T14:12:38.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;使用Aspera高速下载SRA数据&lt;/p&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>代码分析 | Sing-cell Sequencing QC详解</title>
+    <link href="https://iuu19.github.io/2020-04-20-dai-ma-fen-xi-sing-cell-sequencing-qc-xiang-jie/"/>
+    <id>https://iuu19.github.io/2020-04-20-dai-ma-fen-xi-sing-cell-sequencing-qc-xiang-jie/</id>
+    <published>2020-04-20T15:49:31.000Z</published>
+    <updated>2020-04-20T15:49:31.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;代码分析 | Sing-cell Sequencing QC详解&lt;/p&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>从基因名到GO注释一步到位</title>
+    <link href="https://iuu19.github.io/2020-04-15-cong-ji-yin-ming-dao-go-zhu-shi-yi-bu-dao-wei/"/>
+    <id>https://iuu19.github.io/2020-04-15-cong-ji-yin-ming-dao-go-zhu-shi-yi-bu-dao-wei/</id>
+    <published>2020-04-15T14:08:21.000Z</published>
+    <updated>2020-04-15T14:08:21.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;从基因名到GO注释一步到位&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="GO-KEGG富集分析" scheme="https://iuu19.github.io/all-categories/GO-KEGG%E5%AF%8C%E9%9B%86%E5%88%86%E6%9E%90/"/>
+    
+    
+    <category term="GO-KEGG" scheme="https://iuu19.github.io/all-tags/GO-KEGG/"/>
+    
+    <category term="R绘图" scheme="https://iuu19.github.io/all-tags/R%E7%BB%98%E5%9B%BE/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>芯片探针序列的基因组注释</title>
+    <link href="https://iuu19.github.io/2020-01-02-xin-pian-tan-zhen-xu-lie-de-ji-yin-zu-zhu-shi/"/>
+    <id>https://iuu19.github.io/2020-01-02-xin-pian-tan-zhen-xu-lie-de-ji-yin-zu-zhu-shi/</id>
+    <published>2020-01-02T08:50:57.000Z</published>
+    <updated>2020-01-02T08:50:57.000Z</updated>
     
     
       
       
         
         
-    <summary type="html">&lt;h3 id=&quot;1-介绍&quot;&gt;&lt;a href=&quot;#1-介绍&quot; class=&quot;headerlink&quot; title=&quot;1. 介绍&quot;&gt;&lt;/a&gt;1. 介绍&lt;/h3&gt;&lt;p&gt;LASER (Locating Ancestry using SEquencing</summary>
+    <summary type="html">&lt;span id=&quot;more&quot;&gt;&lt;/span&gt;
+
+
+&lt;!-- toc</summary>
         
       
     
     
     
+    
+  </entry>
+  
+  <entry>
+    <title>miRNA数据分析专题</title>
+    <link href="https://iuu19.github.io/2019-12-31-mirna-shu-ju-fen-xi-zhuan-ti/"/>
+    <id>https://iuu19.github.io/2019-12-31-mirna-shu-ju-fen-xi-zhuan-ti/</id>
+    <published>2019-12-31T08:44:43.000Z</published>
+    <updated>2019-12-31T08:44:43.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;miRNA数据分析专题&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="miRNA数据分析" scheme="https://iuu19.github.io/all-categories/miRNA%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"/>
+    
+    
+    <category term="miRNA数据分析" scheme="https://iuu19.github.io/all-tags/miRNA%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>single cell数据分析专题</title>
+    <link href="https://iuu19.github.io/2019-12-20-dan-xi-bao-zhuan-lu-zu-ce-xu-fen-xi-zhuan-ti/"/>
+    <id>https://iuu19.github.io/2019-12-20-dan-xi-bao-zhuan-lu-zu-ce-xu-fen-xi-zhuan-ti/</id>
+    <published>2019-12-20T11:54:18.000Z</published>
+    <updated>2019-12-20T11:54:18.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;单细胞转录组数据分析专题&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="single cell数据分析" scheme="https://iuu19.github.io/all-categories/single-cell%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"/>
+    
+    
+    <category term="scRNA_seq" scheme="https://iuu19.github.io/all-tags/scRNA-seq/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>sci-hub客户端V5.0</title>
+    <link href="https://iuu19.github.io/2019-11-04-sci-hub-ke-hu-duan-v5-0/"/>
+    <id>https://iuu19.github.io/2019-11-04-sci-hub-ke-hu-duan-v5-0/</id>
+    <published>2019-11-04T05:49:23.000Z</published>
+    <updated>2019-11-04T05:49:23.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;SCI-HUB客户端 V5.0版强势来袭，免费下载99.9%的文献~&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="sci-hub" scheme="https://iuu19.github.io/all-categories/sci-hub/"/>
+    
+    
+    <category term="sci-hub" scheme="https://iuu19.github.io/all-tags/sci-hub/"/>
+    
+    <category term="免费下载文献" scheme="https://iuu19.github.io/all-tags/%E5%85%8D%E8%B4%B9%E4%B8%8B%E8%BD%BD%E6%96%87%E7%8C%AE/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Juicer软件的安装详解</title>
+    <link href="https://iuu19.github.io/2019-11-02-juicer-ruan-jian-de-an-zhuang-xiang-jie/"/>
+    <id>https://iuu19.github.io/2019-11-02-juicer-ruan-jian-de-an-zhuang-xiang-jie/</id>
+    <published>2019-11-02T14:50:28.000Z</published>
+    <updated>2019-11-02T14:50:28.000Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;Juicer软件的安装详解&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Hi-C数据分析" scheme="https://iuu19.github.io/all-categories/Hi-C%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/"/>
+    
+    
+    <category term="Hi-C" scheme="https://iuu19.github.io/all-tags/Hi-C/"/>
+    
+    <category term="Juicer" scheme="https://iuu19.github.io/all-tags/Juicer/"/>
     
   </entry>
   

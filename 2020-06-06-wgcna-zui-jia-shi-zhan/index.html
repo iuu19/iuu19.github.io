@@ -1,0 +1,966 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>WGCNA最佳实战 - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"\n\n\n\nWGCNA最佳实战\n\n\n什么是WGCNA?\nWGCNA：全称 Weighted correlation network analysis，加权基因共表达网络分析，是用来描述不同样品之间基因关联模式的系统生物学方法，可以用来鉴定高度协同变化的基因集, 并根据基因集的内连性和基因集与表型之间的关联鉴定候补生物标记基因或治疗靶点。\n相比于只关注差异表达的基因，WGCNA利用数千或近万个变化最大的基因或全部基因的信息识别感兴趣的基因集，并与表型进行显著性关联分析。一是充分利用了信息，二是把数千个基因与表型的关联转换为数个基因集与表型的关联，免去了多重假设检验校正的问题。\n理解WGCNA，需要先理解下面几个术语和它们在WGCNA中的定义:\n1.共表达网络：定义为加权基因网络。\n\n点代表基因\n边代表基因表达相关性。\n加权是指对相关性值进行冥次运算(冥次的值也就是软阈值 (power, pickSoftThreshold这个函数所做的就是确定合适的power))。\n无向网络的边属性计算方式为abs(cor(genex, geney)) ^ power；\n有向网络的边属性计算方式为(1+cor(genex, geney)&#x2F;2) ^ power;\nsign hybrid的边属性计算方式为cor(genex, geney)^power if cor&gt;0 else 0。这种处理方式强化了强相关，弱化了弱相关或负相关，使得相关性数值更符合无标度网络特征，更具有生物意义。如果没有合适的power，一般是由于部分样品与其它样品因为某种原因差别太大导致的，可根据具体问题移除部分样品或查看后面的经验值。\n\n**2.Module(模块)**：高度內连的基因集，表达模式相似的基因分为一类，这样的一类基因成为模块。\n\n在无向网络中，模块内是高度相关的基因。在有向网络中，模块内是高度正相关的基因。\n把基因聚类成模块后，可以对每个模块进行三个层次的分析：(1)功能富集分析查看其功能特征是否与研究目的相符；(2)模块与性状进行关联分析，找出与关注性状相关度最高的模块；(3)模块与样本进行关联分析，找到样品特异高表达的模块。\n\n**3.Connectivity (连接度)**：类似于网络中”度(degree)“的概念。每个基因的连接度是与其相连的基因的边属性之和。\n4.Module eigengene E: 给定模型的第一主成分，代表整个模型的基因表达谱。PCA分析的降维作用，之前主要是拿来做可视化，现在用到这个地方，很好的用一个向量代替了一个矩阵，方便后期计算。(降维除了PCA，还可以看看tSNE)\n5.Intramodular connectivity: 给定基因与给定模型内其他基因的关联度，判断基因所属关系。\n6.Module membership: 给定基因表达谱与给定模型的eigengene的相关性。\n7.Hub gene: 关键基因 (连接度最多或连接多个模块的基因)。\n**8.Adjacency matrix (邻接矩阵)**：基因和基因之间的加权相关性值构成的矩阵。\n**9.TOM (Topological overlap matrix)**：把邻接矩阵转换为拓扑重叠矩阵，以降低噪音和假相关，获得的新距离矩阵，这个信息可拿来构建网络或绘制TOM图。\nWGCNA基本分析流程\n\n构建基因共表达网络：使用加权的表达相关性。\n\n识别基因集：基于加权相关性，进行层级聚类分析，并根据设定标准切分聚类结果，获得不同的基因模块，用聚类树的分枝和不同颜色表示。\n\n如果有表型信息，计算基因模块与表型的相关性，鉴定性状相关的模块。\n\n研究模型之间的关系，从系统层面查看不同模型的互作网络。\n\n从关键模型中选择感兴趣的驱动基因，或根据模型中已知基因的功能推测未知基因的功能。\n\n导出TOM矩阵，绘制相关性图。\n\n\nWGCNA分析实战WGCNA本质是基于相关系数的网络分析方法，适用于多样品数据模式，一般要求样本数多于15个。样本数多于20时效果更好，样本越多，结果越稳定。一般可应用的研究方向有：不同器官或组织类型发育调控、同一组织不同发育调控、非生物胁迫不同时间点应答、病原菌侵染后不同时间点应答。\n从方法上来讲，WGCNA分为表达量聚类分析和表型关联两部分，主要包括基因之间相关系数计算、基因模块的确定、共表达网络、模块与性状关联四个步骤。\n\n基因表达矩阵: 芯片数据的归一化矩阵。常规表达矩阵即可，即基因在行，样品在列，一般以RPKM为单位,RPKM、FPKM或其它标准化方法影响不大。进入分析前做一个转置：推荐使用Deseq2的varianceStabilizingTransformation或log2(x+1)对标准化后的数据做个转换；如果数据来自不同的批次，需要先移除批次效应；如果数据存在系统偏移，需要做下quantile normalization。需要两样东西：表达矩阵datExpr、表型矩阵datTraits\n性状矩阵或表型矩阵：用于关联分析的性状或表型必须是数值型矩阵 (如下面示例中的Height, Weight,Diameter)。本身就是数值型：如长度、重量等，直接使用；如果是区域或分类变量，需要转换为0-1矩阵的形式：如患病与否这样的分类变量，需要用0-1表示（0表示没有该属性：患病，1表示有该属性），构建0-1矩阵后再分析。\n\nID    Sick Height Weight \nsam1   1     1   2   \nsam2   1     2   7 \nsam3   0     10  22 \nsam4   0     NA  31  \nsam5   0     14  19 \n\n第一步 数据输入与初步处理wkdir &lt;- &quot;F:/biosoft/WCGNA/测试数据&quot;\nsetwd(wkdir)\nlibrary(WGCNA)\noptions(stringsAsFactors = FALSE)\nfemData = read.csv(&quot;LiverFemale3600.csv&quot;)\n#dim(femData)\nnames(femData) #看一下列名\n\n进行转置：设置初步的表达矩阵：样本为行，观测为列datExpr0 = as.data.frame(t(femData[, -c(1:8)]))\nnames(datExpr0) = femData$substanceBXH\nrownames(datExpr0) = names(femData)[-c(1:8)]\n\n检查基因和样本是否有太多的缺失值【太多就去掉】gsg = goodSamplesGenes(datExpr0, verbose = 3)\ngsg$allOK # 返回TRUE则继续\n# （可选）如果存在太多的缺失值\nif (!gsg$allOK)\n&#123;\n  # 把含有缺失值的基因或样本打印出来\n  if (sum(!gsg$goodGenes)&gt;0)\n    printFlush(paste(&quot;Removing genes:&quot;, paste(names(datExpr0)[!gsg$goodGenes], collapse = &quot;, &quot;)));\n  if (sum(!gsg$goodSamples)&gt;0)\n    printFlush(paste(&quot;Removing samples:&quot;, paste(rownames(datExpr0)[!gsg$goodSamples], collapse = &quot;, &quot;)));\n  # 去掉那些缺失值\n  datExpr0 = datExpr0[gsg$goodSamples, gsg$goodGenes]\n&#125;\n\n对样本进行聚类,检测异常值if(T)&#123;\n  sampleTree = hclust(dist(datExpr0), method = \"average\")\n  par(cex = 0.6)\n  par(mar = c(0,4,2,0))\n  plot(sampleTree, main = \"Sample clustering to detect outliers\", sub=\"\", xlab=\"\", cex.lab = 1.5,\n       cex.axis = 1.5, cex.main = 2)\n  # 结果可以看到，F2_221是一个异常值\n  abline(h = 15, col = \"red\") #先画一条辅助线\n&#125;\n\n去除异常值，得到过滤后的表达矩阵# 把高于15的切除\nclust = cutreeStatic(sampleTree, cutHeight = 15, minSize = 10)\ntable(clust) # 0代表切除的，1代表保留的\nkeepSamples = (clust==1)\ndatExpr = datExpr0[keepSamples, ]\n\n开始设置表型矩阵&#x3D;》加载表型信息traitData = read.csv(\"ClinicalTraits.csv\")\n#dim(traitData)\nnames(traitData)\n# 去掉不需要的信息，得到全部样本的表型矩阵\nallTraits = traitData[, -c(31, 16)] #去掉'note'、'comments'\nallTraits = allTraits[, c(2, 11:36) ] # 去掉中间的日期之类的\ndim(allTraits)\nnames(allTraits)\n\n得到部分表型矩阵&#x3D;》表达矩阵有哪些样本，表型矩阵就有哪些样本femaleSamples = rownames(datExpr)\ntraitRows = match(femaleSamples, allTraits$Mice)\n# 把原来的第一列Mice变成行名\ndatTraits = allTraits[traitRows, -1]\nrownames(datTraits) = allTraits[traitRows, 1]\ncollectGarbage() #释放内存空间\n\n\n到这里为止，得到了所有样本的表达矩阵和表型矩阵，在进一步构建网络、检测模块之前，先看下表型和样本的相关性\n\n针对去除异常值的表达矩阵进行聚类分析sampleTree2 = hclust(dist(datExpr), method = \"average\")\n# 用颜色表示表型在各个样本的表现: 白色表示低，红色为高，灰色为缺失\ntraitColors = numbers2colors(datTraits, signed = FALSE)\n# 把样本聚类和表型热图绘制在一起\nif(T)&#123;\n  plotDendroAndColors(sampleTree2, traitColors,\n                      groupLabels = names(datTraits),\n                      main = \"Sample dendrogram and trait heatmap\")\n&#125;\nsave(datExpr, datTraits, file = \"FemaleLiver-01-dataInput.RData\")\n\n第二步 网络分析构建网络、检测协同表达的基因模块（非常重要的一步！）\n实现构建网络有3种方法：(3选1即可)1.One-step；2.Step-by-step 支持自定义一些参数；3.Block-wise network construction 针对大型数据这里采用一步分析法\n\n加载之前保存的RDatalnames = load(file = \"FemaleLiver-01-dataInput.RData\")\n\n筛选软阈值（soft thresholding power）\n原则是使构建的网络更符合无标度网络特征\n\n#设置一系列软阈值（默认1到30）\npowers = c(c(1:10), seq(from = 12, to=20, by=2))\n#帮助用户选择合适的软阈值，进行拓扑网络分析\n#需要输入表达矩阵、设置的阈值范围、运行显示的信息程度(verbose=0不显示任何信息)\nsft = pickSoftThreshold(datExpr, powerVector = powers, verbose = 5)\n\nsft结果有两列，其中powerEstimate返回最佳的软阈值beta值。这里的结果是6，表示从6达到高阈值以后，图形曲线开始变平，就是说：到达阈值6时网络拓扑结构连通的就差不多了，够本了！具体见下面做出的图(左一)来理解。实际使用并不需要知道具体值\n画出结果 &#x3D;》横轴是Soft threshold (power)(左图)纵轴是无标度网络的评估参数（相关系数的平方),数值越高，网络越符合无标度特征 (non-scale)(右图)纵轴是基因模块中所有基因邻接函数的均值\nif(T)&#123;\n  par(mfrow = c(1,2))\n  cex1 = 0.9\n  plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],\n       xlab=\"Soft Threshold (power)\",\n       ylab=\"Scale Free Topology Model Fit,signed R^2\",type=\"n\",\n       main = paste(\"Scale independence\"))\n  #注意这里的-sign(sft$fitIndices[,3])中sign函数，它把正数、负数分别转为1、-1\n  text(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],\n       labels=powers,cex=cex1,col=\"red\")\n  # 设置筛选标准h=r^2^=0.9。这里的0.9是个大概的数，就是看左图软阈值6大概对应的位置\n  abline(h=0.90,col=\"red\")\n  #看一下Soft threshold与平均连通性\n  plot(sft$fitIndices[,1], sft$fitIndices[,5],\n       xlab=\"Soft Threshold (power)\",ylab=\"Mean Connectivity\", type=\"n\",\n       main = paste(\"Mean connectivity\"))\n  text(sft$fitIndices[,1], sft$fitIndices[,5], labels=powers, cex=cex1,col=\"red\")\n&#125;\n\n一步构建网络[关键一步！]\n几千个基因组归类成了几十个模块计算基因间的邻接性，根据邻接性计算基因间的相似性，然后算出基因间的相异性系数，并因此得到基因间的系统聚类树按照混合动态剪切树的标准，设置每个基因模块最少的基因数目为30确定基因模块后，再次分析，依次计算每个模块的特征向量值对模块进行聚类分析，将距离较近的模块合并为新的模块power就是上面计算得到的软阈值\n\nnet = blockwiseModules(datExpr, power = 6,\n                       TOMType = \"unsigned\", minModuleSize = 30,\n                       reassignThreshold = 0, mergeCutHeight = 0.25,\n                       numericLabels = TRUE, pamRespectsDendro = FALSE,\n                       saveTOMs = TRUE,\n                       saveTOMFileBase = \"femaleMouseTOM\",\n                       verbose = 3)\n# 显示模块数量以及各自包含的基因数目\n# 0表示未分入任何模块的基因\n# 1是最大的模块，往后依次降序排列，分别对应各自模块的基因\ntable(net$colors)\n\n模块可视化&#x3D;》聚类树将每个模块对应的基因数转换成颜色单位, 灰色默认是无法归类于任何模块的那些基因\nmergedColors = labels2colors(net$colors)\n\n先画聚类，后画颜色\nif(T)&#123;\n  plotDendroAndColors(net$dendrograms[[1]], mergedColors[net$blockGenes[[1]]],\n                      \"Module colors\",\n                      dendroLabels = FALSE, hang = 0.03,\n                      addGuide = TRUE, guideHang = 0.05)\n&#125;\n\n保存数据\nmoduleLabels = net$colors\nmoduleColors = labels2colors(net$colors)\nMEs = net$MEs\ngeneTree = net$dendrograms[[1]]\nsave(MEs, moduleLabels, moduleColors, geneTree,\n     file = \"FemaleLiver-02-networkConstruction-auto.RData\")\n\n第三步 模块联系表型信息看看哪些表型的哪些模块是自己感兴趣的（一般选热图颜色深的）这样初步表明该模块中基因可能是有研究价值的；下一步，进行一个验证，看看这个模块中基因与表型、模块的相关性，看看与模块相关的基因是不是也与表型相关\nrm(list = ls())\nload(file = \"FemaleLiver-01-dataInput.RData\")\nload(file = \"FemaleLiver-02-networkConstruction-auto.RData\")\n\n模块关联表型# 得到基因、样本数量\nnGenes = ncol(datExpr)\nnSamples = nrow(datExpr)\n# 用color labels重新计算MEs（Module Eigengenes:模块的第一主成分）\nMEs0 = moduleEigengenes(datExpr, moduleColors)$eigengenes\nMEs = orderMEs(MEs0)\nmoduleTraitCor = cor(MEs, datTraits, use = \"p\") #（这是重点）计算ME和表型相关性\nmoduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples)\n\n对moduleTraitCor画热图，看结果挑选自己感兴趣的模块进行下游分析if(T)&#123;\n  # 设置热图上的文字（两行数字：第一行是模块与各种表型的相关系数；\n  # 第二行是p值）\n  # signif 取有效数字\n  textMatrix = paste(signif(moduleTraitCor, 2), \"\\n(\",\n                     signif(moduleTraitPvalue, 1), \")\", sep = \"\")\n  dim(textMatrix) = dim(moduleTraitCor)\n  par(mar = c(6, 8.5, 3, 3))\n  # 然后对moduleTraitCor画热图\n  labeledHeatmap(Matrix = moduleTraitCor,\n                 xLabels = names(datTraits),\n                 yLabels = names(MEs),\n                 ySymbols = names(MEs),\n                 colorLabels = FALSE,\n                 colors = greenWhiteRed(50),\n                 textMatrix = textMatrix,\n                 setStdMargins = FALSE,\n                 cex.text = 0.5,\n                 zlim = c(-1,1),\n                 main = paste(\"Module-trait relationships\"))\n&#125;\n\n每种表型都有和它非常相关的模块，因此某个模块可以作为某个表型的代表(signature)，对于非常相关的模块，比如weight表型和brown模块，颜色最深。那么里面的基因是什么？于是进行感兴趣表型中核心模块的基因分析\n计算基因与模块的相关性矩阵（MM: Module Membership）# 把各个module的名字提取出来（从第三个字符开始），用于一会重命名\nmodNames = substring(names(MEs), 3)\n# 得到矩阵\ngeneModuleMembership = as.data.frame(cor(datExpr, MEs, use = \"p\"))\n# 矩阵t检验\nMMPvalue = as.data.frame(corPvalueStudent(as.matrix(geneModuleMembership), nSamples))\n# 修改列名\nnames(geneModuleMembership) = paste(\"MM\", modNames, sep=\"\")\nnames(MMPvalue) = paste(\"p.MM\", modNames, sep=\"\")\n\n计算基因与表型的相关性矩阵（GS: Gene Significance）# 先将感兴趣表型weight提取出来，用于计算矩阵\nweight = as.data.frame(datTraits$weight_g)\nnames(weight) = \"weight\"\n# 得到矩阵\ngeneTraitSignificance = as.data.frame(cor(datExpr, weight, use = \"p\"))\n# 矩阵t检验\nGSPvalue = as.data.frame(corPvalueStudent(as.matrix(geneTraitSignificance), nSamples))\n# 修改列名\nnames(geneTraitSignificance) = paste(\"GS.\", names(weight), sep=\"\")\nnames(GSPvalue) = paste(\"p.GS.\", names(weight), sep=\"\")\n\n合并两个相关性矩阵,找到和模块、表型都高度相关的基因if(T)&#123;\n  module = \"brown\"\n  column = match(module, modNames) #找到目标模块所在列\n  moduleGenes = moduleColors==module #找到模块基因所在行\n  par(mfrow = c(1,1))\n  verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),\n                     abs(geneTraitSignificance[moduleGenes, 1]),\n                     xlab = paste(\"Module Membership in\", module, \"module\"),\n                     ylab = \"Gene significance for body weight\",\n                     main = paste(\"Module membership vs. gene significance\\n\"),\n                     cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2, col = module)\n&#125;\n\n图中看到，MM和GS高度正相关，因此说明和表型高度相关的基因，在与表型相关模块中也是核心元素。\n另外，也可以探索weight表型中其他的模块，比如第一个颜色很浅的magenta模块，它的MM和GS整体负相关\n第四步 网络可视化【针对基因】热图的方式展示加权网络，每行每列代表一个基因\n\n还能表示邻近关系和拓扑重叠，浅颜色表示关系弱，深颜色表示关系强\n\n基因的聚类分析和模块颜色画在顶部和左侧rm(list = ls())\nload(file = \"FemaleLiver-01-dataInput.RData\")\nload(file = \"FemaleLiver-02-networkConstruction-auto.RData\")\nnGenes = ncol(datExpr)\nnSamples = nrow(datExpr)\n\n选择400个基因画图if(T)&#123;\n  nSelect = 400\n  set.seed(10)\n  # 计算拓扑重叠(TOM: Topological Overlap Matrix)\n  # 这个过程先计算了邻接矩阵，后把邻接矩阵转换为拓扑重叠矩阵，\n  # 降低了噪音和假相关，获得距离矩阵dissTOM\n  dissTOM = 1-TOMsimilarityFromExpr(datExpr, power = 6)\n  select = sample(nGenes, size = nSelect)\n  selectTOM = dissTOM[select, select]\n  # 再计算基因之间的距离树(对于基因的子集，需要重新聚类)\n  selectTree = hclust(as.dist(selectTOM), method = \"average\")\n  selectColors = moduleColors[select]\n\n\n  plotDiss = selectTOM^7\n  diag(plotDiss) = NA #将对角线设成NA，在图形中显示为白色的点，更清晰显示趋势\n  TOMplot(plotDiss, selectTree, selectColors, main = \"Network heatmap plot, selected genes\")\n\n&#125;\n\n选择全部基因画图(耗时较久，生成的文件很大)\n结果可以看到各个区块的颜色差异,沿着对角线的深色区块就是模块Module，如果你发现配色反过来了 ，修改方法是给TOMplot加上参数：\n\ncol=gplots::colorpanel(250,'red',\"orange\",'lemonchiffon')\n\nif(T)&#123;\n  plotTOM = dissTOM^7\n  diag(plotTOM) = NA\n  TOMplot(plotTOM, geneTree, moduleColors, main = \"Network heatmap plot, all genes\")\n\n&#125;\n\n【针对模块与表型】展示模块与表型的相关性\n重新计算模块的基因样本相关矩阵（Eigengenes就是基因和样本的相关矩阵）\n\nMEs = moduleEigengenes(datExpr, moduleColors)$eigengenes\n# 将weight表型信息从trait中提取出来\nweight = as.data.frame(datTraits$weight_g)\nnames(weight) = \"weight\"\n# 把weight表型添加到之前计算的ME矩阵中，并排序\nMET = orderMEs(cbind(MEs, weight))\n\n# 画图=》meta-modules（模块的聚类图加上模块与表型的热图）\n# marDendro/marHeatmap 设置下、左、上、右的边距\nif(T)&#123;\n  par(cex = 0.9)\n  plotEigengeneNetworks(MET, \"\", marDendro = c(0,4,1,2), marHeatmap = c(4,4,1,2), cex.lab = 0.8, xLabelsAngle\n                        = 90)\n&#125;\n\n图中可以看到，red、blue、brown模块是高度相关的，并且它们的相关性比各自和weight表型的相关性还大；salmon和weight的相关性也比较强，但是加入red、blue、brown的meta-modules阵营还不够格\n当然分开画也是可以的\nif(T)&#123;\n\n  par(cex = 1.0)\n  plotEigengeneNetworks(MET, \"Eigengene dendrogram\", marDendro = c(0,4,2,0),\n                        plotHeatmaps = FALSE)\n\n\n  par(cex = 1.0)\n  plotEigengeneNetworks(MET, \"Eigengene adjacency heatmap\", marHeatmap = c(4,5,2,2),\n                        plotDendrograms = FALSE, xLabelsAngle = 90)\n\n&#125;\n\n第五步 导出网络准备过程# 重新计算拓扑重叠矩阵\nTOM = TOMsimilarityFromExpr(datExpr, power = 6)\n# 选择导出模块\nmodule = \"brown\"\n# 选择模块中基因/探针\nprobes = names(datExpr)\ninModule = (moduleColors==module)\nmodProbes = probes[inModule]\n# 选择相关模块的拓扑重叠矩阵\nmodTOM = TOM[inModule, inModule]\ndimnames(modTOM) = list(modProbes, modProbes)\n\n导出到VisANTvis = exportNetworkToVisANT(modTOM,\n                            file = paste(\"VisANTInput-\", module, \".txt\", sep=\"\"),\n                            weighted = TRUE,\n                            threshold = 0)\n\n感觉基因太多，可以截取部分（比如前30）nTop = 30\nIMConn = softConnectivity(datExpr[, modProbes])\ntop = (rank(-IMConn) ","dateCreated":"2020-06-06T23:09:26+08:00","dateModified":"2020-06-06T23:09:26+08:00","datePublished":"2020-06-06T23:09:26+08:00","description":"","headline":"WGCNA最佳实战","image":["基本分析流程.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/","thumbnailUrl":"基本分析流程.png"}</script>
+    <meta property="og:type" content="blog">
+<meta property="og:title" content="WGCNA最佳实战">
+<meta property="og:url" content="https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://iuu19.github.io/WGCNA%E6%9C%80%E4%BD%B3%E5%AE%9E%E6%88%98/tutorial.png">
+<meta property="og:image" content="https://iuu19.github.io/WGCNA%E6%9C%80%E4%BD%B3%E5%AE%9E%E6%88%98/%E5%9F%BA%E6%9C%AC%E5%88%86%E6%9E%90%E6%B5%81%E7%A8%8B.png">
+<meta property="article:published_time" content="2020-06-06T15:09:26.000Z">
+<meta property="article:modified_time" content="2020-06-06T15:09:26.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iuu19.github.io/WGCNA%E6%9C%80%E4%BD%B3%E5%AE%9E%E6%88%98/tutorial.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/%E5%9F%BA%E6%9C%AC%E5%88%86%E6%9E%90%E6%B5%81%E7%A8%8B.png"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/%E5%9F%BA%E6%9C%AC%E5%88%86%E6%9E%90%E6%B5%81%E7%A8%8B.png"/>
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            WGCNA最佳实战
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-06-06T23:09:26+08:00">
+	
+		    6月 06, 2020
+    	
+    </time>
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <font face="宋体" size=4>
+
+<span id="more"></span>
+
+<p>WGCNA最佳实战</p>
+<h1 id="table-of-contents">目录</h1><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFWGCNA"><span class="toc-text">什么是WGCNA?</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#WGCNA%E5%9F%BA%E6%9C%AC%E5%88%86%E6%9E%90%E6%B5%81%E7%A8%8B"><span class="toc-text">WGCNA基本分析流程</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#WGCNA%E5%88%86%E6%9E%90%E5%AE%9E%E6%88%98"><span class="toc-text">WGCNA分析实战</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5-%E6%95%B0%E6%8D%AE%E8%BE%93%E5%85%A5%E4%B8%8E%E5%88%9D%E6%AD%A5%E5%A4%84%E7%90%86"><span class="toc-text">第一步 数据输入与初步处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E8%A1%8C%E8%BD%AC%E7%BD%AE%EF%BC%9A%E8%AE%BE%E7%BD%AE%E5%88%9D%E6%AD%A5%E7%9A%84%E8%A1%A8%E8%BE%BE%E7%9F%A9%E9%98%B5%EF%BC%9A%E6%A0%B7%E6%9C%AC%E4%B8%BA%E8%A1%8C%EF%BC%8C%E8%A7%82%E6%B5%8B%E4%B8%BA%E5%88%97"><span class="toc-text">进行转置：设置初步的表达矩阵：样本为行，观测为列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E5%9F%BA%E5%9B%A0%E5%92%8C%E6%A0%B7%E6%9C%AC%E6%98%AF%E5%90%A6%E6%9C%89%E5%A4%AA%E5%A4%9A%E7%9A%84%E7%BC%BA%E5%A4%B1%E5%80%BC%E3%80%90%E5%A4%AA%E5%A4%9A%E5%B0%B1%E5%8E%BB%E6%8E%89%E3%80%91"><span class="toc-text">检查基因和样本是否有太多的缺失值【太多就去掉】</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E6%A0%B7%E6%9C%AC%E8%BF%9B%E8%A1%8C%E8%81%9A%E7%B1%BB-%E6%A3%80%E6%B5%8B%E5%BC%82%E5%B8%B8%E5%80%BC"><span class="toc-text">对样本进行聚类,检测异常值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%BB%E9%99%A4%E5%BC%82%E5%B8%B8%E5%80%BC%EF%BC%8C%E5%BE%97%E5%88%B0%E8%BF%87%E6%BB%A4%E5%90%8E%E7%9A%84%E8%A1%A8%E8%BE%BE%E7%9F%A9%E9%98%B5"><span class="toc-text">去除异常值，得到过滤后的表达矩阵</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%80%E5%A7%8B%E8%AE%BE%E7%BD%AE%E8%A1%A8%E5%9E%8B%E7%9F%A9%E9%98%B5-x3D-%E3%80%8B%E5%8A%A0%E8%BD%BD%E8%A1%A8%E5%9E%8B%E4%BF%A1%E6%81%AF"><span class="toc-text">开始设置表型矩阵&#x3D;》加载表型信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%97%E5%88%B0%E9%83%A8%E5%88%86%E8%A1%A8%E5%9E%8B%E7%9F%A9%E9%98%B5-x3D-%E3%80%8B%E8%A1%A8%E8%BE%BE%E7%9F%A9%E9%98%B5%E6%9C%89%E5%93%AA%E4%BA%9B%E6%A0%B7%E6%9C%AC%EF%BC%8C%E8%A1%A8%E5%9E%8B%E7%9F%A9%E9%98%B5%E5%B0%B1%E6%9C%89%E5%93%AA%E4%BA%9B%E6%A0%B7%E6%9C%AC"><span class="toc-text">得到部分表型矩阵&#x3D;》表达矩阵有哪些样本，表型矩阵就有哪些样本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%92%88%E5%AF%B9%E5%8E%BB%E9%99%A4%E5%BC%82%E5%B8%B8%E5%80%BC%E7%9A%84%E8%A1%A8%E8%BE%BE%E7%9F%A9%E9%98%B5%E8%BF%9B%E8%A1%8C%E8%81%9A%E7%B1%BB%E5%88%86%E6%9E%90"><span class="toc-text">针对去除异常值的表达矩阵进行聚类分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5-%E7%BD%91%E7%BB%9C%E5%88%86%E6%9E%90"><span class="toc-text">第二步 网络分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E5%BB%BA%E7%BD%91%E7%BB%9C%E3%80%81%E6%A3%80%E6%B5%8B%E5%8D%8F%E5%90%8C%E8%A1%A8%E8%BE%BE%E7%9A%84%E5%9F%BA%E5%9B%A0%E6%A8%A1%E5%9D%97%EF%BC%88%E9%9D%9E%E5%B8%B8%E9%87%8D%E8%A6%81%E7%9A%84%E4%B8%80%E6%AD%A5%EF%BC%81%EF%BC%89"><span class="toc-text">构建网络、检测协同表达的基因模块（非常重要的一步！）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E8%BD%BD%E4%B9%8B%E5%89%8D%E4%BF%9D%E5%AD%98%E7%9A%84RData"><span class="toc-text">加载之前保存的RData</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AD%9B%E9%80%89%E8%BD%AF%E9%98%88%E5%80%BC%EF%BC%88soft-thresholding-power%EF%BC%89"><span class="toc-text">筛选软阈值（soft thresholding power）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E6%AD%A5%E6%9E%84%E5%BB%BA%E7%BD%91%E7%BB%9C-%E5%85%B3%E9%94%AE%E4%B8%80%E6%AD%A5%EF%BC%81"><span class="toc-text">一步构建网络[关键一步！]</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97%E5%8F%AF%E8%A7%86%E5%8C%96-x3D-%E3%80%8B%E8%81%9A%E7%B1%BB%E6%A0%91"><span class="toc-text">模块可视化&#x3D;》聚类树</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5-%E6%A8%A1%E5%9D%97%E8%81%94%E7%B3%BB%E8%A1%A8%E5%9E%8B%E4%BF%A1%E6%81%AF"><span class="toc-text">第三步 模块联系表型信息</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%A1%E5%9D%97%E5%85%B3%E8%81%94%E8%A1%A8%E5%9E%8B"><span class="toc-text">模块关联表型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9moduleTraitCor%E7%94%BB%E7%83%AD%E5%9B%BE%EF%BC%8C%E7%9C%8B%E7%BB%93%E6%9E%9C%E6%8C%91%E9%80%89%E8%87%AA%E5%B7%B1%E6%84%9F%E5%85%B4%E8%B6%A3%E7%9A%84%E6%A8%A1%E5%9D%97%E8%BF%9B%E8%A1%8C%E4%B8%8B%E6%B8%B8%E5%88%86%E6%9E%90"><span class="toc-text">对moduleTraitCor画热图，看结果挑选自己感兴趣的模块进行下游分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E5%9F%BA%E5%9B%A0%E4%B8%8E%E6%A8%A1%E5%9D%97%E7%9A%84%E7%9B%B8%E5%85%B3%E6%80%A7%E7%9F%A9%E9%98%B5%EF%BC%88MM-Module-Membership%EF%BC%89"><span class="toc-text">计算基因与模块的相关性矩阵（MM: Module Membership）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E7%AE%97%E5%9F%BA%E5%9B%A0%E4%B8%8E%E8%A1%A8%E5%9E%8B%E7%9A%84%E7%9B%B8%E5%85%B3%E6%80%A7%E7%9F%A9%E9%98%B5%EF%BC%88GS-Gene-Significance%EF%BC%89"><span class="toc-text">计算基因与表型的相关性矩阵（GS: Gene Significance）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E5%B9%B6%E4%B8%A4%E4%B8%AA%E7%9B%B8%E5%85%B3%E6%80%A7%E7%9F%A9%E9%98%B5-%E6%89%BE%E5%88%B0%E5%92%8C%E6%A8%A1%E5%9D%97%E3%80%81%E8%A1%A8%E5%9E%8B%E9%83%BD%E9%AB%98%E5%BA%A6%E7%9B%B8%E5%85%B3%E7%9A%84%E5%9F%BA%E5%9B%A0"><span class="toc-text">合并两个相关性矩阵,找到和模块、表型都高度相关的基因</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E5%9B%9B%E6%AD%A5-%E7%BD%91%E7%BB%9C%E5%8F%AF%E8%A7%86%E5%8C%96"><span class="toc-text">第四步 网络可视化</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E5%9B%A0%E7%9A%84%E8%81%9A%E7%B1%BB%E5%88%86%E6%9E%90%E5%92%8C%E6%A8%A1%E5%9D%97%E9%A2%9C%E8%89%B2%E7%94%BB%E5%9C%A8%E9%A1%B6%E9%83%A8%E5%92%8C%E5%B7%A6%E4%BE%A7"><span class="toc-text">基因的聚类分析和模块颜色画在顶部和左侧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%89%E6%8B%A9400%E4%B8%AA%E5%9F%BA%E5%9B%A0%E7%94%BB%E5%9B%BE"><span class="toc-text">选择400个基因画图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%89%E6%8B%A9%E5%85%A8%E9%83%A8%E5%9F%BA%E5%9B%A0%E7%94%BB%E5%9B%BE-%E8%80%97%E6%97%B6%E8%BE%83%E4%B9%85%EF%BC%8C%E7%94%9F%E6%88%90%E7%9A%84%E6%96%87%E4%BB%B6%E5%BE%88%E5%A4%A7"><span class="toc-text">选择全部基因画图(耗时较久，生成的文件很大)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E3%80%90%E9%92%88%E5%AF%B9%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%A1%A8%E5%9E%8B%E3%80%91%E5%B1%95%E7%A4%BA%E6%A8%A1%E5%9D%97%E4%B8%8E%E8%A1%A8%E5%9E%8B%E7%9A%84%E7%9B%B8%E5%85%B3%E6%80%A7"><span class="toc-text">【针对模块与表型】展示模块与表型的相关性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%94%E6%AD%A5-%E5%AF%BC%E5%87%BA%E7%BD%91%E7%BB%9C"><span class="toc-text">第五步 导出网络</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E8%BF%87%E7%A8%8B"><span class="toc-text">准备过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%BC%E5%87%BA%E5%88%B0VisANT"><span class="toc-text">导出到VisANT</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%84%9F%E8%A7%89%E5%9F%BA%E5%9B%A0%E5%A4%AA%E5%A4%9A%EF%BC%8C%E5%8F%AF%E4%BB%A5%E6%88%AA%E5%8F%96%E9%83%A8%E5%88%86%EF%BC%88%E6%AF%94%E5%A6%82%E5%89%8D30%EF%BC%89"><span class="toc-text">感觉基因太多，可以截取部分（比如前30）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%BC%E5%87%BA%E5%88%B0Cytoscape"><span class="toc-text">导出到Cytoscape</span></a></li></ol></li></ol></li></ol>
+<hr>
+<h1 id="什么是WGCNA"><a href="#什么是WGCNA" class="headerlink" title="什么是WGCNA?"></a>什么是WGCNA?</h1><p><img src="/WGCNA%E6%9C%80%E4%BD%B3%E5%AE%9E%E6%88%98/tutorial.png" alt="tutorials"></p>
+<p><strong>WGCNA</strong>：全称 Weighted correlation network analysis，加权基因共表达网络分析，是用来描述不同样品之间基因关联模式的系统生物学方法，可以用来鉴定高度协同变化的基因集, 并根据基因集的内连性和基因集与表型之间的关联鉴定候补生物标记基因或治疗靶点。</p>
+<p>相比于只关注差异表达的基因，WGCNA利用数千或近万个变化最大的基因或全部基因的信息识别感兴趣的基因集，并与表型进行显著性关联分析。一是充分利用了信息，二是把数千个基因与表型的关联转换为数个基因集与表型的关联，免去了多重假设检验校正的问题。</p>
+<p>理解WGCNA，需要先理解下面<strong>几个术语</strong>和它们在WGCNA中的定义:</p>
+<p><strong>1.共表达网络</strong>：定义为加权基因网络。</p>
+<ul>
+<li><strong>点</strong>代表基因</li>
+<li><strong>边</strong>代表基因表达相关性。</li>
+<li><strong>加权</strong>是指对相关性值进行冥次运算(冥次的值也就是软阈值 (power, pickSoftThreshold这个函数所做的就是确定合适的power))。</li>
+<li><strong>无向网络的边属性计算方式</strong>为abs(cor(genex, geney)) ^ power；</li>
+<li><strong>有向网络的边属性计算方式</strong>为(1+cor(genex, geney)&#x2F;2) ^ power;</li>
+<li><strong>sign hybrid</strong>的边属性计算方式为cor(genex, geney)^power if cor&gt;0 else 0。这种处理方式强化了强相关，弱化了弱相关或负相关，使得相关性数值更符合无标度网络特征，更具有生物意义。如果没有合适的power，一般是由于部分样品与其它样品因为某种原因差别太大导致的，可根据具体问题移除部分样品或查看后面的经验值。</li>
+</ul>
+<p>**2.Module(模块)**：高度內连的基因集，表达模式相似的基因分为一类，这样的一类基因成为模块。</p>
+<ul>
+<li>在无向网络中，模块内是高度相关的基因。在有向网络中，模块内是高度正相关的基因。</li>
+<li>把基因聚类成模块后，可以对<strong>每个模块进行三个层次的分析</strong>：(1)功能富集分析查看其功能特征是否与研究目的相符；(2)模块与性状进行关联分析，找出与关注性状相关度最高的模块；(3)模块与样本进行关联分析，找到样品特异高表达的模块。</li>
+</ul>
+<p>**3.Connectivity (连接度)**：类似于网络中”<strong>度(degree)</strong>“的概念。每个基因的连接度是与其相连的基因的边属性之和。</p>
+<p><strong>4.Module eigengene E</strong>: 给定模型的第一主成分，代表整个模型的基因表达谱。<strong>PCA分析</strong>的降维作用，之前主要是拿来做可视化，现在用到这个地方，很好的用一个向量代替了一个矩阵，方便后期计算。(降维除了<strong>PCA</strong>，还可以看看<strong>tSNE</strong>)</p>
+<p><strong>5.Intramodular connectivity</strong>: 给定基因与给定模型内其他基因的关联度，判断基因所属关系。</p>
+<p><strong>6.Module membership</strong>: 给定基因表达谱与给定模型的eigengene的相关性。</p>
+<p><strong>7.Hub gene</strong>: 关键基因 (连接度最多或连接多个模块的基因)。</p>
+<p>**8.Adjacency matrix (邻接矩阵)**：基因和基因之间的加权相关性值构成的矩阵。</p>
+<p>**9.TOM (Topological overlap matrix)**：把邻接矩阵转换为拓扑重叠矩阵，以降低噪音和假相关，获得的新距离矩阵，这个信息可拿来构建网络或绘制TOM图。</p>
+<h1 id="WGCNA基本分析流程"><a href="#WGCNA基本分析流程" class="headerlink" title="WGCNA基本分析流程"></a>WGCNA基本分析流程</h1><p><img src="/WGCNA%E6%9C%80%E4%BD%B3%E5%AE%9E%E6%88%98/%E5%9F%BA%E6%9C%AC%E5%88%86%E6%9E%90%E6%B5%81%E7%A8%8B.png" alt="基本分析流程"></p>
+<ul>
+<li><p>构建基因共表达网络：使用加权的表达相关性。</p>
+</li>
+<li><p>识别基因集：基于加权相关性，进行层级聚类分析，并根据设定标准切分聚类结果，获得不同的基因模块，用聚类树的分枝和不同颜色表示。</p>
+</li>
+<li><p>如果有表型信息，计算基因模块与表型的相关性，鉴定性状相关的模块。</p>
+</li>
+<li><p>研究模型之间的关系，从系统层面查看不同模型的互作网络。</p>
+</li>
+<li><p>从关键模型中选择感兴趣的驱动基因，或根据模型中已知基因的功能推测未知基因的功能。</p>
+</li>
+<li><p>导出TOM矩阵，绘制相关性图。</p>
+</li>
+</ul>
+<h1 id="WGCNA分析实战"><a href="#WGCNA分析实战" class="headerlink" title="WGCNA分析实战"></a>WGCNA分析实战</h1><p>WGCNA本质是基于相关系数的网络分析方法，适用于多样品数据模式，一般要求样本数多于15个。样本数多于20时效果更好，样本越多，结果越稳定。一般可应用的研究方向有：不同器官或组织类型发育调控、同一组织不同发育调控、非生物胁迫不同时间点应答、病原菌侵染后不同时间点应答。</p>
+<p><strong>从方法上来讲</strong>，WGCNA分为<strong>表达量聚类分析</strong>和<strong>表型关联</strong>两部分，主要包括基因之间相关系数计算、基因模块的确定、共表达网络、模块与性状关联四个步骤。</p>
+<ul>
+<li><strong>基因表达矩阵</strong>: 芯片数据的归一化矩阵。常规表达矩阵即可，即基因在行，样品在列，一般以RPKM为单位,RPKM、FPKM或其它标准化方法影响不大。进入分析前做一个转置：推荐使用<code>Deseq2</code>的<code>varianceStabilizingTransformation</code>或<code>log2(x+1)</code>对标准化后的数据做个转换；如果数据来自不同的批次，需要先移除批次效应；如果数据存在系统偏移，需要做下<code>quantile normalization</code>。<br>需要两样东西：表达矩阵datExpr、表型矩阵datTraits</li>
+<li><strong>性状矩阵或表型矩阵</strong>：用于关联分析的性状或表型必须是数值型矩阵 (如下面示例中的Height, Weight,Diameter)。本身就是数值型：如长度、重量等，直接使用；如果是区域或分类变量，需要转换为0-1矩阵的形式：如患病与否这样的分类变量，需要用0-1表示（0表示没有该属性：患病，1表示有该属性），构建0-1矩阵后再分析。</li>
+</ul>
+<pre><code>ID    Sick Height Weight 
+sam1   1     1   2   
+sam2   1     2   7 
+sam3   0     10  22 
+sam4   0     NA  31  
+sam5   0     14  19 
+</code></pre>
+<h2 id="第一步-数据输入与初步处理"><a href="#第一步-数据输入与初步处理" class="headerlink" title="第一步 数据输入与初步处理"></a>第一步 数据输入与初步处理</h2><pre><code>wkdir &lt;- &quot;F:/biosoft/WCGNA/测试数据&quot;
+setwd(wkdir)
+library(WGCNA)
+options(stringsAsFactors = FALSE)
+femData = read.csv(&quot;LiverFemale3600.csv&quot;)
+#dim(femData)
+names(femData) #看一下列名
+</code></pre>
+<h3 id="进行转置：设置初步的表达矩阵：样本为行，观测为列"><a href="#进行转置：设置初步的表达矩阵：样本为行，观测为列" class="headerlink" title="进行转置：设置初步的表达矩阵：样本为行，观测为列"></a>进行转置：设置初步的表达矩阵：样本为行，观测为列</h3><pre><code>datExpr0 = as.data.frame(t(femData[, -c(1:8)]))
+names(datExpr0) = femData$substanceBXH
+rownames(datExpr0) = names(femData)[-c(1:8)]
+</code></pre>
+<h3 id="检查基因和样本是否有太多的缺失值【太多就去掉】"><a href="#检查基因和样本是否有太多的缺失值【太多就去掉】" class="headerlink" title="检查基因和样本是否有太多的缺失值【太多就去掉】"></a>检查基因和样本是否有太多的缺失值【太多就去掉】</h3><pre><code>gsg = goodSamplesGenes(datExpr0, verbose = 3)
+gsg$allOK # 返回TRUE则继续
+# （可选）如果存在太多的缺失值
+if (!gsg$allOK)
+&#123;
+  # 把含有缺失值的基因或样本打印出来
+  if (sum(!gsg$goodGenes)&gt;0)
+    printFlush(paste(&quot;Removing genes:&quot;, paste(names(datExpr0)[!gsg$goodGenes], collapse = &quot;, &quot;)));
+  if (sum(!gsg$goodSamples)&gt;0)
+    printFlush(paste(&quot;Removing samples:&quot;, paste(rownames(datExpr0)[!gsg$goodSamples], collapse = &quot;, &quot;)));
+  # 去掉那些缺失值
+  datExpr0 = datExpr0[gsg$goodSamples, gsg$goodGenes]
+&#125;
+</code></pre>
+<h3 id="对样本进行聚类-检测异常值"><a href="#对样本进行聚类-检测异常值" class="headerlink" title="对样本进行聚类,检测异常值"></a>对样本进行聚类,检测异常值</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">if(T)&#123;
+  sampleTree = hclust(dist(datExpr0), method = "average")
+  par(cex = 0.6)
+  par(mar = c(0,4,2,0))
+  plot(sampleTree, main = "Sample clustering to detect outliers", sub="", xlab="", cex.lab = 1.5,
+       cex.axis = 1.5, cex.main = 2)
+  # 结果可以看到，F2_221是一个异常值
+  abline(h = 15, col = "red") #先画一条辅助线
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="去除异常值，得到过滤后的表达矩阵"><a href="#去除异常值，得到过滤后的表达矩阵" class="headerlink" title="去除异常值，得到过滤后的表达矩阵"></a>去除异常值，得到过滤后的表达矩阵</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;"># 把高于15的切除
+clust = cutreeStatic(sampleTree, cutHeight = 15, minSize = 10)
+table(clust) # 0代表切除的，1代表保留的
+keepSamples = (clust==1)
+datExpr = datExpr0[keepSamples, ]
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="开始设置表型矩阵-x3D-》加载表型信息"><a href="#开始设置表型矩阵-x3D-》加载表型信息" class="headerlink" title="开始设置表型矩阵&#x3D;》加载表型信息"></a>开始设置表型矩阵&#x3D;》加载表型信息</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">traitData = read.csv("ClinicalTraits.csv")
+#dim(traitData)
+names(traitData)
+# 去掉不需要的信息，得到全部样本的表型矩阵
+allTraits = traitData[, -c(31, 16)] #去掉'note'、'comments'
+allTraits = allTraits[, c(2, 11:36) ] # 去掉中间的日期之类的
+dim(allTraits)
+names(allTraits)
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="得到部分表型矩阵-x3D-》表达矩阵有哪些样本，表型矩阵就有哪些样本"><a href="#得到部分表型矩阵-x3D-》表达矩阵有哪些样本，表型矩阵就有哪些样本" class="headerlink" title="得到部分表型矩阵&#x3D;》表达矩阵有哪些样本，表型矩阵就有哪些样本"></a>得到部分表型矩阵&#x3D;》表达矩阵有哪些样本，表型矩阵就有哪些样本</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">femaleSamples = rownames(datExpr)
+traitRows = match(femaleSamples, allTraits$Mice)
+# 把原来的第一列Mice变成行名
+datTraits = allTraits[traitRows, -1]
+rownames(datTraits) = allTraits[traitRows, 1]
+collectGarbage() #释放内存空间
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<blockquote>
+<p>到这里为止，得到了所有样本的表达矩阵和表型矩阵，在进一步构建网络、检测模块之前，先看下表型和样本的相关性</p>
+</blockquote>
+<h3 id="针对去除异常值的表达矩阵进行聚类分析"><a href="#针对去除异常值的表达矩阵进行聚类分析" class="headerlink" title="针对去除异常值的表达矩阵进行聚类分析"></a>针对去除异常值的表达矩阵进行聚类分析</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">sampleTree2 = hclust(dist(datExpr), method = "average")
+# 用颜色表示表型在各个样本的表现: 白色表示低，红色为高，灰色为缺失
+traitColors = numbers2colors(datTraits, signed = FALSE)
+# 把样本聚类和表型热图绘制在一起
+if(T)&#123;
+  plotDendroAndColors(sampleTree2, traitColors,
+                      groupLabels = names(datTraits),
+                      main = "Sample dendrogram and trait heatmap")
+&#125;
+save(datExpr, datTraits, file = "FemaleLiver-01-dataInput.RData")
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="第二步-网络分析"><a href="#第二步-网络分析" class="headerlink" title="第二步 网络分析"></a>第二步 网络分析</h2><h3 id="构建网络、检测协同表达的基因模块（非常重要的一步！）"><a href="#构建网络、检测协同表达的基因模块（非常重要的一步！）" class="headerlink" title="构建网络、检测协同表达的基因模块（非常重要的一步！）"></a>构建网络、检测协同表达的基因模块（非常重要的一步！）</h3><blockquote>
+<p>实现构建网络有3种方法：(3选1即可)<br>1.One-step；<br>2.Step-by-step 支持自定义一些参数；<br>3.Block-wise network construction 针对大型数据<br><strong>这里采用一步分析法</strong></p>
+</blockquote>
+<h3 id="加载之前保存的RData"><a href="#加载之前保存的RData" class="headerlink" title="加载之前保存的RData"></a>加载之前保存的RData</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">lnames = load(file = "FemaleLiver-01-dataInput.RData")
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<h3 id="筛选软阈值（soft-thresholding-power）"><a href="#筛选软阈值（soft-thresholding-power）" class="headerlink" title="筛选软阈值（soft thresholding power）"></a>筛选软阈值（soft thresholding power）</h3><blockquote>
+<p>原则是使构建的网络更符合无标度网络特征</p>
+</blockquote>
+<pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">#设置一系列软阈值（默认1到30）
+powers = c(c(1:10), seq(from = 12, to=20, by=2))
+#帮助用户选择合适的软阈值，进行拓扑网络分析
+#需要输入表达矩阵、设置的阈值范围、运行显示的信息程度(verbose=0不显示任何信息)
+sft = pickSoftThreshold(datExpr, powerVector = powers, verbose = 5)
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>sft结果有两列，其中powerEstimate返回最佳的软阈值beta值。这里的结果是6，表示从6达到高阈值以后，图形曲线开始变平，就是说：到达阈值6时网络拓扑结构连通的就差不多了，够本了！具体见下面做出的图(左一)来理解。实际使用并不需要知道具体值</p>
+<p>画出结果 &#x3D;》横轴是Soft threshold (power)<br>(左图)纵轴是无标度网络的评估参数（相关系数的平方),数值越高，网络越符合无标度特征 (non-scale)<br>(右图)纵轴是基因模块中所有基因邻接函数的均值</p>
+<pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">if(T)&#123;
+  par(mfrow = c(1,2))
+  cex1 = 0.9
+  plot(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
+       xlab="Soft Threshold (power)",
+       ylab="Scale Free Topology Model Fit,signed R^2",type="n",
+       main = paste("Scale independence"))
+  #注意这里的-sign(sft$fitIndices[,3])中sign函数，它把正数、负数分别转为1、-1
+  text(sft$fitIndices[,1], -sign(sft$fitIndices[,3])*sft$fitIndices[,2],
+       labels=powers,cex=cex1,col="red")
+  # 设置筛选标准h=r^2^=0.9。这里的0.9是个大概的数，就是看左图软阈值6大概对应的位置
+  abline(h=0.90,col="red")
+  #看一下Soft threshold与平均连通性
+  plot(sft$fitIndices[,1], sft$fitIndices[,5],
+       xlab="Soft Threshold (power)",ylab="Mean Connectivity", type="n",
+       main = paste("Mean connectivity"))
+  text(sft$fitIndices[,1], sft$fitIndices[,5], labels=powers, cex=cex1,col="red")
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="一步构建网络-关键一步！"><a href="#一步构建网络-关键一步！" class="headerlink" title="一步构建网络[关键一步！]"></a>一步构建网络[关键一步！]</h3><blockquote>
+<p>几千个基因组归类成了几十个模块<br>计算基因间的邻接性，根据邻接性计算基因间的相似性，然后算出基因间的相异性系数，并因此得到基因间的系统聚类树<br>按照混合动态剪切树的标准，设置每个基因模块最少的基因数目为30<br>确定基因模块后，再次分析，依次计算每个模块的特征向量值<br>对模块进行聚类分析，将距离较近的模块合并为新的模块<br>power就是上面计算得到的软阈值</p>
+</blockquote>
+<pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">net = blockwiseModules(datExpr, power = 6,
+                       TOMType = "unsigned", minModuleSize = 30,
+                       reassignThreshold = 0, mergeCutHeight = 0.25,
+                       numericLabels = TRUE, pamRespectsDendro = FALSE,
+                       saveTOMs = TRUE,
+                       saveTOMFileBase = "femaleMouseTOM",
+                       verbose = 3)
+# 显示模块数量以及各自包含的基因数目
+# 0表示未分入任何模块的基因
+# 1是最大的模块，往后依次降序排列，分别对应各自模块的基因
+table(net$colors)
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="模块可视化-x3D-》聚类树"><a href="#模块可视化-x3D-》聚类树" class="headerlink" title="模块可视化&#x3D;》聚类树"></a>模块可视化&#x3D;》聚类树</h3><p>将每个模块对应的基因数转换成颜色单位, 灰色默认是无法归类于任何模块的那些基因</p>
+<pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">mergedColors = labels2colors(net$colors)
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>先画聚类，后画颜色</p>
+<pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">if(T)&#123;
+  plotDendroAndColors(net$dendrograms[[1]], mergedColors[net$blockGenes[[1]]],
+                      "Module colors",
+                      dendroLabels = FALSE, hang = 0.03,
+                      addGuide = TRUE, guideHang = 0.05)
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>保存数据</p>
+<pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">moduleLabels = net$colors
+moduleColors = labels2colors(net$colors)
+MEs = net$MEs
+geneTree = net$dendrograms[[1]]
+save(MEs, moduleLabels, moduleColors, geneTree,
+     file = "FemaleLiver-02-networkConstruction-auto.RData")
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="第三步-模块联系表型信息"><a href="#第三步-模块联系表型信息" class="headerlink" title="第三步 模块联系表型信息"></a>第三步 模块联系表型信息</h2><p>看看哪些表型的哪些模块是自己感兴趣的（一般选热图颜色深的）<br>这样初步表明该模块中基因可能是有研究价值的；<br>下一步，进行一个验证，看看这个模块中基因与表型、模块的相关性，看看与模块相关的基因是不是也与表型相关</p>
+<pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">rm(list = ls())
+load(file = "FemaleLiver-01-dataInput.RData")
+load(file = "FemaleLiver-02-networkConstruction-auto.RData")
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<h2 id="模块关联表型"><a href="#模块关联表型" class="headerlink" title="模块关联表型"></a>模块关联表型</h2><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;"># 得到基因、样本数量
+nGenes = ncol(datExpr)
+nSamples = nrow(datExpr)
+# 用color labels重新计算MEs（Module Eigengenes:模块的第一主成分）
+MEs0 = moduleEigengenes(datExpr, moduleColors)$eigengenes
+MEs = orderMEs(MEs0)
+moduleTraitCor = cor(MEs, datTraits, use = "p") #（这是重点）计算ME和表型相关性
+moduleTraitPvalue = corPvalueStudent(moduleTraitCor, nSamples)
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="对moduleTraitCor画热图，看结果挑选自己感兴趣的模块进行下游分析"><a href="#对moduleTraitCor画热图，看结果挑选自己感兴趣的模块进行下游分析" class="headerlink" title="对moduleTraitCor画热图，看结果挑选自己感兴趣的模块进行下游分析"></a>对moduleTraitCor画热图，看结果挑选自己感兴趣的模块进行下游分析</h2><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">if(T)&#123;
+  # 设置热图上的文字（两行数字：第一行是模块与各种表型的相关系数；
+  # 第二行是p值）
+  # signif 取有效数字
+  textMatrix = paste(signif(moduleTraitCor, 2), "\n(",
+                     signif(moduleTraitPvalue, 1), ")", sep = "")
+  dim(textMatrix) = dim(moduleTraitCor)
+  par(mar = c(6, 8.5, 3, 3))
+  # 然后对moduleTraitCor画热图
+  labeledHeatmap(Matrix = moduleTraitCor,
+                 xLabels = names(datTraits),
+                 yLabels = names(MEs),
+                 ySymbols = names(MEs),
+                 colorLabels = FALSE,
+                 colors = greenWhiteRed(50),
+                 textMatrix = textMatrix,
+                 setStdMargins = FALSE,
+                 cex.text = 0.5,
+                 zlim = c(-1,1),
+                 main = paste("Module-trait relationships"))
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>每种表型都有和它非常相关的模块，因此某个模块可以作为某个表型的代表(signature)，对于非常相关的模块，比如weight表型和brown模块，颜色最深。那么里面的基因是什么？于是进行感兴趣表型中核心模块的基因分析</p>
+<h3 id="计算基因与模块的相关性矩阵（MM-Module-Membership）"><a href="#计算基因与模块的相关性矩阵（MM-Module-Membership）" class="headerlink" title="计算基因与模块的相关性矩阵（MM: Module Membership）"></a>计算基因与模块的相关性矩阵（MM: Module Membership）</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;"># 把各个module的名字提取出来（从第三个字符开始），用于一会重命名
+modNames = substring(names(MEs), 3)
+# 得到矩阵
+geneModuleMembership = as.data.frame(cor(datExpr, MEs, use = "p"))
+# 矩阵t检验
+MMPvalue = as.data.frame(corPvalueStudent(as.matrix(geneModuleMembership), nSamples))
+# 修改列名
+names(geneModuleMembership) = paste("MM", modNames, sep="")
+names(MMPvalue) = paste("p.MM", modNames, sep="")
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="计算基因与表型的相关性矩阵（GS-Gene-Significance）"><a href="#计算基因与表型的相关性矩阵（GS-Gene-Significance）" class="headerlink" title="计算基因与表型的相关性矩阵（GS: Gene Significance）"></a>计算基因与表型的相关性矩阵（GS: Gene Significance）</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;"># 先将感兴趣表型weight提取出来，用于计算矩阵
+weight = as.data.frame(datTraits$weight_g)
+names(weight) = "weight"
+# 得到矩阵
+geneTraitSignificance = as.data.frame(cor(datExpr, weight, use = "p"))
+# 矩阵t检验
+GSPvalue = as.data.frame(corPvalueStudent(as.matrix(geneTraitSignificance), nSamples))
+# 修改列名
+names(geneTraitSignificance) = paste("GS.", names(weight), sep="")
+names(GSPvalue) = paste("p.GS.", names(weight), sep="")
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="合并两个相关性矩阵-找到和模块、表型都高度相关的基因"><a href="#合并两个相关性矩阵-找到和模块、表型都高度相关的基因" class="headerlink" title="合并两个相关性矩阵,找到和模块、表型都高度相关的基因"></a>合并两个相关性矩阵,找到和模块、表型都高度相关的基因</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">if(T)&#123;
+  module = "brown"
+  column = match(module, modNames) #找到目标模块所在列
+  moduleGenes = moduleColors==module #找到模块基因所在行
+  par(mfrow = c(1,1))
+  verboseScatterplot(abs(geneModuleMembership[moduleGenes, column]),
+                     abs(geneTraitSignificance[moduleGenes, 1]),
+                     xlab = paste("Module Membership in", module, "module"),
+                     ylab = "Gene significance for body weight",
+                     main = paste("Module membership vs. gene significance\n"),
+                     cex.main = 1.2, cex.lab = 1.2, cex.axis = 1.2, col = module)
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>图中看到，MM和GS高度正相关，因此说明和表型高度相关的基因，在与表型相关模块中也是核心元素。</p>
+<p>另外，也可以探索weight表型中其他的模块，比如第一个颜色很浅的magenta模块，它的MM和GS整体负相关</p>
+<h2 id="第四步-网络可视化"><a href="#第四步-网络可视化" class="headerlink" title="第四步 网络可视化"></a>第四步 网络可视化</h2><p>【针对基因】热图的方式展示加权网络，每行每列代表一个基因</p>
+<blockquote>
+<p>还能表示邻近关系和拓扑重叠，浅颜色表示关系弱，深颜色表示关系强</p>
+</blockquote>
+<h3 id="基因的聚类分析和模块颜色画在顶部和左侧"><a href="#基因的聚类分析和模块颜色画在顶部和左侧" class="headerlink" title="基因的聚类分析和模块颜色画在顶部和左侧"></a>基因的聚类分析和模块颜色画在顶部和左侧</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">rm(list = ls())
+load(file = "FemaleLiver-01-dataInput.RData")
+load(file = "FemaleLiver-02-networkConstruction-auto.RData")
+nGenes = ncol(datExpr)
+nSamples = nrow(datExpr)
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="选择400个基因画图"><a href="#选择400个基因画图" class="headerlink" title="选择400个基因画图"></a>选择400个基因画图</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">if(T)&#123;
+  nSelect = 400
+  set.seed(10)
+  # 计算拓扑重叠(TOM: Topological Overlap Matrix)
+  # 这个过程先计算了邻接矩阵，后把邻接矩阵转换为拓扑重叠矩阵，
+  # 降低了噪音和假相关，获得距离矩阵dissTOM
+  dissTOM = 1-TOMsimilarityFromExpr(datExpr, power = 6)
+  select = sample(nGenes, size = nSelect)
+  selectTOM = dissTOM[select, select]
+  # 再计算基因之间的距离树(对于基因的子集，需要重新聚类)
+  selectTree = hclust(as.dist(selectTOM), method = "average")
+  selectColors = moduleColors[select]
+
+
+  plotDiss = selectTOM^7
+  diag(plotDiss) = NA #将对角线设成NA，在图形中显示为白色的点，更清晰显示趋势
+  TOMplot(plotDiss, selectTree, selectColors, main = "Network heatmap plot, selected genes")
+
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="选择全部基因画图-耗时较久，生成的文件很大"><a href="#选择全部基因画图-耗时较久，生成的文件很大" class="headerlink" title="选择全部基因画图(耗时较久，生成的文件很大)"></a>选择全部基因画图(耗时较久，生成的文件很大)</h3><blockquote>
+<p>结果可以看到各个区块的颜色差异,沿着对角线的深色区块就是模块Module，如果你发现配色反过来了 ，修改方法是给TOMplot加上参数：</p>
+</blockquote>
+<pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">col=gplots::colorpanel(250,'red',"orange",'lemonchiffon')
+
+if(T)&#123;
+  plotTOM = dissTOM^7
+  diag(plotTOM) = NA
+  TOMplot(plotTOM, geneTree, moduleColors, main = "Network heatmap plot, all genes")
+
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="【针对模块与表型】展示模块与表型的相关性"><a href="#【针对模块与表型】展示模块与表型的相关性" class="headerlink" title="【针对模块与表型】展示模块与表型的相关性"></a>【针对模块与表型】展示模块与表型的相关性</h3><blockquote>
+<p>重新计算模块的基因样本相关矩阵（Eigengenes就是基因和样本的相关矩阵）</p>
+</blockquote>
+<pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">MEs = moduleEigengenes(datExpr, moduleColors)$eigengenes
+# 将weight表型信息从trait中提取出来
+weight = as.data.frame(datTraits$weight_g)
+names(weight) = "weight"
+# 把weight表型添加到之前计算的ME矩阵中，并排序
+MET = orderMEs(cbind(MEs, weight))
+
+# 画图=》meta-modules（模块的聚类图加上模块与表型的热图）
+# marDendro/marHeatmap 设置下、左、上、右的边距
+if(T)&#123;
+  par(cex = 0.9)
+  plotEigengeneNetworks(MET, "", marDendro = c(0,4,1,2), marHeatmap = c(4,4,1,2), cex.lab = 0.8, xLabelsAngle
+                        = 90)
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<p>图中可以看到，red、blue、brown模块是高度相关的，并且它们的相关性比各自和weight表型的相关性还大；salmon和weight的相关性也比较强，但是加入red、blue、brown的meta-modules阵营还不够格</p>
+<p>当然分开画也是可以的</p>
+<pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">if(T)&#123;
+
+  par(cex = 1.0)
+  plotEigengeneNetworks(MET, "Eigengene dendrogram", marDendro = c(0,4,2,0),
+                        plotHeatmaps = FALSE)
+
+
+  par(cex = 1.0)
+  plotEigengeneNetworks(MET, "Eigengene adjacency heatmap", marHeatmap = c(4,5,2,2),
+                        plotDendrograms = FALSE, xLabelsAngle = 90)
+
+&#125;
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="第五步-导出网络"><a href="#第五步-导出网络" class="headerlink" title="第五步 导出网络"></a>第五步 导出网络</h2><h3 id="准备过程"><a href="#准备过程" class="headerlink" title="准备过程"></a>准备过程</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;"># 重新计算拓扑重叠矩阵
+TOM = TOMsimilarityFromExpr(datExpr, power = 6)
+# 选择导出模块
+module = "brown"
+# 选择模块中基因/探针
+probes = names(datExpr)
+inModule = (moduleColors==module)
+modProbes = probes[inModule]
+# 选择相关模块的拓扑重叠矩阵
+modTOM = TOM[inModule, inModule]
+dimnames(modTOM) = list(modProbes, modProbes)
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="导出到VisANT"><a href="#导出到VisANT" class="headerlink" title="导出到VisANT"></a>导出到VisANT</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">vis = exportNetworkToVisANT(modTOM,
+                            file = paste("VisANTInput-", module, ".txt", sep=""),
+                            weighted = TRUE,
+                            threshold = 0)
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="感觉基因太多，可以截取部分（比如前30）"><a href="#感觉基因太多，可以截取部分（比如前30）" class="headerlink" title="感觉基因太多，可以截取部分（比如前30）"></a>感觉基因太多，可以截取部分（比如前30）</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">nTop = 30
+IMConn = softConnectivity(datExpr[, modProbes])
+top = (rank(-IMConn) <= nTop)
+submodTOM <- modTOM[top, top] #然后用submodTOM代替前面的modTOM导出
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+<h3 id="导出到Cytoscape"><a href="#导出到Cytoscape" class="headerlink" title="导出到Cytoscape"></a>导出到Cytoscape</h3><pre class="line-numbers language-&#123;r&#125;"><code class="language-&#123;r&#125;">modules = c("brown", "red")
+cyt = exportNetworkToCytoscape(modTOM,
+                               edgeFile = paste("CytoscapeInput-edges-", paste(modules, collapse="-"), ".txt", sep=""),
+                               nodeFile = paste("CytoscapeInput-nodes-", paste(modules, collapse="-"), ".txt", sep=""),
+                               weighted = TRUE,
+                               threshold = 0.02,
+                               nodeNames = modProbes,
+                               nodeAttr = moduleColors[inModule])
+# 同理，感觉基因太多可以用submodTOM代替modTOM
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-06-10-linux-ji-chu-anaconda-an-zhuang-ji-conda-shi-yong-jiao-cheng/"
+                    data-tooltip="linux基础|Anaconda安装及Conda使用教程"
+                    aria-label="上一篇: linux基础|Anaconda安装及Conda使用教程"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-05-09-hui-tu-su-cai-xin-hao-tong-lu-hui-zhi-gong-ju/"
+                    data-tooltip="绘图素材|信号通路绘制工具"
+                    aria-label="下一篇: 绘图素材|信号通路绘制工具"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-06-10-linux-ji-chu-anaconda-an-zhuang-ji-conda-shi-yong-jiao-cheng/"
+                    data-tooltip="linux基础|Anaconda安装及Conda使用教程"
+                    aria-label="上一篇: linux基础|Anaconda安装及Conda使用教程"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-05-09-hui-tu-su-cai-xin-hao-tong-lu-hui-zhi-gong-ju/"
+                    data-tooltip="绘图素材|信号通路绘制工具"
+                    aria-label="下一篇: 绘图素材|信号通路绘制工具"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2020-06-06-wgcna-zui-jia-shi-zhan/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>
