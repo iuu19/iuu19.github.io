@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>iuu&#39;s blog</title>
+  
+  
+  <link href="https://iuu.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://iuu.github.io/"/>
+  <updated>2022-06-19T14:10:05.949Z</updated>
+  <id>https://iuu.github.io/</id>
+  
+  <author>
+    <name>Dr.iuu</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>good evening</title>
+    <link href="https://iuu.github.io/2022-06-19-good-evening/"/>
+    <id>https://iuu.github.io/2022-06-19-good-evening/</id>
+    <published>2022-06-19T14:09:10.000Z</published>
+    <updated>2022-06-19T14:10:05.949Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;h3 id=&quot;1-介绍&quot;&gt;&lt;a href=&quot;#1-介绍&quot; class=&quot;headerlink&quot; title=&quot;1. 介绍&quot;&gt;&lt;/a&gt;1. 介绍&lt;/h3&gt;&lt;p&gt;LASER (Locating Ancestry using SEquencing</summary>
+        
+      
+    
+    
+    
+    
+  </entry>
+  
+</feed>

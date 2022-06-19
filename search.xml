@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+  
+    
+    <entry>
+      <title>good evening</title>
+      <link href="/2022-06-19-good-evening/"/>
+      <url>/2022-06-19-good-evening/</url>
+      
+        <content type="html"><![CDATA[<h3 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1. 介绍"></a>1. 介绍</h3><p>LASER (Locating Ancestry using SEquencing Reads)，是C++编译的软件包，可以直接从全基因组测序读取估算祖先，而无需调用基因型。该方法依赖于一组参考个体，这些参考个体的全基因组SNP基因型和祖先信息是已知的。我们首先通过将主成分分析（PCA）应用于参考个体的基因型数据来构建参考坐标系。</p><h3 id="2-下载"><a href="#2-下载" class="headerlink" title="2. 下载"></a>2. 下载</h3><p><a href="http://csg.sph.umich.edu//chaolong/LASER/">LASER Package</a>: Version 2.03</p><pre><code>wget -c https://sph.umich.edu/csg/software_pages/softwaredownloads/LASER-2.03.tar.gztar xzvf LASER-2.03.tar.gzmv LASER-2.03 laser# version-2.04: http://csg.sph.umich.edu/chaolong/LASER/LASER-2.04.tar.gz</code></pre>]]></content>
+      
+      
+      
+    </entry>
+    
+    
+  
+  
+</search>
