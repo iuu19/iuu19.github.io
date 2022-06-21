@@ -17,11 +17,11 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"sRNAnalyzer–A pipeline for small RNA sequencing data analysis\n\n\n\n\n\n\n\nGetting Started with sRNAnalyzer\n\n\n\n\n\nIntroductionsRNAnalyzer is a flexible, modular pipeline for the analysis of small RNA sequencing data. Features include,\n\nAdditional adapter trimming process to generate cleaner data\nComprehensive microRNA profiling strategies to better handle isomiR issues\nSummarization for each nucleotide to detect potential SNPs on miRNAs\nMultiple assignment to simulate miRNA array and qRT-PCR platforms\nA local probabilistic model to map reads to the most-likely entry IDs\nComprehensive ribosomal RNA filtering to get more accurate mapping results\nMore specific species assignment on exogenous RNAs in circulation\nTaxonomy annotation&#x2F;summarization at major ranks for exogenous species\n\nDownloadsDownload the sRNAnalyzer pipeline and alignment databases as .tar.gz files.\n\nsRNAnalyzer Pipeline: sRNAnalyzer   \nsmall RNA Databases: sRNA_DBs   \nHuman and Exogenous Databases: MainDBs   \nNCBI Non-Human Databases: NCBI_NonHuman\nE.Coli Samples for Pipeline Evaluation: E_coli_evaluation_samples\n\nWeb ApplicationTo demonstrate how to use sRNAnalyzer, we built a web interface in a local server, which can be accessed at Web Application page for uploading data and running sRNAnalyzer pipeline online. For testing purpose, Username – ‘isb’ and Password – ‘password’ can be used. For academic use, free accounts will be provided based on email applications. Please send emails to Dr. Kai Wang.\nGetting StartedTo get started using sRNAnalyzer, download the sRNAnalyzer as a .zip or a .tar.gz file as well as the sRNA databases required. Then head to the Getting Started page for instruction on setting up and running sRNAnalyzer.\nDocumentationFor more information on options and configuration, head to the Documentation. For documentation on the format of the output and summary files, go to the Output file documentation.\n1. Download and Install Dependencies\n\nMake sure you have python 2.6 or later and perl 5 or later installed.\n\nDownload and install bowtie. Make sure the bowtie command is in your system path. Note: bowtie 2 is not supported in sRNAnalyzer.\n\nDownload and install the fastx_toolkit, following the instructions on the website. Download the fastx 0.0.14 version. Make sure the command fastx_collapser is in your system path.\n\nDownload and install cutadapt. This requires python 2.6 or later and a C compiler. The easiest way to install cutadapt is using pip following the instructions on the cutadapt website. Make sure the cutadapt command is in your system path.\n\n\n2. Download and Setup sRNAnalyzer\n\nDownload sRNAnalyzer. Unzip the downloaded archive. You may want to add the sRNAnalzyer directory to your system PATH so you can use the sRNAnalyzer commands directly. Next, we need to download some databases for alignment. There are three options for databases to download: a small RNA database, a database with human DNA and RNA, as well as some bacterial sequences, and the NCBI non-human database. The latter two databases are quite large (&gt; 70GB uncompressed), so it is recommended to begin with the sRNA database. The installation procedure for all three databases is the same. First, download one of the databases and unzip the archive. Open the DB_config file and change the line\n\nbase: Insert the path to this folder here\n\nby inserting the full path to the folder. For example,\nbase: /databases/bowtie/indexes/sRNA_DBs\n\nLooking at the DB_config, you should see a list of database names with paths. These databases are the ones that you can use in your pipeline now. It is also possible to add many new databases to the pipeline by downloading or building bowtie indexes and specifying their location in the database configuration file. For more information, see the Configuration File Documentation Now you’re ready to begin using the pipeline.\n\n\n3. Using the Pipeline\nIn order to use the pipeline, we need to create a pipeline configuration file, which specifies preprocessing setting, such as adapter sequences, and alignment settings such as database order and maximum mismatch allowances. Go to the Config Docs to learn how to create a configuration file with the settings required for your project.\nAn typical pipeline configuration file is shown below,\npreprocess:\n  kit:        NEB\n  gzip:       true\n  stop-oligo: false\n        \nalignment:\n  type: single\n  human_miRNA:     2\n  human_miRNA_sub: 2\n  human_piRNA:     2\n  human_snoRNA:    2\n\n3.1 Preprocessing\nUsing a terminal, change the directory so that the fastq or fast.gz files you wish to process are in the current working directory. In order to run preprocessing, run the command\n/Downloads/sRNAnalyzer/preprocess.pl --config pipeline_config.conf\n\nwhere pipeline_config.yaml is your pipeline configuration file, and &#x2F;Downloads&#x2F; is replaced with wherever your sRNAnalyzer folder is located. Or if you have added the sRNAnalyzer directory to the system PATH, then simply use\npreprocess.pl --config pipeline_config.conf\n\nThe preprocessing will generated sample_Processed.fa files that have had adapter trimmed, low-quality reads filtered out, and collapsed. Additional report files are also generated with information about adapter trimming and read quality.\n3.2 Alignment\nTo perform the alignment, ensure that your database and pipeline configuration files are properly setup. After downloading the initial human small RNA databases, the databases available for alignment, which can be specified in the pipeline configuration file are,\nhuman_miRNA\nhuman_miRNA_sub\nhuman_piRNA\nhuman_snoRNA\nvirus_miRNA\nplant_miRNA\nall_miRNA\nall_miRNA_sub\n\nThen, making sure that you are in the directory containing the _Processed.fa files you wish to align, run the command\n/Downloads/sRNAnalyzer/align.pl /home/data pipeline_config.yaml DB_config.conf\n\nor\nalign.pl /home/data pipeline_config.yaml DB_config.conf\n\nif you have added sRNAnalyzer to the system PATH\nIn the command, pipeline_config.yaml is the pipeline configuration file and DB_config.conf is the database configuration file.\nThe align command will output several files, including feature files, profile files, a read distribution file, and an unmatched sequences file.\n3.3 SummarizationThe next step in the pipeline is the summarization of the results of the alignment in order to prepare for statistical analysis of the data. An example summarization command is,\nsummarize.pl DB_config.conf --project my_project\n\nThis command will sum the feature and profile result from individual samples into result files for all samples. my_project is the name of the project, so all of the result files with start with the prefix my_project_. The general form of the summarize command is,\nsummarize.pl &lt;db-config-file&gt; &lt;sample-order-file&gt; --project &lt;project-name&gt;\n\nwhere the db-config-file is required, and the sample-order-file and project-name are both optional. The db-config-file is the database configuration file discussed above, and the sample-order-file specifies the order of the samples in the result files. If the sample order file is not provided, the order is alphabetical. The summarize.pl command has two additional options, --miRNA and --exogenous. Use the –miRNA flag if you would like to summarize miRNA separately and get information about possible miRNA SNPs. Use the --exogenous flag if you would like to summarize exogenous reads, including summarizing by taxonomy information. Note that the --exogenous option is only available if the MainDBs or NCBI_NonHuman databases are installed.\n","dateCreated":"2020-05-02T23:49:27+08:00","dateModified":"2020-05-02T23:49:27+08:00","datePublished":"2020-05-02T23:49:27+08:00","description":"sRNAnalyzer–A pipeline for small RNA sequencing data analysis","headline":"sRNAnalyzer","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2020-05-02-srnanalyzer/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2020-05-02-srnanalyzer/","keywords":"small RNA-seq"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"sRNAnalyzer–A pipeline for small RNA sequencing data analysis\n\n\n\n\n\n\n\nGetting Started with sRNAnalyzer\n\n\n\n\n\nIntroductionsRNAnalyzer is a flexible, modular pipeline for the analysis of small RNA sequencing data. Features include,\n\nAdditional adapter trimming process to generate cleaner data\nComprehensive microRNA profiling strategies to better handle isomiR issues\nSummarization for each nucleotide to detect potential SNPs on miRNAs\nMultiple assignment to simulate miRNA array and qRT-PCR platforms\nA local probabilistic model to map reads to the most-likely entry IDs\nComprehensive ribosomal RNA filtering to get more accurate mapping results\nMore specific species assignment on exogenous RNAs in circulation\nTaxonomy annotation&#x2F;summarization at major ranks for exogenous species\n\nDownloadsDownload the sRNAnalyzer pipeline and alignment databases as .tar.gz files.\n\nsRNAnalyzer Pipeline: sRNAnalyzer   \nsmall RNA Databases: sRNA_DBs   \nHuman and Exogenous Databases: MainDBs   \nNCBI Non-Human Databases: NCBI_NonHuman\nE.Coli Samples for Pipeline Evaluation: E_coli_evaluation_samples\n\nWeb ApplicationTo demonstrate how to use sRNAnalyzer, we built a web interface in a local server, which can be accessed at Web Application page for uploading data and running sRNAnalyzer pipeline online. For testing purpose, Username – ‘isb’ and Password – ‘password’ can be used. For academic use, free accounts will be provided based on email applications. Please send emails to Dr. Kai Wang.\nGetting StartedTo get started using sRNAnalyzer, download the sRNAnalyzer as a .zip or a .tar.gz file as well as the sRNA databases required. Then head to the Getting Started page for instruction on setting up and running sRNAnalyzer.\nDocumentationFor more information on options and configuration, head to the Documentation. For documentation on the format of the output and summary files, go to the Output file documentation.\n1. Download and Install Dependencies\n\nMake sure you have python 2.6 or later and perl 5 or later installed.\n\nDownload and install bowtie. Make sure the bowtie command is in your system path. Note: bowtie 2 is not supported in sRNAnalyzer.\n\nDownload and install the fastx_toolkit, following the instructions on the website. Download the fastx 0.0.14 version. Make sure the command fastx_collapser is in your system path.\n\nDownload and install cutadapt. This requires python 2.6 or later and a C compiler. The easiest way to install cutadapt is using pip following the instructions on the cutadapt website. Make sure the cutadapt command is in your system path.\n\n\n2. Download and Setup sRNAnalyzer\n\nDownload sRNAnalyzer. Unzip the downloaded archive. You may want to add the sRNAnalzyer directory to your system PATH so you can use the sRNAnalyzer commands directly. Next, we need to download some databases for alignment. There are three options for databases to download: a small RNA database, a database with human DNA and RNA, as well as some bacterial sequences, and the NCBI non-human database. The latter two databases are quite large (&gt; 70GB uncompressed), so it is recommended to begin with the sRNA database. The installation procedure for all three databases is the same. First, download one of the databases and unzip the archive. Open the DB_config file and change the line\n\nbase: Insert the path to this folder here\n\nby inserting the full path to the folder. For example,\nbase: /databases/bowtie/indexes/sRNA_DBs\n\nLooking at the DB_config, you should see a list of database names with paths. These databases are the ones that you can use in your pipeline now. It is also possible to add many new databases to the pipeline by downloading or building bowtie indexes and specifying their location in the database configuration file. For more information, see the Configuration File Documentation Now you’re ready to begin using the pipeline.\n\n\n3. Using the Pipeline\nIn order to use the pipeline, we need to create a pipeline configuration file, which specifies preprocessing setting, such as adapter sequences, and alignment settings such as database order and maximum mismatch allowances. Go to the Config Docs to learn how to create a configuration file with the settings required for your project.\nAn typical pipeline configuration file is shown below,\npreprocess:\n  kit:        NEB\n  gzip:       true\n  stop-oligo: false\n        \nalignment:\n  type: single\n  human_miRNA:     2\n  human_miRNA_sub: 2\n  human_piRNA:     2\n  human_snoRNA:    2\n\n3.1 Preprocessing\nUsing a terminal, change the directory so that the fastq or fast.gz files you wish to process are in the current working directory. In order to run preprocessing, run the command\n/Downloads/sRNAnalyzer/preprocess.pl --config pipeline_config.conf\n\nwhere pipeline_config.yaml is your pipeline configuration file, and &#x2F;Downloads&#x2F; is replaced with wherever your sRNAnalyzer folder is located. Or if you have added the sRNAnalyzer directory to the system PATH, then simply use\npreprocess.pl --config pipeline_config.conf\n\nThe preprocessing will generated sample_Processed.fa files that have had adapter trimmed, low-quality reads filtered out, and collapsed. Additional report files are also generated with information about adapter trimming and read quality.\n3.2 Alignment\nTo perform the alignment, ensure that your database and pipeline configuration files are properly setup. After downloading the initial human small RNA databases, the databases available for alignment, which can be specified in the pipeline configuration file are,\nhuman_miRNA\nhuman_miRNA_sub\nhuman_piRNA\nhuman_snoRNA\nvirus_miRNA\nplant_miRNA\nall_miRNA\nall_miRNA_sub\n\nThen, making sure that you are in the directory containing the _Processed.fa files you wish to align, run the command\n/Downloads/sRNAnalyzer/align.pl /home/data pipeline_config.yaml DB_config.conf\n\nor\nalign.pl /home/data pipeline_config.yaml DB_config.conf\n\nif you have added sRNAnalyzer to the system PATH\nIn the command, pipeline_config.yaml is the pipeline configuration file and DB_config.conf is the database configuration file.\nThe align command will output several files, including feature files, profile files, a read distribution file, and an unmatched sequences file.\n3.3 SummarizationThe next step in the pipeline is the summarization of the results of the alignment in order to prepare for statistical analysis of the data. An example summarization command is,\nsummarize.pl DB_config.conf --project my_project\n\nThis command will sum the feature and profile result from individual samples into result files for all samples. my_project is the name of the project, so all of the result files with start with the prefix my_project_. The general form of the summarize command is,\nsummarize.pl &lt;db-config-file&gt; &lt;sample-order-file&gt; --project &lt;project-name&gt;\n\nwhere the db-config-file is required, and the sample-order-file and project-name are both optional. The db-config-file is the database configuration file discussed above, and the sample-order-file specifies the order of the samples in the result files. If the sample order file is not provided, the order is alphabetical. The summarize.pl command has two additional options, --miRNA and --exogenous. Use the –miRNA flag if you would like to summarize miRNA separately and get information about possible miRNA SNPs. Use the --exogenous flag if you would like to summarize exogenous reads, including summarizing by taxonomy information. Note that the --exogenous option is only available if the MainDBs or NCBI_NonHuman databases are installed.\n","dateCreated":"2020-05-02T23:49:27+08:00","dateModified":"2020-05-02T23:49:27+08:00","datePublished":"2020-05-02T23:49:27+08:00","description":"sRNAnalyzer–A pipeline for small RNA sequencing data analysis","headline":"sRNAnalyzer","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2020-05-02-sRNAnalyzer/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2020-05-02-sRNAnalyzer/","keywords":"small RNA-seq"}</script>
     <meta name="description" content="sRNAnalyzer–A pipeline for small RNA sequencing data analysis">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="sRNAnalyzer">
-<meta property="og:url" content="https://iuu19.github.io/2020-05-02-srnanalyzer/index.html">
+<meta property="og:url" content="https://iuu19.github.io/2020-05-02-sRNAnalyzer/index.html">
 <meta property="og:site_name" content="iuu&#39;s blog">
 <meta property="og:description" content="sRNAnalyzer–A pipeline for small RNA sequencing data analysis">
 <meta property="og:locale" content="zh_CN">
@@ -402,7 +402,7 @@ all_miRNA_sub
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                    href="/2020-05-05-RNA-Seq%E5%88%86%E6%9E%90-MicroRazerS-small-RNA-seq-map/"
                     data-tooltip="RNA-Seq分析|MicroRazerS-small RNA-seq map"
                     aria-label="上一篇: RNA-Seq分析|MicroRazerS-small RNA-seq map"
                 >
@@ -416,7 +416,7 @@ all_miRNA_sub
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2020-04-21-shi-yong-aspera-gao-su-xia-zai-sra-shu-ju/"
+                    href="/2020-04-21-%E4%BD%BF%E7%94%A8Aspera%E9%AB%98%E9%80%9F%E4%B8%8B%E8%BD%BDSRA%E6%95%B0%E6%8D%AE/"
                     data-tooltip="使用Aspera高速下载SRA数据"
                     aria-label="下一篇: 使用Aspera高速下载SRA数据"
                 >
@@ -443,7 +443,7 @@ all_miRNA_sub
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-02-sRNAnalyzer/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -456,7 +456,7 @@ all_miRNA_sub
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-02-sRNAnalyzer/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -469,7 +469,7 @@ all_miRNA_sub
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-02-sRNAnalyzer/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -513,7 +513,7 @@ all_miRNA_sub
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2020-05-05-rna-seq-fen-xi-microrazers-small-rna-seq-map/"
+                    href="/2020-05-05-RNA-Seq%E5%88%86%E6%9E%90-MicroRazerS-small-RNA-seq-map/"
                     data-tooltip="RNA-Seq分析|MicroRazerS-small RNA-seq map"
                     aria-label="上一篇: RNA-Seq分析|MicroRazerS-small RNA-seq map"
                 >
@@ -527,7 +527,7 @@ all_miRNA_sub
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2020-04-21-shi-yong-aspera-gao-su-xia-zai-sra-shu-ju/"
+                    href="/2020-04-21-%E4%BD%BF%E7%94%A8Aspera%E9%AB%98%E9%80%9F%E4%B8%8B%E8%BD%BDSRA%E6%95%B0%E6%8D%AE/"
                     data-tooltip="使用Aspera高速下载SRA数据"
                     aria-label="下一篇: 使用Aspera高速下载SRA数据"
                 >
@@ -554,7 +554,7 @@ all_miRNA_sub
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-02-sRNAnalyzer/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -567,7 +567,7 @@ all_miRNA_sub
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-02-sRNAnalyzer/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -580,7 +580,7 @@ all_miRNA_sub
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-02-sRNAnalyzer/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -612,7 +612,7 @@ all_miRNA_sub
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-05-02-sRNAnalyzer/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -625,7 +625,7 @@ all_miRNA_sub
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-05-02-sRNAnalyzer/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -638,7 +638,7 @@ all_miRNA_sub
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-02-srnanalyzer/"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2020-05-02-sRNAnalyzer/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>

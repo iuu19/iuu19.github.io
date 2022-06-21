@@ -1,0 +1,646 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>PCA analysis using GCAT - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"PCA analysis using GCAT\n\n\n\n\n\n\nAbout GCATGCAT(Genome-wide Complex Trait Analysis)在全基因组关联分析中是一款十分好用的软件，更多功能可去官网(http://cnsgenomics.com/software/gcta/#Overview)查看。在分析的时候计算LD，PCA以及关联分析我会选择GCTA，主要是可以多线程，且免编译安装，使用起来十分方便。GCTA(Genome-wide Complex Trait Analysis) was initially designed to estimate the proportion of phenotypic variance explained by all genome-wide SNPs for complex traits (i.e., the GREML method). It has been subsequently extended for many other analyses to better understand the genetic architecture of complex traits. GCTA currently supports the following analyses:GRM: estimating the genetic relationships among individuals in GWAS data;Estimating the inbreeding coefficients of individuals in GWAS data;GREML: estimating the proportion of variance in a phenotype explained by all GWAS SNPs (i.e. the SNP-based heritability);Partitioning the genetic variance onto individual chromosomes, MAF bins or functional categories;Estimating the genetic variance attributed to the X chromosome, and testing for the effect of dosage compensation;GREMLd: estimating the dominance variance in unrelated individuals using GWAS data;Bivariate GREML: estimating the genetic correlation between two traits (diseases) using GWAS data;PCA analysis and estimation of Fst in GWAS data;Computing LD scores and searching for LD friends for a list of target SNPs;Simulating a phenotype based on GWAS data;Conditional &amp; joint (COJO) analysis of GWAS summary statistics without individual-level genotype data;mtCOJO: multi-trait-based conditional &amp; joint analysis using GWAS summary data;GSMR: generalised summary-data-based mendelian randomisaion;MLMA and MLMA-LOCO: mixed linear model association analysis;fastBAT: gene- or set-based association analysis;sBLUP: summary-data based BLUP analysis for genomic risk prediction;Haseman-Elston regression to estimate the the SNP-based heritability for a trait and the genetic correlation between two traits;fastGWA: an extremely source-efficient (mixed) linear model association tool.\n\nReference:GCTA: A Tool for Genome-wide Complex Trait Analysis,Am J Hum Genet. 2011 Jan 7; 88(1): 76–82.(https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3014363/)\n\nsoftware:Genome-wide Complex Trait Analysis (GCTA)(http://cnsgenomics.com/software/gcta/#Overview)\n\nInstallation下载后添加环境变量即可使用。\n\nExamples1.首先使用plink将vcf 格式的文件转化成所以.bed，.bim，.pam结尾的输入文件。\n./plink --allow-extra-chr --out myplink_test --recode --vcf Gpan.prune.in.vcf\n./plink --allow-extra-chr --file myplink_test --noweb --make-bed --out tmp\n\n2.利用GCTA进行PCA构建\n./gcta64 --bfile tmp --make-grm --autosome --out tmp\n./gcta64 --grm tmp --pca --out pcatmp\n\n3.运行玩后会生成三个文件\n-rw-r----- 1 hhu pawsey0149 1.1K Oct  5 12:32 pcatmp.log\n-rw-r----- 1 hhu pawsey0149 8.0K Oct  5 12:32 pcatmp.eigenval\n-rw-r----- 1 hhu pawsey0149  45K Oct  5 12:34 pcatmp.eigenvec\n\n打开用以后续分析的pcatmp.eigenvec查看一下.\n4.打开文本编辑器，将下面这一行加到分析文件的第一行中，以便后面的分析：\nID Group PC1 PC2 PC3 ...\n\n5.使用的R包进行可视化，这里没有具体将每个个体就行分群，我全部标记为一个组。真实的结果是根据你strcture图或者系统进化树对群体进行适当的分组，这样画出来的效果会更好，图例中PC1,PC2,PC3的值根据你生成的pcatmp.eigenval文件来。\nsetwd(\"F:\\\\you_scripts\\\\gcta\")\nlibrary(ggplot2)\n#pdf(file=\"apvc12hweDEL46.pca_gcat.plot.pdf\")\ndata ","dateCreated":"2019-10-22T00:00:00+08:00","dateModified":"2019-10-22T00:00:00+08:00","datePublished":"2019-10-22T00:00:00+08:00","description":"PCA analysis using GCAT","headline":"PCA analysis using GCAT","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-10-22-PCA_GCAT/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-10-22-PCA_GCAT/","keywords":"PCA, GCAT"}</script>
+    <meta name="description" content="PCA analysis using GCAT">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="PCA analysis using GCAT">
+<meta property="og:url" content="https://iuu19.github.io/2019-10-22-PCA_GCAT/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:description" content="PCA analysis using GCAT">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-10-21T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-10-21T16:00:00.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta property="article:tag" content="PCA">
+<meta property="article:tag" content="GCAT">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            PCA analysis using GCAT
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2019-10-22T00:00:00+08:00">
+	
+		    10月 22, 2019
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/all-categories/PCA/">PCA</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>PCA analysis using GCAT</p>
+<span id="more"></span>
+
+
+<h1 id="table-of-contents">目录</h1><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#About-GCAT"><span class="toc-text">About GCAT</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reference"><span class="toc-text">Reference:</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#software"><span class="toc-text">software:</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Installation"><span class="toc-text">Installation</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Examples"><span class="toc-text">Examples</span></a></li></ol>
+
+
+<h1 id="About-GCAT"><a href="#About-GCAT" class="headerlink" title="About GCAT"></a>About GCAT</h1><p>GCAT(Genome-wide Complex Trait Analysis)在全基因组关联分析中是一款十分好用的软件，更多功能可去官网(<a target="_blank" rel="noopener" href="http://cnsgenomics.com/software/gcta/#Overview)%E6%9F%A5%E7%9C%8B%E3%80%82%E5%9C%A8%E5%88%86%E6%9E%90%E7%9A%84%E6%97%B6%E5%80%99%E8%AE%A1%E7%AE%97LD%EF%BC%8CPCA%E4%BB%A5%E5%8F%8A%E5%85%B3%E8%81%94%E5%88%86%E6%9E%90%E6%88%91%E4%BC%9A%E9%80%89%E6%8B%A9GCTA%EF%BC%8C%E4%B8%BB%E8%A6%81%E6%98%AF%E5%8F%AF%E4%BB%A5%E5%A4%9A%E7%BA%BF%E7%A8%8B%EF%BC%8C%E4%B8%94%E5%85%8D%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85%EF%BC%8C%E4%BD%BF%E7%94%A8%E8%B5%B7%E6%9D%A5%E5%8D%81%E5%88%86%E6%96%B9%E4%BE%BF%E3%80%82">http://cnsgenomics.com/software/gcta/#Overview)查看。在分析的时候计算LD，PCA以及关联分析我会选择GCTA，主要是可以多线程，且免编译安装，使用起来十分方便。</a><br><strong>GCTA</strong>(Genome-wide Complex Trait Analysis) was initially designed to estimate the proportion of phenotypic variance explained by all genome-wide SNPs for complex traits (i.e., the GREML method). It has been subsequently extended for many other analyses to better understand the genetic architecture of complex traits. GCTA currently supports the following analyses:<br><strong>GRM</strong>: estimating the genetic relationships among individuals in GWAS data;<br>Estimating the inbreeding coefficients of individuals in GWAS data;<br><strong>GREML</strong>: estimating the proportion of variance in a phenotype explained by all GWAS SNPs (i.e. the SNP-based heritability);<br>Partitioning the genetic variance onto individual chromosomes, MAF bins or functional categories;<br>Estimating the genetic variance attributed to the X chromosome, and testing for the effect of dosage compensation;<br><strong>GREMLd</strong>: estimating the dominance variance in unrelated individuals using GWAS data;<br><strong>Bivariate GREML</strong>: estimating the genetic correlation between two traits (diseases) using GWAS data;<br>PCA analysis and estimation of Fst in GWAS data;<br>Computing LD scores and searching for LD friends for a list of target SNPs;<br>Simulating a phenotype based on GWAS data;<br>Conditional &amp; joint (COJO) analysis of GWAS summary statistics without individual-level genotype data;<br><strong>mtCOJO</strong>: multi-trait-based conditional &amp; joint analysis using GWAS summary data;<br><strong>GSMR</strong>: generalised summary-data-based mendelian randomisaion;<br><strong>MLMA and MLMA-LOCO</strong>: mixed linear model association analysis;<br><strong>fastBAT</strong>: gene- or set-based association analysis;<br><strong>sBLUP</strong>: summary-data based BLUP analysis for genomic risk prediction;<br>Haseman-Elston regression to estimate the the SNP-based heritability for a trait and the genetic correlation between two traits;<br><strong>fastGWA</strong>: an extremely source-efficient (mixed) linear model association tool.</p>
+<hr>
+<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference:"></a>Reference:</h1><p><strong>GCTA</strong>: A Tool for Genome-wide Complex Trait Analysis,Am J Hum Genet. 2011 Jan 7; 88(1): 76–82.(<a target="_blank" rel="noopener" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3014363/">https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3014363/</a>)</p>
+<hr>
+<h1 id="software"><a href="#software" class="headerlink" title="software:"></a>software:</h1><p><strong>Genome-wide Complex Trait Analysis (GCTA)</strong>(<a target="_blank" rel="noopener" href="http://cnsgenomics.com/software/gcta/#Overview">http://cnsgenomics.com/software/gcta/#Overview</a>)</p>
+<hr>
+<h1 id="Installation"><a href="#Installation" class="headerlink" title="Installation"></a>Installation</h1><p>下载后添加环境变量即可使用。</p>
+<hr>
+<h1 id="Examples"><a href="#Examples" class="headerlink" title="Examples"></a>Examples</h1><p>1.首先使用plink将vcf 格式的文件转化成所以.bed，.bim，.pam结尾的输入文件。</p>
+<pre class="line-numbers language-bash"><code class="language-bash">./plink --allow-extra-chr --out myplink_test --recode --vcf Gpan.prune.in.vcf
+./plink --allow-extra-chr --file myplink_test --noweb --make-bed --out tmp
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>2.利用GCTA进行PCA构建</p>
+<pre class="line-numbers language-bash"><code class="language-bash">./gcta64 --bfile tmp --make-grm --autosome --out tmp
+./gcta64 --grm tmp --pca --out pcatmp
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+<p>3.运行玩后会生成三个文件</p>
+<pre class="line-numbers language-bash"><code class="language-bash">-rw-r----- 1 hhu pawsey0149 1.1K Oct  5 12:32 pcatmp.log
+-rw-r----- 1 hhu pawsey0149 8.0K Oct  5 12:32 pcatmp.eigenval
+-rw-r----- 1 hhu pawsey0149  45K Oct  5 12:34 pcatmp.eigenvec
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span></span></code></pre>
+<p>打开用以后续分析的pcatmp.eigenvec查看一下.</p>
+<p>4.打开文本编辑器，将下面这一行加到分析文件的第一行中，以便后面的分析：</p>
+<pre class="line-numbers language-bash"><code class="language-bash">ID Group PC1 PC2 PC3 <span class="token punctuation">..</span>.
+<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+<p>5.使用的R包进行可视化，这里没有具体将每个个体就行分群，我全部标记为一个组。真实的结果是根据你strcture图或者系统进化树对群体进行适当的分组，这样画出来的效果会更好，图例中PC1,PC2,PC3的值根据你生成的pcatmp.eigenval文件来。</p>
+<pre class="line-numbers language-&#123;r"><code class="language-&#123;r">setwd("F:\\you_scripts\\gcta")
+library(ggplot2)
+#pdf(file="apvc12hweDEL46.pca_gcat.plot.pdf")
+data <-read.table(file="apvc12hweDEL46_gcta.eigenvec",header=T)
+par(mfrow<-c(3,1))
+ggplot(data = data, aes(x = PC1, y = PC2, group = Group)) +
+  geom_point(alpha = 0.5) + xlab("PC1") + ylab("PC2")
+ggplot(data = data, aes(x = PC1, y = PC3, group = Group)) +
+  geom_point(alpha = 0.5) + xlab("PC1") + ylab("PC3")
+ggplot(data = data, aes(x = PC2, y = PC3, group = Group)) +
+  geom_point(alpha = 0.5) + xlab("PC2") + ylab("PC3")
+#dev.off()
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/GCAT/" rel="tag">GCAT</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/PCA/" rel="tag">PCA</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-10-30-Single_Cell_ATAC_Usage/"
+                    data-tooltip="Single Cell ATAC Install and Usage"
+                    aria-label="上一篇: Single Cell ATAC Install and Usage"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-10-22-PCA_GCAT/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-10-22-PCA_GCAT/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-10-22-PCA_GCAT/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-10-30-Single_Cell_ATAC_Usage/"
+                    data-tooltip="Single Cell ATAC Install and Usage"
+                    aria-label="上一篇: Single Cell ATAC Install and Usage"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-10-22-PCA_GCAT/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-10-22-PCA_GCAT/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-10-22-PCA_GCAT/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-10-22-PCA_GCAT/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-10-22-PCA_GCAT/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2019-10-22-PCA_GCAT/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

@@ -1,0 +1,804 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>从基因名到GO注释一步到位 - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"从基因名到GO注释一步到位\n\n\n\n\n\n\n\n\n大部分的生物学高通量数据处理后都是得到基因集，不管是上调下调表达基因集，还是共表达的模块基因集，都是需要注释到生物学功能数据库来看基因集的意义，最常见的是 GO&#x2F;KEGG数据库啦，还有很多其它在MsigDB的，比如reactome和biocarta数据库等等。 \n\n\n\n\n\n这样分析起来就很麻烦，尤其是GO数据库，还有 BP,CC,MF的区别，这个时候推荐使用Y叔的神器，使用\n\n\nlibrary(ggplot2)\nlibrary(stringr)\nlibrary(clusterProfiler)\n# 我这里演示的是brown_down_gene，是WGCNA的一个模块，基因集\n# 因为表达矩阵是symbol，所以需要转为ENTREZID，才能走clusterProfiler的函数。\ngene.df &lt;- bitr(brown_down_gene$symbol, fromType=&quot;SYMBOL&quot;,\n                toType=&quot;ENTREZID&quot;, \n                OrgDb = &quot;org.Hs.eg.db&quot;)\ngo &lt;- enrichGO(gene = gene.df$ENTREZID, OrgDb = &quot;org.Hs.eg.db&quot;, ont=&quot;all&quot;)\nbarplot(go, split=&quot;ONTOLOGY&quot;)+ facet_grid(ONTOLOGY~., scale=&quot;free&quot;)\n\n\n会得到如下所示的图，当然，理解起来需要耗费一点功夫，如果你是第一次看到的话！不仅仅是要理解GO数据库，以及BP,MF,CC的分类系统，超几何分布检验，不同的阈值过滤，筛选指标等等。\n\n\n\n\n\n\n因为上面的代码并没有修改默认的统计学指标筛选参数，如果你的基因确实没有规则，有可能拿不到结果哦！这个时候可以设置：pvalueCutoff &#x3D; 0.9, qvalueCutoff &#x3D;0.9 甚至为1，来不做筛选。而且基因集的大小也是被限制了。  \n \n\n\n\n\n如果你想分开计算上下调基因的GO数据库注释\n\n\n\n\n\n\n而且还想保留富集分析结果到csv文件，代码如下：\n\n\nlibrary(ggplot2)\nlibrary(stringr)\nlibrary(clusterProfiler)\n# 通过前面的差异分析，我们拿到了  gene_up 和 gene_down 这两个基因集\n# 后面的分析，只需要  gene_up 和 gene_down  这两个变量即可\ngo_up &lt;- enrichGO(gene_up, \n                    OrgDb = &quot;org.Hs.eg.db&quot;, \n                    ont=&quot;all&quot;,\n                    pvalueCutoff = 0.9,\n                    qvalueCutoff =0.9)\ngo_up=DOSE::setReadable(go_up, OrgDb=&#39;org.Hs.eg.db&#39;,keyType=&#39;ENTREZID&#39;)\nwrite.csv(go_up@result,paste0(pro,&#39;_go_down.up.csv&#39;))\nbarplot(go_up, split=&quot;ONTOLOGY&quot;,font.size =10)+ \n  facet_grid(ONTOLOGY~., scale=&quot;free&quot;) + \n  scale_x_discrete(labels=function(x) str_wrap(x, width=50))+\n  ggsave(paste0(pro,&#39;gene_up_GO_all_barplot.png&#39;)) \n\ngo_down &lt;- enrichGO(gene_down, \n                    OrgDb = &quot;org.Hs.eg.db&quot;, \n                    ont=&quot;all&quot;,\n                    pvalueCutoff = 0.9,\n                    qvalueCutoff =0.9)\ngo_down=DOSE::setReadable(go_down, OrgDb=&#39;org.Hs.eg.db&#39;,keyType=&#39;ENTREZID&#39;)\nwrite.csv(go_down@result,paste0(pro,&#39;_go_down.up.csv&#39;))\nbarplot(go_down, split=&quot;ONTOLOGY&quot;,font.size =10)+ \n  facet_grid(ONTOLOGY~., scale=&quot;free&quot;) + \n  scale_x_discrete(labels=function(x) str_wrap(x, width=50))+\n  ggsave(paste0(pro,&#39;gene_down_GO_all_barplot.png&#39;)) \n\n\n\n其实就是两个独立的基因集，独立的走enrichGO流程啦！\n\n\n\n\n\n\n多组基因集的KEGG数据库富集\n\n\n\n\n\n\n有趣的是，如果你是多组基因，不仅仅是上下调，甚至可以走compareCluster流程，不过Y叔的这个函数总是喜欢在线获取KEGG数据库的最新信息，这一点对很多人来说，考验网速：\n\n\n# 这里需要制作一个 DEG 的数据框，其中有两列ENTREZID，是基因id,和new是分组信息\nxx.formula &lt;- compareCluster(ENTREZID~new, data=DEG, fun=&#39;enrichKEGG&#39;)\ndotplot(xx.formula, x=~GeneRatio) + facet_grid(~new)\n\n\n\n\n如果是多组基因集走GO数据库富集\n\n\n\n\n\n\n如下，构建一个数据框，list_de_gene_clusters， 含有两列信息：\n\n\nlist_de_gene_clusters &lt;- split(de_gene_clusters$ENTREZID, \n                               de_gene_clusters$cluster)\n\n# Run full GO enrichment test\nformula_res &lt;- compareCluster(\n  ENTREZID~cluster, \n  data=de_gene_clusters, \n  fun=&quot;enrichGO&quot;, \n  OrgDb=&quot;org.Mm.eg.db&quot;,\n  ont           = &quot;BP&quot;,\n  pAdjustMethod = &quot;BH&quot;,\n  pvalueCutoff  = 0.01,\n  qvalueCutoff  = 0.05\n)\n\n# Run GO enrichment test and merge terms \n# that are close to each other to remove result redundancy\nlineage1_ego &lt;- simplify(\n  formula_res, \n  cutoff=0.5, \n  by=&quot;p.adjust&quot;, \n  select_fun=min\n)\n\n\n\n\n感兴趣的可以把这个结果跟3个出名的网页工具进行比较\n\n\n\n\n\n\n\n\nhttps://amp.pharm.mssm.edu/Enrichr/\nhttp://www.webgestalt.org/   \nhttps://biit.cs.ut.ee/gprofiler\n\n\n\n\n\n\n\n另外，强推Y叔clusterProfiler的一些可视化方法\n\n\n\n\n\n\n可视化方法函数列表：\n\nbarplot\ncnetplot\ndotplot\nemapplot\ngseaplot\ngoplot\nupsetplot\n\n好几个都是以前没有介绍过的，有趣的是我准备浏览这些可视化函数的帮助文档的时候，看到了这样的话：重点来了，Y叔特意为其包写了一本书来介绍其用法。 \nPlease go to https://yulab-smu.github.io/clusterProfiler-book/ for the full vignette.\n\n\n\n\n\n\n\n\n\n\n","dateCreated":"2020-04-15T22:08:21+08:00","dateModified":"2020-04-15T22:08:21+08:00","datePublished":"2020-04-15T22:08:21+08:00","description":"从基因名到GO注释一步到位","headline":"从基因名到GO注释一步到位","image":["1.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/","keywords":"GO-KEGG, R绘图","thumbnailUrl":"1.png"}</script>
+    <meta name="description" content="从基因名到GO注释一步到位">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="从基因名到GO注释一步到位">
+<meta property="og:url" content="https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:description" content="从基因名到GO注释一步到位">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://iuu19.github.io/2020-04-15-cong-ji-yin-ming-dao-go-zhu-shi-yi-bu-dao-wei/1.png">
+<meta property="article:published_time" content="2020-04-15T14:08:21.000Z">
+<meta property="article:modified_time" content="2020-04-15T14:08:21.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta property="article:tag" content="GO-KEGG">
+<meta property="article:tag" content="R绘图">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iuu19.github.io/2020-04-15-cong-ji-yin-ming-dao-go-zhu-shi-yi-bu-dao-wei/1.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/1.png"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/1.png"/>
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            从基因名到GO注释一步到位
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-04-15T22:08:21+08:00">
+	
+		    4月 15, 2020
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/all-categories/GO-KEGG%E5%AF%8C%E9%9B%86%E5%88%86%E6%9E%90/">GO-KEGG富集分析</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>从基因名到GO注释一步到位</p>
+<span id="more"></span>
+
+
+<h1 id="table-of-contents">目录</h1>
+<hr>
+<font face="黑体" color=black size=4>
+<table><tr><td bgcolor=lightblue>
+
+<p>大部分的生物学高通量数据处理后都是得到基因集，不管是上调下调表达基因集，还是共表达的模块基因集，都是需要注释到生物学功能数据库来看基因集的意义，最常见的是<font color=darkgreen face="黑体"> GO&#x2F;KEGG数据库</font>啦，还有很多其它在<font color=darkgreen face="黑体">MsigDB</font>的，比如<font color=darkgreen face="黑体">reactome和biocarta数据库</font>等等。 </p>
+</td></tr></table>
+</font>
+
+<font face="黑体" color=black size=4>
+
+<p>这样分析起来就很麻烦，尤其是GO数据库，还有 BP,CC,MF的区别，这个时候推荐使用Y叔的神器，使用</p>
+</font>
+
+<pre><code>library(ggplot2)
+library(stringr)
+library(clusterProfiler)
+# 我这里演示的是brown_down_gene，是WGCNA的一个模块，基因集
+# 因为表达矩阵是symbol，所以需要转为ENTREZID，才能走clusterProfiler的函数。
+gene.df &lt;- bitr(brown_down_gene$symbol, fromType=&quot;SYMBOL&quot;,
+                toType=&quot;ENTREZID&quot;, 
+                OrgDb = &quot;org.Hs.eg.db&quot;)
+go &lt;- enrichGO(gene = gene.df$ENTREZID, OrgDb = &quot;org.Hs.eg.db&quot;, ont=&quot;all&quot;)
+barplot(go, split=&quot;ONTOLOGY&quot;)+ facet_grid(ONTOLOGY~., scale=&quot;free&quot;)
+</code></pre>
+<font face="黑体" color=black size=4>
+会得到如下所示的图，当然，理解起来需要耗费一点功夫，如果你是第一次看到的话！不仅仅是要理解GO数据库，以及BP,MF,CC的分类系统，超几何分布检验，不同的阈值过滤，筛选指标等等。
+</font>
+
+<img src="/2020-04-15-cong-ji-yin-ming-dao-go-zhu-shi-yi-bu-dao-wei/1.png" class="">
+
+<font face="黑体" color=black size=4>
+
+<p>因为上面的代码并没有修改默认的统计学指标筛选参数，如果你的基因确实没有规则，有可能拿不到结果哦！这个时候可以设置：pvalueCutoff &#x3D; 0.9, qvalueCutoff &#x3D;0.9 甚至为1，来不做筛选。而且基因集的大小也是被限制了。  </p>
+</font> 
+
+<center>
+<font face="黑体" color=white size=5>
+<table><tr><td bgcolor=DeepSkyBlue>
+如果你想分开计算上下调基因的GO数据库注释
+</td></tr></table>
+</font>
+</center>
+
+<font face="黑体" color=black size=4>
+
+<p>而且还想保留富集分析结果到csv文件，代码如下：</p>
+</font>
+
+<pre><code>library(ggplot2)
+library(stringr)
+library(clusterProfiler)
+# 通过前面的差异分析，我们拿到了  gene_up 和 gene_down 这两个基因集
+# 后面的分析，只需要  gene_up 和 gene_down  这两个变量即可
+go_up &lt;- enrichGO(gene_up, 
+                    OrgDb = &quot;org.Hs.eg.db&quot;, 
+                    ont=&quot;all&quot;,
+                    pvalueCutoff = 0.9,
+                    qvalueCutoff =0.9)
+go_up=DOSE::setReadable(go_up, OrgDb=&#39;org.Hs.eg.db&#39;,keyType=&#39;ENTREZID&#39;)
+write.csv(go_up@result,paste0(pro,&#39;_go_down.up.csv&#39;))
+barplot(go_up, split=&quot;ONTOLOGY&quot;,font.size =10)+ 
+  facet_grid(ONTOLOGY~., scale=&quot;free&quot;) + 
+  scale_x_discrete(labels=function(x) str_wrap(x, width=50))+
+  ggsave(paste0(pro,&#39;gene_up_GO_all_barplot.png&#39;)) 
+
+go_down &lt;- enrichGO(gene_down, 
+                    OrgDb = &quot;org.Hs.eg.db&quot;, 
+                    ont=&quot;all&quot;,
+                    pvalueCutoff = 0.9,
+                    qvalueCutoff =0.9)
+go_down=DOSE::setReadable(go_down, OrgDb=&#39;org.Hs.eg.db&#39;,keyType=&#39;ENTREZID&#39;)
+write.csv(go_down@result,paste0(pro,&#39;_go_down.up.csv&#39;))
+barplot(go_down, split=&quot;ONTOLOGY&quot;,font.size =10)+ 
+  facet_grid(ONTOLOGY~., scale=&quot;free&quot;) + 
+  scale_x_discrete(labels=function(x) str_wrap(x, width=50))+
+  ggsave(paste0(pro,&#39;gene_down_GO_all_barplot.png&#39;)) 
+</code></pre>
+<font face="黑体" color=black size=4>
+
+<p>其实就是两个独立的基因集，独立的走enrichGO流程啦！</p>
+</font>
+
+
+<center>
+<font face="黑体" color=white size=5>
+<table><tr><td bgcolor=DeepSkyBlue>
+多组基因集的KEGG数据库富集
+</td></tr></table>
+</font>
+</center>
+
+<font face="黑体" color=black size=4>
+
+<p>有趣的是，如果你是多组基因，不仅仅是上下调，甚至可以走compareCluster流程，不过Y叔的这个函数总是喜欢在线获取KEGG数据库的最新信息，这一点对很多人来说，考验网速：</p>
+</font>
+
+<pre><code># 这里需要制作一个 DEG 的数据框，其中有两列ENTREZID，是基因id,和new是分组信息
+xx.formula &lt;- compareCluster(ENTREZID~new, data=DEG, fun=&#39;enrichKEGG&#39;)
+dotplot(xx.formula, x=~GeneRatio) + facet_grid(~new)
+</code></pre>
+<center>
+<font face="黑体" color=white size=5>
+<table><tr><td bgcolor=DeepSkyBlue>
+如果是多组基因集走GO数据库富集
+</td></tr></table>
+</font>
+</center>
+
+<font face="黑体" color=black size=4>
+
+<p>如下，构建一个数据框，list_de_gene_clusters， 含有两列信息：</p>
+</font>
+
+<pre><code>list_de_gene_clusters &lt;- split(de_gene_clusters$ENTREZID, 
+                               de_gene_clusters$cluster)
+
+# Run full GO enrichment test
+formula_res &lt;- compareCluster(
+  ENTREZID~cluster, 
+  data=de_gene_clusters, 
+  fun=&quot;enrichGO&quot;, 
+  OrgDb=&quot;org.Mm.eg.db&quot;,
+  ont           = &quot;BP&quot;,
+  pAdjustMethod = &quot;BH&quot;,
+  pvalueCutoff  = 0.01,
+  qvalueCutoff  = 0.05
+)
+
+# Run GO enrichment test and merge terms 
+# that are close to each other to remove result redundancy
+lineage1_ego &lt;- simplify(
+  formula_res, 
+  cutoff=0.5, 
+  by=&quot;p.adjust&quot;, 
+  select_fun=min
+)
+</code></pre>
+<center>
+<font face="黑体" color=white size=5>
+<table><tr><td bgcolor=DeepSkyBlue>
+感兴趣的可以把这个结果跟3个出名的网页工具进行比较
+</td></tr></table>
+</font>
+</center>
+
+
+<font face="黑体" color=black size=4>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://amp.pharm.mssm.edu/Enrichr/">https://amp.pharm.mssm.edu/Enrichr/</a></li>
+<li><a target="_blank" rel="noopener" href="http://www.webgestalt.org/">http://www.webgestalt.org/</a>   </li>
+<li><a target="_blank" rel="noopener" href="https://biit.cs.ut.ee/gprofiler">https://biit.cs.ut.ee/gprofiler</a></li>
+</ul>
+</font>
+
+
+<center>
+<font face="黑体" color=white size=5>
+<table><tr><td bgcolor=DeepSkyBlue>
+另外，强推Y叔clusterProfiler的一些可视化方法
+</td></tr></table>
+</font>
+</center>
+
+<font face="黑体" color=black size=4>
+
+<p>可视化方法函数列表：</p>
+<ul>
+<li>barplot</li>
+<li>cnetplot</li>
+<li>dotplot</li>
+<li>emapplot</li>
+<li>gseaplot</li>
+<li>goplot</li>
+<li>upsetplot</li>
+</ul>
+<p>好几个都是以前没有介绍过的，有趣的是我准备浏览这些可视化函数的帮助文档的时候，看到了这样的话：<br>重点来了，Y叔特意为其包写了一本书来介绍其用法。 </p>
+<p>Please go to <a target="_blank" rel="noopener" href="https://yulab-smu.github.io/clusterProfiler-book/">https://yulab-smu.github.io/clusterProfiler-book/</a> for the full vignette.</p>
+</font>
+
+
+
+
+
+
+
+
+
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/GO-KEGG/" rel="tag">GO-KEGG</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/R%E7%BB%98%E5%9B%BE/" rel="tag">R绘图</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-04-20-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90-Sing-cell-Sequencing-QC%E8%AF%A6%E8%A7%A3/"
+                    data-tooltip="代码分析 | Sing-cell Sequencing QC详解"
+                    aria-label="上一篇: 代码分析 | Sing-cell Sequencing QC详解"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-01-02-%E8%8A%AF%E7%89%87%E6%8E%A2%E9%92%88%E5%BA%8F%E5%88%97%E7%9A%84%E5%9F%BA%E5%9B%A0%E7%BB%84%E6%B3%A8%E9%87%8A/"
+                    data-tooltip="芯片探针序列的基因组注释"
+                    aria-label="下一篇: 芯片探针序列的基因组注释"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-04-20-%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90-Sing-cell-Sequencing-QC%E8%AF%A6%E8%A7%A3/"
+                    data-tooltip="代码分析 | Sing-cell Sequencing QC详解"
+                    aria-label="上一篇: 代码分析 | Sing-cell Sequencing QC详解"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-01-02-%E8%8A%AF%E7%89%87%E6%8E%A2%E9%92%88%E5%BA%8F%E5%88%97%E7%9A%84%E5%9F%BA%E5%9B%A0%E7%BB%84%E6%B3%A8%E9%87%8A/"
+                    data-tooltip="芯片探针序列的基因组注释"
+                    aria-label="下一篇: 芯片探针序列的基因组注释"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2020-04-15-%E4%BB%8E%E5%9F%BA%E5%9B%A0%E5%90%8D%E5%88%B0GO%E6%B3%A8%E9%87%8A%E4%B8%80%E6%AD%A5%E5%88%B0%E4%BD%8D/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+
+
+
+
+    </body>
+</html>

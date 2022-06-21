@@ -1,0 +1,969 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>Single Cell ATAC Install and Usage - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"Single Cell ATAC Install and Usage\n\n\n\n\n\nSingle Cell ATAC Install and Usage参考文献：Massively parallel single-cell chromatin landscapes of human immune cell development and intratumoral T cell exhaustion.Nat Biotechnol. 2019 Aug;37(8):925-936.\nSystem RequirementsHardware:Cell Ranger ATAC pipelines run on Linux systems that meet these minimum requirements:\n\n8-core Intel or AMD processor (16 cores recommended)\n64GB RAM (128GB recommended)\n1TB free disk space\n64-bit CentOS&#x2F;RedHat 6.0 or Ubuntu 12.04\n\nSoftware:In order to run cellranger-atac mkfastq, the following software needs to be installed:\n\nIllumina® bcl2fastq: bcl2fastq must be version 2.17 or higher. It supports most sequencers running RTA version 1.18.54 or higher. If you are using NovaSeq™, the pipelines require version 2.20 or higher. If your sequencer is running an older version of RTA, then the pipelines require bcl2fastq 1.8.4.\n\n准备工作:1.软件下载:先去10xgenomics官网下载需要用到的数据和软件。因为上面提到的文章是Greenleaf教授和10xgenomics公司合作一起做的，所以前期的处理都是用cellranger-atac来做的。而且10xgenomics官网还提供了示例数据可以让我们这群菜鸡们学习。\n\n代码直接copy：\nwget -O cellranger-atac-1.1.0.tar.gz &quot;http://cf.10xgenomics.com/releases/cell-atac/cellranger-atac-1.1.0.tar.gz?Expires=1572437506&amp;Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovL2NmLjEweGdlbm9taWNzLmNvbS9yZWxlYXNlcy9jZWxsLWF0YWMvY2VsbHJhbmdlci1hdGFjLTEuMS4wLnRhci5neiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU3MjQzNzUwNn19fV19&amp;Signature=d23dUiAoSbRdnq3o8QfltPWgc7CfTRgA7-LzC4rC-m5kEPTKOUpCfcBT8AhWzQH-vo6pIxEc-GNGME~Yzqt9zDVFlHo-h6thslW~vCGuvgbR8Dl3F7R7iPF3p8I61EW~tyM5okumiOirqswpEXpAnHyWwU2fg2cguFfhwOSQpWuVMvebZOc70HFPskV5H6AG2EWkbpkIadfPAPfhpygV0Opn-D5V2~Oqty6c6f2y8cgASw-KYVA4azy3Gv9bFlTVOfahuFvVl0Gdbb90vWOa7Cb1HiGZwTe5N9yI1buXTLzVIuyksMr7rNG0rYncgQKxT1xedsDj9BWAcCwUjK4hrw__&amp;Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&quot;\n\n解压后得到一个cellranger-atac-1.1.0的路径：\n\n同样的，我们需要把这个路径加入到环境变量中，这样以后用的时候就会比较方便了。（建议将下面代码加入到~&#x2F;.bashrc中，这样就会永久生效了）:\nexport PATH=~/scATAC/cellranger-atac-1.1.0:$PATH\n\n大家自行修改自己的家目录路径。Site Check Script:\n\nNext, run the bundled site check script and send the output to 10x Genomics. We will review the information to ensure that Cell Ranger ATAC will run smoothly once you have generated your own Chromium data. Assuming you have installed Cell Ranger ATAC as described above, run the following commands.\n\n$ cellranger-atac sitecheck &gt; sitecheck.txt\n$ cellranger-atac upload your@email.edu sitecheck.txt\n\nVerify Installation:\n\nTo ensure that the cellranger-atac pipeline is installed correctly, use cellranger-atac testrun. This test can take up to 60 minutes on a sixteen-core workstation. Assuming you have installed Cell Ranger ATAC into &#x2F;opt, the command to run the test would look like the following:\n\ncellranger-atac testrun --id=tiny\n \ncellranger-atac testrun 1.1.0\nCopyright (c) 2018 10x Genomics, Inc.  All rights reserved.\n-------------------------------------------------------------------------------\nRunning Cell Ranger ATAC in test mode...\n\nMartian Runtime - 3.2.1\n\nRunning preflight checks (please wait)...\n2018-09-17 20:44:33 [runtime] (ready)           ID.tiny.SC_ATAC_COUNTER_CS.SC_ATAC_COUNTER._BASIC_SC_ATAC_COUNTER._ALIGNER.SETUP_CHUNKS\n2018-09-17 20:44:33 [runtime] (run:local)       ID.tiny.SC_ATAC_COUNTER_CS.SC_ATAC_COUNTER._BASIC_SC_ATAC_COUNTER._ALIGNER.SETUP_CHUNKS.fork0.chnk0.main\n...\n\nPipestance completed successfully!\n\nSaving diagnostics to tiny/tiny.mri.tgz\n\n2.参考基因组下载GRCh38 Reference - 1.1.0 (April 16, 2019)\n\nHuman reference (GRCh38) dataset required for Cell Ranger ATAC.\n\nwget http://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-GRCh38-1.1.0.tar.gz\n\nhg19 Reference - 1.1.0 (April 16, 2019)\n\nHuman reference (hg19) dataset required for Cell Ranger ATAC.\n\nwget http://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-b37-1.1.0.tar.gz\n\nmm10 Reference - 1.1.0 (April 16, 2019)\n\nMouse reference (mm10) dataset required for Cell Ranger ATAC.\n\nwget http://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-mm10-1.1.0.tar.gz\n\n示例数据下载demo数据地址在：https://support.10xgenomics.com/single-cell-atac/datasets\n\n\n下了一个1k Peripheral blood mononuclear cells (PBMCs) from a healthy donor (v1.0)的数据:代码如下：\nwget http://cf.10xgenomics.com/samples/cell-atac/1.1.0/atac_pbmc_1k_v1/atac_pbmc_1k_v1_fastqs.tar\n\ncellranger-atac运行代码：官网说明贴\ncellranger-atac count\n         --id=ID\n         --fastqs=PATH\n         --reference=PATH\n         [--sample=PREFIX]\n        [options]\n         \n         \n 必须参数：\n --id=ID：这里写上一个ID号，程序一旦运行就会生成一个同名的目录用来存放输出结果\n --fastqs=PATH：这里写上你的数据位置\n --reference=PATH：写上你的参考基因组文件路径\n --sample=PREFIX：这里根据你的fastq文件来填写，规则和cellranger的文件命名格式有关，反正就是写“_S1”前面的一系列字符串\n \n 可选参数：\n --localvmem=NUM：指定程序可用的内存GB\n --localcores=NUM：指定程序可用的核心数\n\n关于输出文件：2018-09-17 22:26:56 [runtime] (join_complete)   ID.sample345.SC_ATAC_COUNTER_CS.SC_ATAC_COUNTER.CLOUPE_PREPROCESS\n \nOutputs:\n- Per-barcode fragment counts &amp; metrics:        /opt/sample345/outs/singlecell.csv\n- Position sorted BAM file:                     /opt/sample345/outs/possorted_bam.bam\n- Position sorted BAM index:                    /opt/sample345/outs/possorted_bam.bam.bai\n- Summary of all data metrics:                  /opt/sample345/outs/summary.json\n- HTML file summarizing data &amp; analysis:        /opt/sample345/outs/web_summary.html\n- Bed file of all called peak locations:        /opt/sample345/outs/peaks.bed\n- Raw peak barcode matrix in hdf5 format:       /opt/sample345/outs/raw_peak_bc_matrix.h5\n- Raw peak barcode matrix in mex format:        /opt/sample345/outs/raw_peak_bc_matrix\n- Directory of analysis files:                  /opt/sample345/outs/analysis\n- Filtered peak barcode matrix in hdf5 format:  /opt/sample345/outs/filtered_peak_bc_matrix.h5\n- Filtered peak barcode matrix:                 /opt/sample345/outs/filtered_peak_bc_matrix\n- Barcoded and aligned fragment file:           /opt/sample345/outs/fragments.tsv.gz\n- Fragment file index:                          /opt/sample345/outs/fragments.tsv.gz.tbi\n- Filtered tf barcode matrix in hdf5 format:    /opt/sample345/outs/filtered_tf_bc_matrix.h5\n- Filtered tf barcode matrix in mex format:     /opt/sample345/outs/filtered_tf_bc_matrix\n- Loupe Cell Browser input file:                /opt/sample345/outs/cloupe.cloupe\n- csv summarizing important metrics and values: /opt/sample345/outs/summary.csv\n \nPipestance completed successfully!\n\nThe output of the pipeline will be contained in a folder named with the sample ID you specified (e.g. sample345). The subfolder named outs will contain the main pipeline output files:\n\n\n\nFile Name\nDescription\n\n\n\nsinglecell.csv\nPer-barcode fragment counts &amp; metrics\n\n\npossorted_bam.bam\nPosition sorted BAM file\n\n\npossorted_bam.bam.bai\nPosition sorted BAM index\n\n\nsummary.json\nSummary of all data metrics\n\n\nweb_summary.html\nHTML file summarizing data &amp; analysis\n\n\npeaks.bed\nBed file of all called peak locations\n\n\nraw_peak_bc_matrix.h5\nRaw peak barcode matrix in hdf5 format\n\n\nraw_peak_bc_matrix\nRaw peak barcode matrix in mex format\n\n\nanalysis\nDirectory of analysis files\n\n\nfiltered_peak_bc_matrix.h5\nFiltered peak barcode matrix in hdf5 format\n\n\nfiltered_peak_bc_matrix\nFiltered peak barcode matrix\n\n\nfragments.tsv.gz\nBarcoded and aligned fragment file\n\n\nfragments.tsv.gz.tbi\nFragment file index\n\n\nfiltered_tf_bc_matrix.h5\nFiltered tf barcode matrix in hdf5 format\n\n\nfiltered_tf_bc_matrix\nFiltered tf barcode matrix in mex format\n\n\ncloupe.cloupe\nLoupe Cell Browser input file\n\n\nweb_summary.html\n\n\n\n\ncellranger-atac和最基础的cellranger一样，也是会生成一个html的结果报表（很长，没有截全，后面分开单独展示）:\nSample\n这一列几乎就是总结了下运行时各个文件的情况，包括文件在哪里，基因组在哪里之类的。\n\nSequencing\n\n主要是一些质控的指标QC metrics\n\nCells\n\n主要是关于细胞的一些metadata数据，同时提供了2个图：\n左图中如果峰越陡峭，则说明有细胞的油滴和没有细胞的空油滴分开的效果好。右图中则展示了有细胞油滴和空油滴中捕获到的序列片段数目。\n\nCell Clustering\n\n根据染色体可及性的关系做了一个细胞分群的图，有相似的染色体开放模式的细胞被分到了一群（左图）。\n右图：根据左图的分群情况，展示the number of unique fragments，也就是fragments 的种类数吧（不是绝对数目，而是一个种类数目。例如：一个细胞表达3个a，4个b，那么这里the number of unique fragments就是2。如果另一个细胞表达1个a，1个b，1个c，那么这里the number of unique fragments就是3），有多少种类型，就会有一个具体的数值，根据数值大小进行上色。在这个图里则是：颜色越黄，那么这群细胞中找到的fragments类型越多。\n\nInsert Sizes这里的插入片段也就是ATAC建库时切取的片段大小。根据之前讲过的Tn5酶的原理可以知道，我们的建库时Tn5酶会把开放的染色体区域给切割，形成的片段都是以核小体为基本单位的，而每个核小体由146bp的DNA缠绕组蛋白八聚体1.75圈形成，组蛋白H1在核心颗粒外结合额外20bp DNA。\n\n\n10x官网对于上面两个参数的解释是：Fragments in nucleosome-free regions：Fragments ＜147bp的片段数，因为核小体的长度为146bp，所以这个指标说的应该是那些核小体之间的连接片段。Fragments flanking a single nucleosome：147bp＜Fragments ＜294bp的片段数，这个应该是关于核小体缠绕的序列片段，加上建库时的接头序列，肯定长度要比146bp要长。\nTargeting这里参数有很多\n\n\n\nEnrichment score of transcription start sites:这个值反映了染色体可及性的一个信号，对于每个细胞都会有一个这个值，但是这里只展示了一个最大值。\n\nFraction of fragments overlapping TSS：测序得到的fragments 在 GENCODE 注释文件里能比对上去的比例。（如果值比较低可能是之前没人报道）\n\nFraction of fragments overlapping called peaks：The fraction of fragments (that passed all filters) overlapping the  set of peaks called for the library.\n\nFraction of fragments overlapping any targeted region:测序得到的fragments能够比对到 targeted regions （ transcription start sites, DNase hypersensitive regions, enhancer or promoter regions ）这些位置的比例。\n\nFraction of total read pairs mapped confidently to genome (&gt;30 mapq)有着较高比对质量的 Fraction 比例\n\nFraction of total read pairs that are unmapped and in cell barcodes在一定可信程度下，没能比对到参考基因组上的片段\n\nFraction of total read pairs in mitochondria and in cell barcodes比对到线粒体基因上的 Fraction 比例\n\n\n关于两个图：左图：TSS的具体情况右图：每个点代表一个细胞。横坐标是每个细胞中的Fraction 数目，纵坐标是比对到基因组上的Fraction 百分比。红色的是没有细胞的液滴，蓝色是有细胞的液滴。\nLibrary Complexity先看左边的3个指标：\n\nPercent duplicatesPCR重复的比例\nSequencing saturationunique read pairs &#x2F;  estimated library complexity 算出来的一个比值\nEstimated bulk library complexity当前测序条件下，预估的测序文库的复杂度\n关于右图：横坐标是每个细胞中的reads数目，纵坐标是每个细胞中的Fraction种类数目。\n\npeak_annotation.tsv\n $ head peak_annotation.tsv\n peakgenedistancepeak_type\n chr1_629780_630114OR4F1656559distal\n chr1_633810_634239OR4F1652434distal\n chr1_778340_779198OR4F16-91668distal\n chr1_827065_827882SAMD11-97856distal\n chr1_869626_870213SAMD11-55525distal\n chr1_904458_905535SAMD11-20203distal\n chr1_923844_923904SAMD11-1834distal\n chr1_941868_941942SAMD1116128distal\n chr1_958890_959787NOC2L0promoter\n\n\ngene指的是找到一个离peaks最近的基因。因为我们关注的是找到motif后，当TF结合在motif后对相应基因的表达调控情况，到底是会因此该基因的过表达还是表达减弱。\ndistance指的是peak距离那个基因的TSS（转录起始位点）的距离。负数表示在TSS上游，0表示peaks包含了TSS，正数表示在TSS下游。\npeak_type有3种类型，分别为 “promoter”, “distal” or “intergenic”。根据我对peak_annotation.tsv文件的探索，发现：distal型的peak一般距离TSS非常远，一般成千bp。\nGenerating FASTQs with cellranger-atac mkfastqTable of Contents\n\nOverview\nExample Workflows\nArguments and Options\nExample Data\nRunning mkfastq with a simple CSV samplesheet\nRunning mkfastq with an Illumina® Experiment Manager sample sheet\nChecking FASTQ output\nReading Quality Control Metrics\nTroubleshooting\n\nOverviewThe cellranger-atac workflow starts by demultiplexing the Illumina® sequencer’s base call files (BCLs) for each flowcell directory into FASTQ files. 10x recommends using cellranger-atac mkfastq, a pipeline that wraps bcl2fastq from Illumina® and provides a number of convenient features in addition to the features of bcl2fastq:\n\nTranslates 10x sample index set names into the corresponding list of four sample index oligonucleotides. For example, well A1 can be specified in the samplesheet as SI-NA-A1, and cellranger-atac mkfastq will recognize the four oligos AAACGGCG, CCTACCAT, GGCGTTTC, and TTGTAAGA and merge the resulting FASTQ files.\nSupports a simplified CSV samplesheet format to handle 10x use cases.\nGenerates sequencing and 10x-specific quality control metrics, including barcode quality, accuracy, and diversity.\nSupports most bcl2fastq arguments, such as –use-bases-mask.\n\nExample WorkflowsIn this example, we have two 10x libraries (each processed through a separate Chromium chip channel) that are multiplexed on a single flowcell. Note that after running cellranger-atac mkfastq, we run a separate instance of the pipeline on each library:\n\nIn this example, we have one 10x library sequenced on two flowcells. Note that after running cellranger-atac mkfastq, we run a single instance of the pipeline on all the FASTQ files generated:\n\n\nExample Datacellranger-atac mkfastq recognizes two file formats for describing samples: a simple, three-column CSV format, and the Illumina® Experiment Manager (IEM) sample sheet format used by bcl2fastq. There is an example below for running mkfastq with each format.\nTo follow along, please do the following:\n\nDownload the tiny-bcl tar file.\nUntar the tiny-bcl tar file in a convenient location. This will create a new tiny-bcl subdirectory.\nDownload the simple CSV layout file: cellranger-atac-tiny-bcl-simple-1.0.0.csv.\nDownload the Illumina® Experiment Manager sample sheet: cellranger-atac-tiny-bcl-samplesheet-1.0.0.csv.\n\nRunning mkfastq with a simple CSV samplesheetWe recommend the simple CSV samplesheet for most sequencing experiments. The simple CSV format has only three columns (Lane, Sample, Index), and is thus less prone to formatting errors. You can see an example of this in cellranger-atac-tiny-bcl-simple-1.0.0.csv:\nLane,Sample,Index\n1,test_sample,SI-NA-C1\n\nHere are the options for each column:\n\nLane\tWhich lane(s) of the flowcell to process. Can be either a single lane, a range (e.g., 2-4) or ‘*’ for all lanes in the flowcell.\nSample\tThe name of the sample. This name will be the prefix to all the generated FASTQs, and will correspond to the –sample argument in all downstream 10x pipelines.Sample names must conform to the Illumina® bcl2fastq naming requirements. Only letters, numbers, underscores and hyphens are allowed; no other symbols, including dots (“.”) are allowed.\nIndex\tThe 10x sample index set that was used in library construction, e.g., SI-NA-A12.\n\nTo run mkfastq with a simple layout CSV, use the --csv argument. Here’s how to run mkfastq on the tiny-bcl sequencing run with the simple layout:\n$ cellranger-atac mkfastq --id=tiny-bcl \\\n                     --run=/path/to/tiny_bcl \\\n                     --csv=cellranger-atac-tiny-bcl-simple-1.0.0.csv\n \ncellranger-atac mkfastq\nCopyright (c) 2018 10x Genomics, Inc.  All rights reserved.\n-------------------------------------------------------------------------------\nMartian Runtime - 1.1.0-3.2.1\nRunning preflight checks (please wait)...\n2018-08-09 16:33:54 [runtime] (ready)           ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET\n2018-08-09 16:33:57 [runtime] (split_complete)  ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET\n2018-08-09 16:33:57 [runtime] (run:local)       ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET.fork0.chnk0.main\n2018-08-09 16:34:00 [runtime] (chunks_complete) ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET\n...\n\nRunning mkfastq with an Illumina® Experiment Manager sample sheetThe cellranger-atac mkfastq pipeline can also be run with a samplesheet in the Illumina® Experiment Manager (IEM) format. If you didn’t sequence with an i7 index, you’ll need to use this format. Let’s briefly look at cellranger-atac-tiny-bcl-samplesheet-1.0.0.csv before running the pipeline. You will see a number of fields specific to running on Illumina® platforms, and then a [Data] section.\nThat section is where to put your sample, lane and index information. Here’s an example:\n[Data]\nLane,Sample_ID,index,Sample_Project\n1,Sample1,SI-NA-C1,tiny-bcl\n\nHere, SI-NA-C1 refers to a 10x sample index, a set of four oligo sequences. cellranger-atac mkfastq also supports listing oligo sequences explicitly.\nIn this example, only reads from lane 1 will be used. To demultiplex the given sample index across all lanes, omit the lanes column entirely.\nSample names must conform to the Illumina® bcl2fastq naming requirements. Specifcally only letters, numbers, underscores and hyphens area allowed. No other symbols, including dots (.) are allowed.\nAlso note that while an authentic IEM sample sheet will contain other sections above the [Data] section, these are optional for demultiplexing. For demultiplexing an existing run with cellranger-atac mkfastq, only the [Data] section is required.\nNext, run the cellranger-atac mkfastq pipeline, using the --samplesheet argument:\n$ cellranger-atac mkfastq --id=tiny-bcl \\\n                     --run=/path/to/tiny_bcl \\\n                     --samplesheet=cellranger-atac-tiny-bcl-samplesheet-1.0.0.csv\n \ncellranger-atac mkfastq\nCopyright (c) 2018 10x Genomics, Inc.  All rights reserved.\n-------------------------------------------------------------------------------\nMartian Runtime - 3.2.1\nRunning preflight checks (please wait)...\n2018-08-09 16:25:49 [runtime] (ready)           ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET\n2018-08-09 16:25:52 [runtime] (split_complete)  ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET\n2018-08-09 16:25:52 [runtime] (run:local)       ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET.fork0.chnk0.main\n2018-08-09 16:25:58 [runtime] (chunks_complete) ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET\n...\n\nChecking FASTQ outputOnce the cellranger-atac mkfastq pipeline has successfully completed, the output can be found in a new folder named with the value you provided to cellranger-atac mkfastq in the --id option (if not specified, defaults to the name of the flowcell):\n$ ls -l\ndrwxr-xr-x 4 jdoe  jdoe     4096 Sep 13 12:05 tiny-bcl\n\nThe key output files can be found in outs&#x2F;fastq_path, and is organized in the same manner as a conventional bcl2fastq run:\n$ ls -l tiny-bcl/outs/fastq_path/\ndrwxr-xr-x 3 jdoe jdoe         3 Aug  9 12:26 Reports\ndrwxr-xr-x 2 jdoe jdoe         8 Aug  9 12:26 Stats\ndrwxr-xr-x 3 jdoe jdoe         3 Aug  9 12:26 tiny-bcl\n-rw-r--r-- 1 jdoe jdoe  20615106 Aug  9 12:26 Undetermined_S0_L001_I1_001.fastq.gz\n-rw-r--r-- 1 jdoe jdoe 151499694 Aug  9 12:26 Undetermined_S0_L001_R1_001.fastq.gz\n-rw-r--r-- 1 jdoe jdoe  52692701 Aug  9 12:26 Undetermined_S0_L001_R2_001.fastq.gz\n-rw-r--r-- 1 jdoe jdoe 151499694 Aug  9 12:26 Undetermined_S0_L001_R3_001.fastq.gz\n \n$ tree tiny-bcl/outs/fastq_path/tiny_bcl/\ntiny-bcl/outs/fastq_path/tiny_bcl/\n  Sample1\n    Sample1_S1_L001_I1_001.fastq.gz\n    Sample1_S1_L001_R1_001.fastq.gz\n    Sample1_S1_L001_R2_001.fastq.gz\n    Sample1_S1_L001_R3_001.fastq.gz\n\n","dateCreated":"2019-10-30T00:00:00+08:00","dateModified":"2019-10-30T00:00:00+08:00","datePublished":"2019-10-30T00:00:00+08:00","description":"Single Cell ATAC Install and Usage","headline":"Single Cell ATAC Install and Usage","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/","keywords":"scRNA-Seq, ATAC"}</script>
+    <meta name="description" content="Single Cell ATAC Install and Usage">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Single Cell ATAC Install and Usage">
+<meta property="og:url" content="https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:description" content="Single Cell ATAC Install and Usage">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-10-29T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-10-29T16:00:00.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta property="article:tag" content="scRNA-Seq">
+<meta property="article:tag" content="ATAC">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            Single Cell ATAC Install and Usage
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2019-10-30T00:00:00+08:00">
+	
+		    10月 30, 2019
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/all-categories/Single-Cell-RNA-Sequencing/">Single-Cell-RNA-Sequencing</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>Single Cell ATAC Install and Usage</p>
+<span id="more"></span>
+
+
+<h1 id="table-of-contents">目录</h1><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Single-Cell-ATAC-Install-and-Usage"><span class="toc-text">Single Cell ATAC Install and Usage</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#System-Requirements"><span class="toc-text">System Requirements</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="toc-text">准备工作:</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%BD%AF%E4%BB%B6%E4%B8%8B%E8%BD%BD"><span class="toc-text">1.软件下载:</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%8F%82%E8%80%83%E5%9F%BA%E5%9B%A0%E7%BB%84%E4%B8%8B%E8%BD%BD"><span class="toc-text">2.参考基因组下载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%E6%95%B0%E6%8D%AE%E4%B8%8B%E8%BD%BD"><span class="toc-text">示例数据下载</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cellranger-atac%E8%BF%90%E8%A1%8C%E4%BB%A3%E7%A0%81%EF%BC%9A"><span class="toc-text">cellranger-atac运行代码：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8E%E8%BE%93%E5%87%BA%E6%96%87%E4%BB%B6%EF%BC%9A"><span class="toc-text">关于输出文件：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Generating-FASTQs-with-cellranger-atac-mkfastq"><span class="toc-text">Generating FASTQs with cellranger-atac mkfastq</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Overview"><span class="toc-text">Overview</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Example-Workflows"><span class="toc-text">Example Workflows</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Example-Data"><span class="toc-text">Example Data</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Running-mkfastq-with-a-simple-CSV-samplesheet"><span class="toc-text">Running mkfastq with a simple CSV samplesheet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Running-mkfastq-with-an-Illumina%C2%AE-Experiment-Manager-sample-sheet"><span class="toc-text">Running mkfastq with an Illumina® Experiment Manager sample sheet</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Checking-FASTQ-output"><span class="toc-text">Checking FASTQ output</span></a></li></ol></li></ol></li></ol>
+
+<h1 id="Single-Cell-ATAC-Install-and-Usage"><a href="#Single-Cell-ATAC-Install-and-Usage" class="headerlink" title="Single Cell ATAC Install and Usage"></a>Single Cell ATAC Install and Usage</h1><p>参考文献：<a target="_blank" rel="noopener" href="https://www.ncbi.nlm.nih.gov/pubmed/?term=Massively+parallel+single-cell+chromatin+landscapes+of+human+immune+cell+development+and+intratumoral+T+cell+exhaustion">Massively parallel single-cell chromatin landscapes of human immune cell development and intratumoral T cell exhaustion.Nat Biotechnol. 2019 Aug;37(8):925-936.</a></p>
+<h2 id="System-Requirements"><a href="#System-Requirements" class="headerlink" title="System Requirements"></a>System Requirements</h2><p><strong>Hardware:</strong><br>Cell Ranger ATAC pipelines run on Linux systems that meet these minimum requirements:</p>
+<ul>
+<li>8-core Intel or AMD processor (16 cores recommended)</li>
+<li>64GB RAM (128GB recommended)</li>
+<li>1TB free disk space</li>
+<li>64-bit CentOS&#x2F;RedHat 6.0 or Ubuntu 12.04</li>
+</ul>
+<p><strong>Software:</strong><br>In order to run cellranger-atac mkfastq, the following software needs to be installed:</p>
+<ul>
+<li>Illumina® bcl2fastq: bcl2fastq must be version 2.17 or higher. It supports most sequencers running RTA version 1.18.54 or higher. If you are using NovaSeq™, the pipelines require version 2.20 or higher. If your sequencer is running an older version of RTA, then the pipelines require bcl2fastq 1.8.4.</li>
+</ul>
+<h2 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作:"></a>准备工作:</h2><h3 id="1-软件下载"><a href="#1-软件下载" class="headerlink" title="1.软件下载:"></a>1.软件下载:</h3><p>先去10xgenomics官网下载需要用到的数据和软件。因为上面提到的文章是Greenleaf教授和10xgenomics公司合作一起做的，所以前期的处理都是用cellranger-atac来做的。而且10xgenomics官网还提供了示例数据可以让我们这群菜鸡们学习。</p>
+
+<p>代码直接copy：</p>
+<pre><code>wget -O cellranger-atac-1.1.0.tar.gz &quot;http://cf.10xgenomics.com/releases/cell-atac/cellranger-atac-1.1.0.tar.gz?Expires=1572437506&amp;Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovL2NmLjEweGdlbm9taWNzLmNvbS9yZWxlYXNlcy9jZWxsLWF0YWMvY2VsbHJhbmdlci1hdGFjLTEuMS4wLnRhci5neiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU3MjQzNzUwNn19fV19&amp;Signature=d23dUiAoSbRdnq3o8QfltPWgc7CfTRgA7-LzC4rC-m5kEPTKOUpCfcBT8AhWzQH-vo6pIxEc-GNGME~Yzqt9zDVFlHo-h6thslW~vCGuvgbR8Dl3F7R7iPF3p8I61EW~tyM5okumiOirqswpEXpAnHyWwU2fg2cguFfhwOSQpWuVMvebZOc70HFPskV5H6AG2EWkbpkIadfPAPfhpygV0Opn-D5V2~Oqty6c6f2y8cgASw-KYVA4azy3Gv9bFlTVOfahuFvVl0Gdbb90vWOa7Cb1HiGZwTe5N9yI1buXTLzVIuyksMr7rNG0rYncgQKxT1xedsDj9BWAcCwUjK4hrw__&amp;Key-Pair-Id=APKAI7S6A5RYOXBWRPDA&quot;
+</code></pre>
+<p>解压后得到一个cellranger-atac-1.1.0的路径：</p>
+
+<p>同样的，我们需要把这个路径加入到环境变量中，这样以后用的时候就会比较方便了。（建议将下面代码加入到~&#x2F;.bashrc中，这样就会永久生效了）:</p>
+<pre><code>export PATH=~/scATAC/cellranger-atac-1.1.0:$PATH
+</code></pre>
+<p>大家自行修改自己的家目录路径。<br><strong>Site Check Script:</strong></p>
+<ul>
+<li>Next, run the bundled site check script and send the output to 10x Genomics. We will review the information to ensure that Cell Ranger ATAC will run smoothly once you have generated your own Chromium data. Assuming you have installed Cell Ranger ATAC as described above, run the following commands.</li>
+</ul>
+<pre><code>$ cellranger-atac sitecheck &gt; sitecheck.txt
+$ cellranger-atac upload your@email.edu sitecheck.txt
+</code></pre>
+<p><strong>Verify Installation:</strong></p>
+<ul>
+<li>To ensure that the cellranger-atac pipeline is installed correctly, use cellranger-atac testrun. This test can take up to 60 minutes on a sixteen-core workstation. Assuming you have installed Cell Ranger ATAC into &#x2F;opt, the command to run the test would look like the following:</li>
+</ul>
+<pre><code>cellranger-atac testrun --id=tiny
+ 
+cellranger-atac testrun 1.1.0
+Copyright (c) 2018 10x Genomics, Inc.  All rights reserved.
+-------------------------------------------------------------------------------
+Running Cell Ranger ATAC in test mode...
+
+Martian Runtime - 3.2.1
+
+Running preflight checks (please wait)...
+2018-09-17 20:44:33 [runtime] (ready)           ID.tiny.SC_ATAC_COUNTER_CS.SC_ATAC_COUNTER._BASIC_SC_ATAC_COUNTER._ALIGNER.SETUP_CHUNKS
+2018-09-17 20:44:33 [runtime] (run:local)       ID.tiny.SC_ATAC_COUNTER_CS.SC_ATAC_COUNTER._BASIC_SC_ATAC_COUNTER._ALIGNER.SETUP_CHUNKS.fork0.chnk0.main
+...
+
+Pipestance completed successfully!
+
+Saving diagnostics to tiny/tiny.mri.tgz
+</code></pre>
+<h3 id="2-参考基因组下载"><a href="#2-参考基因组下载" class="headerlink" title="2.参考基因组下载"></a>2.参考基因组下载</h3><p><strong>GRCh38 Reference - 1.1.0 (April 16, 2019)</strong></p>
+<ul>
+<li>Human reference (GRCh38) dataset required for Cell Ranger ATAC.</li>
+</ul>
+<pre><code>wget http://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-GRCh38-1.1.0.tar.gz
+</code></pre>
+<p><strong>hg19 Reference - 1.1.0 (April 16, 2019)</strong></p>
+<ul>
+<li>Human reference (hg19) dataset required for Cell Ranger ATAC.</li>
+</ul>
+<pre><code>wget http://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-b37-1.1.0.tar.gz
+</code></pre>
+<p><strong>mm10 Reference - 1.1.0 (April 16, 2019)</strong></p>
+<ul>
+<li>Mouse reference (mm10) dataset required for Cell Ranger ATAC.</li>
+</ul>
+<pre><code>wget http://cf.10xgenomics.com/supp/cell-atac/refdata-cellranger-atac-mm10-1.1.0.tar.gz
+</code></pre>
+<h3 id="示例数据下载"><a href="#示例数据下载" class="headerlink" title="示例数据下载"></a>示例数据下载</h3><p><strong>demo数据</strong>地址在：<a target="_blank" rel="noopener" href="https://support.10xgenomics.com/single-cell-atac/datasets">https://support.10xgenomics.com/single-cell-atac/datasets</a></p>
+
+
+<p>下了一个1k Peripheral blood mononuclear cells (PBMCs) from a healthy donor (v1.0)的数据:<br>代码如下：</p>
+<pre><code>wget http://cf.10xgenomics.com/samples/cell-atac/1.1.0/atac_pbmc_1k_v1/atac_pbmc_1k_v1_fastqs.tar
+</code></pre>
+<h2 id="cellranger-atac运行代码："><a href="#cellranger-atac运行代码：" class="headerlink" title="cellranger-atac运行代码："></a>cellranger-atac运行代码：</h2><p><a target="_blank" rel="noopener" href="https://support.10xgenomics.com/single-cell-atac/software/pipelines/latest/using/count">官网说明贴</a></p>
+<pre><code>cellranger-atac count
+         --id=ID
+         --fastqs=PATH
+         --reference=PATH
+         [--sample=PREFIX]
+        [options]
+         
+         
+ 必须参数：
+ --id=ID：这里写上一个ID号，程序一旦运行就会生成一个同名的目录用来存放输出结果
+ --fastqs=PATH：这里写上你的数据位置
+ --reference=PATH：写上你的参考基因组文件路径
+ --sample=PREFIX：这里根据你的fastq文件来填写，规则和cellranger的文件命名格式有关，反正就是写“_S1”前面的一系列字符串
+ 
+ 可选参数：
+ --localvmem=NUM：指定程序可用的内存GB
+ --localcores=NUM：指定程序可用的核心数
+</code></pre>
+<h2 id="关于输出文件："><a href="#关于输出文件：" class="headerlink" title="关于输出文件："></a>关于输出文件：</h2><pre><code>2018-09-17 22:26:56 [runtime] (join_complete)   ID.sample345.SC_ATAC_COUNTER_CS.SC_ATAC_COUNTER.CLOUPE_PREPROCESS
+ 
+Outputs:
+- Per-barcode fragment counts &amp; metrics:        /opt/sample345/outs/singlecell.csv
+- Position sorted BAM file:                     /opt/sample345/outs/possorted_bam.bam
+- Position sorted BAM index:                    /opt/sample345/outs/possorted_bam.bam.bai
+- Summary of all data metrics:                  /opt/sample345/outs/summary.json
+- HTML file summarizing data &amp; analysis:        /opt/sample345/outs/web_summary.html
+- Bed file of all called peak locations:        /opt/sample345/outs/peaks.bed
+- Raw peak barcode matrix in hdf5 format:       /opt/sample345/outs/raw_peak_bc_matrix.h5
+- Raw peak barcode matrix in mex format:        /opt/sample345/outs/raw_peak_bc_matrix
+- Directory of analysis files:                  /opt/sample345/outs/analysis
+- Filtered peak barcode matrix in hdf5 format:  /opt/sample345/outs/filtered_peak_bc_matrix.h5
+- Filtered peak barcode matrix:                 /opt/sample345/outs/filtered_peak_bc_matrix
+- Barcoded and aligned fragment file:           /opt/sample345/outs/fragments.tsv.gz
+- Fragment file index:                          /opt/sample345/outs/fragments.tsv.gz.tbi
+- Filtered tf barcode matrix in hdf5 format:    /opt/sample345/outs/filtered_tf_bc_matrix.h5
+- Filtered tf barcode matrix in mex format:     /opt/sample345/outs/filtered_tf_bc_matrix
+- Loupe Cell Browser input file:                /opt/sample345/outs/cloupe.cloupe
+- csv summarizing important metrics and values: /opt/sample345/outs/summary.csv
+ 
+Pipestance completed successfully!
+</code></pre>
+<p>The output of the pipeline will be contained in a folder named with the sample ID you specified (e.g. sample345). The subfolder named outs will contain the main pipeline output files:</p>
+<table>
+<thead>
+<tr>
+<th>File Name</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>singlecell.csv</td>
+<td align="left">Per-barcode fragment counts &amp; metrics</td>
+</tr>
+<tr>
+<td>possorted_bam.bam</td>
+<td align="left">Position sorted BAM file</td>
+</tr>
+<tr>
+<td>possorted_bam.bam.bai</td>
+<td align="left">Position sorted BAM index</td>
+</tr>
+<tr>
+<td>summary.json</td>
+<td align="left">Summary of all data metrics</td>
+</tr>
+<tr>
+<td>web_summary.html</td>
+<td align="left">HTML file summarizing data &amp; analysis</td>
+</tr>
+<tr>
+<td>peaks.bed</td>
+<td align="left">Bed file of all called peak locations</td>
+</tr>
+<tr>
+<td>raw_peak_bc_matrix.h5</td>
+<td align="left">Raw peak barcode matrix in hdf5 format</td>
+</tr>
+<tr>
+<td>raw_peak_bc_matrix</td>
+<td align="left">Raw peak barcode matrix in mex format</td>
+</tr>
+<tr>
+<td>analysis</td>
+<td align="left">Directory of analysis files</td>
+</tr>
+<tr>
+<td>filtered_peak_bc_matrix.h5</td>
+<td align="left">Filtered peak barcode matrix in hdf5 format</td>
+</tr>
+<tr>
+<td>filtered_peak_bc_matrix</td>
+<td align="left">Filtered peak barcode matrix</td>
+</tr>
+<tr>
+<td>fragments.tsv.gz</td>
+<td align="left">Barcoded and aligned fragment file</td>
+</tr>
+<tr>
+<td>fragments.tsv.gz.tbi</td>
+<td align="left">Fragment file index</td>
+</tr>
+<tr>
+<td>filtered_tf_bc_matrix.h5</td>
+<td align="left">Filtered tf barcode matrix in hdf5 format</td>
+</tr>
+<tr>
+<td>filtered_tf_bc_matrix</td>
+<td align="left">Filtered tf barcode matrix in mex format</td>
+</tr>
+<tr>
+<td>cloupe.cloupe</td>
+<td align="left">Loupe Cell Browser input file</td>
+</tr>
+<tr>
+<td><strong>web_summary.html</strong></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<ul>
+<li>cellranger-atac和最基础的cellranger一样，也是会生成一个html的结果报表（很长，没有截全，后面分开单独展示）:
+<strong>Sample</strong></li>
+<li>这一列几乎就是总结了下运行时各个文件的情况，包括文件在哪里，基因组在哪里之类的。</li>
+</ul>
+<p><strong>Sequencing</strong></p>
+<ul>
+<li>主要是一些质控的指标QC metrics</li>
+</ul>
+<p><strong>Cells</strong></p>
+<ul>
+<li>主要是关于细胞的一些metadata数据，同时提供了2个图：
+左图中如果峰越陡峭，则说明有细胞的油滴和没有细胞的空油滴分开的效果好。<br>右图中则展示了有细胞油滴和空油滴中捕获到的序列片段数目。</li>
+</ul>
+<p><strong>Cell Clustering</strong></p>
+<ul>
+<li>根据染色体可及性的关系做了一个细胞分群的图，有相似的染色体开放模式的细胞被分到了一群（左图）。
+右图：根据左图的分群情况，展示the number of unique fragments，也就是fragments 的种类数吧（不是绝对数目，而是一个种类数目。例如：一个细胞表达3个a，4个b，那么这里the number of unique fragments就是2。如果另一个细胞表达1个a，1个b，1个c，那么这里the number of unique fragments就是3），有多少种类型，就会有一个具体的数值，根据数值大小进行上色。在这个图里则是：颜色越黄，那么这群细胞中找到的fragments类型越多。</li>
+</ul>
+<p><strong>Insert Sizes</strong><br>这里的插入片段也就是ATAC建库时切取的片段大小。根据之前讲过的Tn5酶的原理可以知道，我们的建库时Tn5酶会把开放的染色体区域给切割，形成的片段都是以核小体为基本单位的，而每个核小体由146bp的DNA缠绕组蛋白八聚体1.75圈形成，组蛋白H1在核心颗粒外结合额外20bp DNA。</p>
+
+
+<p>10x官网对于上面两个参数的解释是：<br><em>Fragments in nucleosome-free regions</em>：Fragments ＜147bp的片段数，因为核小体的长度为146bp，所以这个指标说的应该是那些核小体之间的连接片段。<br><em>Fragments flanking a single nucleosome</em>：147bp＜Fragments ＜294bp的片段数，这个应该是关于核小体缠绕的序列片段，加上建库时的接头序列，肯定长度要比146bp要长。</p>
+<p><strong>Targeting</strong><br>这里参数有很多</p>
+
+
+<ul>
+<li><p><strong>Enrichment score of transcription start sites:</strong><br>这个值反映了染色体可及性的一个信号，对于每个细胞都会有一个这个值，但是这里只展示了一个最大值。</p>
+</li>
+<li><p><strong>Fraction of fragments overlapping TSS：</strong><br>测序得到的fragments 在 GENCODE 注释文件里能比对上去的比例。（如果值比较低可能是之前没人报道）</p>
+</li>
+<li><p><strong>Fraction of fragments overlapping called peaks：</strong><br>The fraction of fragments (that passed all filters) overlapping the  set of peaks called for the library.</p>
+</li>
+<li><p><strong>Fraction of fragments overlapping any targeted region:</strong><br>测序得到的fragments能够比对到 targeted regions （ transcription start sites, DNase hypersensitive regions, enhancer or promoter regions ）这些位置的比例。</p>
+</li>
+<li><p><strong>Fraction of total read pairs mapped confidently to genome (&gt;30 mapq)</strong><br>有着较高比对质量的 Fraction 比例</p>
+</li>
+<li><p><strong>Fraction of total read pairs that are unmapped and in cell barcodes</strong><br>在一定可信程度下，没能比对到参考基因组上的片段</p>
+</li>
+<li><p><strong>Fraction of total read pairs in mitochondria and in cell barcodes</strong><br>比对到线粒体基因上的 Fraction 比例</p>
+</li>
+</ul>
+<p>关于两个图：<br>左图：TSS的具体情况<br>右图：每个点代表一个细胞。横坐标是每个细胞中的Fraction 数目，纵坐标是比对到基因组上的Fraction 百分比。<br>红色的是没有细胞的液滴，蓝色是有细胞的液滴。</p>
+<p><strong>Library Complexity</strong><br>先看左边的3个指标：</p>
+<ul>
+<li><strong>Percent duplicates</strong><br>PCR重复的比例</li>
+<li><strong>Sequencing saturation</strong><br>unique read pairs &#x2F;  estimated library complexity 算出来的一个比值</li>
+<li><strong>Estimated bulk library complexity</strong><br>当前测序条件下，预估的测序文库的复杂度
+关于右图：<br>横坐标是每个细胞中的reads数目，纵坐标是每个细胞中的Fraction种类数目。</li>
+</ul>
+<p><strong>peak_annotation.tsv</strong></p>
+<pre><code> $ head peak_annotation.tsv
+ peakgenedistancepeak_type
+ chr1_629780_630114OR4F1656559distal
+ chr1_633810_634239OR4F1652434distal
+ chr1_778340_779198OR4F16-91668distal
+ chr1_827065_827882SAMD11-97856distal
+ chr1_869626_870213SAMD11-55525distal
+ chr1_904458_905535SAMD11-20203distal
+ chr1_923844_923904SAMD11-1834distal
+ chr1_941868_941942SAMD1116128distal
+ chr1_958890_959787NOC2L0promoter
+</code></pre>
+
+<p><strong>gene</strong>指的是找到一个离peaks最近的基因。因为我们关注的是找到motif后，当TF结合在motif后对相应基因的表达调控情况，到底是会因此该基因的过表达还是表达减弱。</p>
+<p><strong>distance</strong>指的是peak距离那个基因的TSS（转录起始位点）的距离。负数表示在TSS上游，0表示peaks包含了TSS，正数表示在TSS下游。</p>
+<p><strong>peak_type</strong>有3种类型，分别为 “promoter”, “distal” or “intergenic”。根据我对peak_annotation.tsv文件的探索，发现：distal型的peak一般距离TSS非常远，一般成千bp。</p>
+<h2 id="Generating-FASTQs-with-cellranger-atac-mkfastq"><a href="#Generating-FASTQs-with-cellranger-atac-mkfastq" class="headerlink" title="Generating FASTQs with cellranger-atac mkfastq"></a>Generating FASTQs with cellranger-atac mkfastq</h2><p><strong>Table of Contents</strong></p>
+<ul>
+<li>Overview</li>
+<li>Example Workflows</li>
+<li>Arguments and Options</li>
+<li>Example Data</li>
+<li>Running mkfastq with a simple CSV samplesheet</li>
+<li>Running mkfastq with an Illumina® Experiment Manager sample sheet</li>
+<li>Checking FASTQ output</li>
+<li>Reading Quality Control Metrics</li>
+<li>Troubleshooting</li>
+</ul>
+<h3 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a><strong>Overview</strong></h3><p>The cellranger-atac workflow starts by demultiplexing the Illumina® sequencer’s base call files (BCLs) for each flowcell directory into FASTQ files. 10x recommends using cellranger-atac mkfastq, a pipeline that wraps bcl2fastq from Illumina® and provides a number of convenient features in addition to the features of bcl2fastq:</p>
+<ul>
+<li>Translates 10x sample index set names into the corresponding list of four sample index oligonucleotides. For example, well A1 can be specified in the samplesheet as SI-NA-A1, and cellranger-atac mkfastq will recognize the four oligos AAACGGCG, CCTACCAT, GGCGTTTC, and TTGTAAGA and merge the resulting FASTQ files.</li>
+<li>Supports a simplified CSV samplesheet format to handle 10x use cases.</li>
+<li>Generates sequencing and 10x-specific quality control metrics, including barcode quality, accuracy, and diversity.</li>
+<li>Supports most bcl2fastq arguments, such as –use-bases-mask.</li>
+</ul>
+<h3 id="Example-Workflows"><a href="#Example-Workflows" class="headerlink" title="Example Workflows"></a><strong>Example Workflows</strong></h3><p>In this example, we have two 10x libraries (each processed through a separate Chromium chip channel) that are multiplexed on a single flowcell. Note that after running cellranger-atac mkfastq, we run a separate instance of the pipeline on each library:</p>
+
+<p>In this example, we have one 10x library sequenced on two flowcells. Note that after running cellranger-atac mkfastq, we run a single instance of the pipeline on all the FASTQ files generated:</p>
+
+
+<h3 id="Example-Data"><a href="#Example-Data" class="headerlink" title="Example Data"></a><strong>Example Data</strong></h3><p><code>cellranger-atac mkfastq</code> recognizes two file formats for describing samples: a simple, three-column CSV format, and the Illumina® Experiment Manager (IEM) sample sheet format used by bcl2fastq. There is an example below for running <code>mkfastq</code> with each format.</p>
+<p>To follow along, please do the following:</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="http://cf.10xgenomics.com/supp/cell-atac/cellranger-atac-tiny-bcl-1.0.0.tar.gz">Download the tiny-bcl tar file</a>.</li>
+<li>Untar the tiny-bcl tar file in a convenient location. This will create a new tiny-bcl subdirectory.</li>
+<li>Download the simple CSV layout file: <a target="_blank" rel="noopener" href="http://cf.10xgenomics.com/supp/cell-atac/cellranger-atac-tiny-bcl-simple-1.0.0.csv">cellranger-atac-tiny-bcl-simple-1.0.0.csv</a>.</li>
+<li>Download the Illumina® Experiment Manager sample sheet: <a target="_blank" rel="noopener" href="http://cf.10xgenomics.com/supp/cell-atac/cellranger-atac-tiny-bcl-samplesheet-1.0.0.csv">cellranger-atac-tiny-bcl-samplesheet-1.0.0.csv</a>.</li>
+</ol>
+<h3 id="Running-mkfastq-with-a-simple-CSV-samplesheet"><a href="#Running-mkfastq-with-a-simple-CSV-samplesheet" class="headerlink" title="Running mkfastq with a simple CSV samplesheet"></a><strong>Running mkfastq with a simple CSV samplesheet</strong></h3><p><strong>We recommend the simple CSV samplesheet for most sequencing experiments.</strong> The simple CSV format has only three columns (Lane, Sample, Index), and is thus less prone to formatting errors. You can see an example of this in cellranger-atac-tiny-bcl-simple-1.0.0.csv:</p>
+<pre><code>Lane,Sample,Index
+1,test_sample,SI-NA-C1
+</code></pre>
+<p>Here are the options for each column:</p>
+<ul>
+<li><strong>Lane</strong>	Which lane(s) of the flowcell to process. Can be either a single lane, a range (e.g., 2-4) or ‘*’ for all lanes in the flowcell.</li>
+<li><strong>Sample</strong>	The name of the sample. This name will be the prefix to all the generated FASTQs, and will correspond to the –sample argument in all downstream 10x pipelines.<br>Sample names must conform to the Illumina® bcl2fastq naming requirements. Only letters, numbers, underscores and hyphens are allowed; no other symbols, including dots (“.”) are allowed.</li>
+<li><strong>Index</strong>	The 10x sample index set that was used in library construction, e.g., SI-NA-A12.</li>
+</ul>
+<p>To run <code>mkfastq</code> with a simple layout CSV, use the <code>--csv</code> argument. Here’s how to run <code>mkfastq</code> on the <code>tiny-bcl</code> sequencing run with the simple layout:</p>
+<pre><code>$ cellranger-atac mkfastq --id=tiny-bcl \
+                     --run=/path/to/tiny_bcl \
+                     --csv=cellranger-atac-tiny-bcl-simple-1.0.0.csv
+ 
+cellranger-atac mkfastq
+Copyright (c) 2018 10x Genomics, Inc.  All rights reserved.
+-------------------------------------------------------------------------------
+Martian Runtime - 1.1.0-3.2.1
+Running preflight checks (please wait)...
+2018-08-09 16:33:54 [runtime] (ready)           ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET
+2018-08-09 16:33:57 [runtime] (split_complete)  ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET
+2018-08-09 16:33:57 [runtime] (run:local)       ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET.fork0.chnk0.main
+2018-08-09 16:34:00 [runtime] (chunks_complete) ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET
+...
+</code></pre>
+<h3 id="Running-mkfastq-with-an-Illumina®-Experiment-Manager-sample-sheet"><a href="#Running-mkfastq-with-an-Illumina®-Experiment-Manager-sample-sheet" class="headerlink" title="Running mkfastq with an Illumina® Experiment Manager sample sheet"></a><strong>Running mkfastq with an Illumina® Experiment Manager sample sheet</strong></h3><p>The <code>cellranger-atac mkfastq</code> pipeline can also be run with a samplesheet in the Illumina® Experiment Manager (IEM) format. If you didn’t sequence with an i7 index, you’ll need to use this format. Let’s briefly look at <code>cellranger-atac-tiny-bcl-samplesheet-1.0.0.csv</code> before running the pipeline. You will see a number of fields specific to running on Illumina® platforms, and then a [Data] section.</p>
+<p>That section is where to put your sample, lane and index information. Here’s an example:</p>
+<pre><code>[Data]
+Lane,Sample_ID,index,Sample_Project
+1,Sample1,SI-NA-C1,tiny-bcl
+</code></pre>
+<p>Here, <code>SI-NA-C1</code> refers to a 10x sample index, a set of four oligo sequences. cellranger-atac mkfastq also supports listing oligo sequences explicitly.</p>
+<p>In this example, only reads from lane 1 will be used. To demultiplex the given sample index across all lanes, omit the lanes column entirely.</p>
+<p>Sample names must conform to the Illumina® <code>bcl2fastq</code> naming requirements. Specifcally only letters, numbers, underscores and hyphens area allowed. No other symbols, including dots (.) are allowed.</p>
+<p>Also note that while an authentic IEM sample sheet will contain other sections above the [Data] section, these are optional for demultiplexing. For demultiplexing an existing run with <code>cellranger-atac mkfastq</code>, only the [Data] section is required.</p>
+<p>Next, run the <code>cellranger-atac mkfastq</code> pipeline, using the <code>--samplesheet</code> argument:</p>
+<pre><code>$ cellranger-atac mkfastq --id=tiny-bcl \
+                     --run=/path/to/tiny_bcl \
+                     --samplesheet=cellranger-atac-tiny-bcl-samplesheet-1.0.0.csv
+ 
+cellranger-atac mkfastq
+Copyright (c) 2018 10x Genomics, Inc.  All rights reserved.
+-------------------------------------------------------------------------------
+Martian Runtime - 3.2.1
+Running preflight checks (please wait)...
+2018-08-09 16:25:49 [runtime] (ready)           ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET
+2018-08-09 16:25:52 [runtime] (split_complete)  ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET
+2018-08-09 16:25:52 [runtime] (run:local)       ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET.fork0.chnk0.main
+2018-08-09 16:25:58 [runtime] (chunks_complete) ID.tiny-bcl.MAKE_FASTQS_CS.MAKE_FASTQS.PREPARE_SAMPLESHEET
+...
+</code></pre>
+<h3 id="Checking-FASTQ-output"><a href="#Checking-FASTQ-output" class="headerlink" title="Checking FASTQ output"></a>Checking FASTQ output</h3><p>Once the <code>cellranger-atac mkfastq</code> pipeline has successfully completed, the output can be found in a new folder named with the value you provided to <code>cellranger-atac mkfastq</code> in the <code>--id</code> option (if not specified, defaults to the name of the flowcell):</p>
+<pre><code>$ ls -l
+drwxr-xr-x 4 jdoe  jdoe     4096 Sep 13 12:05 tiny-bcl
+</code></pre>
+<p>The key output files can be found in outs&#x2F;fastq_path, and is organized in the same manner as a conventional bcl2fastq run:</p>
+<pre><code>$ ls -l tiny-bcl/outs/fastq_path/
+drwxr-xr-x 3 jdoe jdoe         3 Aug  9 12:26 Reports
+drwxr-xr-x 2 jdoe jdoe         8 Aug  9 12:26 Stats
+drwxr-xr-x 3 jdoe jdoe         3 Aug  9 12:26 tiny-bcl
+-rw-r--r-- 1 jdoe jdoe  20615106 Aug  9 12:26 Undetermined_S0_L001_I1_001.fastq.gz
+-rw-r--r-- 1 jdoe jdoe 151499694 Aug  9 12:26 Undetermined_S0_L001_R1_001.fastq.gz
+-rw-r--r-- 1 jdoe jdoe  52692701 Aug  9 12:26 Undetermined_S0_L001_R2_001.fastq.gz
+-rw-r--r-- 1 jdoe jdoe 151499694 Aug  9 12:26 Undetermined_S0_L001_R3_001.fastq.gz
+ 
+$ tree tiny-bcl/outs/fastq_path/tiny_bcl/
+tiny-bcl/outs/fastq_path/tiny_bcl/
+  Sample1
+    Sample1_S1_L001_I1_001.fastq.gz
+    Sample1_S1_L001_R1_001.fastq.gz
+    Sample1_S1_L001_R2_001.fastq.gz
+    Sample1_S1_L001_R3_001.fastq.gz
+</code></pre>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/ATAC/" rel="tag">ATAC</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/scRNA-Seq/" rel="tag">scRNA-Seq</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                    data-tooltip="SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征"
+                    aria-label="上一篇: SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-10-22-PCA_GCAT/"
+                    data-tooltip="PCA analysis using GCAT"
+                    aria-label="下一篇: PCA analysis using GCAT"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                    data-tooltip="SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征"
+                    aria-label="上一篇: SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-10-22-PCA_GCAT/"
+                    data-tooltip="PCA analysis using GCAT"
+                    aria-label="下一篇: PCA analysis using GCAT"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2019-10-30-Single_Cell_ATAC_Usage/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

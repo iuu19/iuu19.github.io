@@ -1,0 +1,650 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>linux基础|Anaconda安装及Conda使用教程 - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"\n\n\n\nlinux基础|Anaconda安装及Conda使用教程\n\n\n1.Anaconda下载Anaconda Linux版本下载地址清华镜像源\n2.Anaconda安装安装代码bash Anaconda3-5.3.1-Linux-x86_64.sh\n\n安装过程注意事项：\n首词bash也需要输入，无论是否用的Bash shell。\n\n安装过程中，看到提示“In order to continue the installation process, please review the license agreement.”（“请浏览许可证协议以便继续安装。”），点击“Enter”查看“许可证协议”。\n\n在“许可证协议”界面将屏幕滚动至底，输入“yes”表示同意许可证协议内容。然后进行下一步。\n\n安装过程中，提示“Press Enter to accept the default install location, CTRL-C to cancel the installation or specify an alternate installation directory.”（“按回车键确认安装路径，按’CTRL-C’取消安装或者指定安装目录。”）如果接受默认安装路径，则会显示“PREFIX&#x3D;&#x2F;home&#x2F;&#x2F;anaconda&lt;2 or 3&gt;”并且继续安装。安装过程大约需要几分钟的时间。\n\n安装器若提示“Do you wish the installer to prepend the Anaconda&lt;2 or 3&gt; install location to PATH in your &#x2F;home&#x2F;&#x2F;.bashrc ?”（“你希望安装器添加Anaconda安装路径在&#x2F;home&#x2F;&#x2F;.bashrc文件中吗？”），建议输入“yes”。注意：路径&#x2F;home&#x2F;&#x2F;.bash_rc中“”即进入到家目录后你的目录名。如果输入“no”，则需要手动添加路径，否则conda将无法正常运行。\n\n当看到“Thank you for installing Anaconda&lt;2 or 3&gt;!”则说明已经成功完成安装。\n\n\n验证安装结果。可选用以下任意一种方法：\n\n在终端中输入命令condal list，如果Anaconda被成功安装，则会显示已经安装的包名和版本号。\n\n在终端中输入python。这条命令将会启动Python交互界面，如果Anaconda被成功安装并且可以运行，则将会在Python版本号的右边显示“Anaconda custom (64-bit)”。退出Python交互界面则输入exit()或quit()即可。\n\n在终端中输入anaconda-navigator。如果Anaconda被成功安装，则Anaconda Navigator将会被启动。\n\n\n3.conda管理3.1 验证conda已被安装conda list\n\n终端上将会以conda 版本号的形式显示当前安装conda的版本号。如：conda 4.5.11\n3.2 卸载condarm -rf ~/anaconda2\n\n3.3 管理环境创建新环境conda create --name wgs\nor \n#安装python3环境\nconda create --name wgs python=3.7\nor \n#安装python2环境\nconda create --name wgs python=2.7\n\n切换环境source activate wgs\n\n退出环境至rootsource deactivate\n\n显示已创建环境conda info --envs\n\n删除环境conda remove --name wgs --all\n\n导入导出环境如果想要导出当前环境的包信息可以用\n#将包信息存入yaml文件中:\nconda env export &gt; environment.yaml\n\n当需要重新创建一个相同的虚拟环境时可以用\nconda env create -f environment.yaml\n\n3.4 管理conda包查找可供安装的包版本conda search vcftools\n\n获取当前环境中已安装的包信息conda list\n\n安装包conda install vcftools\n\nconda config –add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/conda config –add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/bioconda/conda config –add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/freeconda config –add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/mainconda config –add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2conda config –add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/proconda config –add channels http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/rconda config –set show_channel_urls yes\n","dateCreated":"2020-06-10T08:27:34+08:00","dateModified":"2020-06-10T08:27:34+08:00","datePublished":"2020-06-10T08:27:34+08:00","description":"","headline":"linux基础|Anaconda安装及Conda使用教程","image":["1.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/","thumbnailUrl":"1.png"}</script>
+    <meta property="og:type" content="blog">
+<meta property="og:title" content="linux基础|Anaconda安装及Conda使用教程">
+<meta property="og:url" content="https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-06-10T00:27:34.000Z">
+<meta property="article:modified_time" content="2020-06-10T00:27:34.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/1.png"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/1.png"/>
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            linux基础|Anaconda安装及Conda使用教程
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-06-10T08:27:34+08:00">
+	
+		    6月 10, 2020
+    	
+    </time>
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <font face="times new roman" size=4>
+
+<span id="more"></span>
+
+<p>linux基础|Anaconda安装及Conda使用教程</p>
+<h1 id="table-of-contents">目录</h1><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#1-Anaconda%E4%B8%8B%E8%BD%BD"><span class="toc-text">1.Anaconda下载</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#2-Anaconda%E5%AE%89%E8%A3%85"><span class="toc-text">2.Anaconda安装</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E4%BB%A3%E7%A0%81"><span class="toc-text">安装代码</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E8%BF%87%E7%A8%8B%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9%EF%BC%9A"><span class="toc-text">安装过程注意事项：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AA%8C%E8%AF%81%E5%AE%89%E8%A3%85%E7%BB%93%E6%9E%9C%E3%80%82"><span class="toc-text">验证安装结果。</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#3-conda%E7%AE%A1%E7%90%86"><span class="toc-text">3.conda管理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E9%AA%8C%E8%AF%81conda%E5%B7%B2%E8%A2%AB%E5%AE%89%E8%A3%85"><span class="toc-text">3.1 验证conda已被安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-%E5%8D%B8%E8%BD%BDconda"><span class="toc-text">3.2 卸载conda</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E7%AE%A1%E7%90%86%E7%8E%AF%E5%A2%83"><span class="toc-text">3.3 管理环境</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BA%E6%96%B0%E7%8E%AF%E5%A2%83"><span class="toc-text">创建新环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%87%E6%8D%A2%E7%8E%AF%E5%A2%83"><span class="toc-text">切换环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%80%E5%87%BA%E7%8E%AF%E5%A2%83%E8%87%B3root"><span class="toc-text">退出环境至root</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%98%BE%E7%A4%BA%E5%B7%B2%E5%88%9B%E5%BB%BA%E7%8E%AF%E5%A2%83"><span class="toc-text">显示已创建环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E7%8E%AF%E5%A2%83"><span class="toc-text">删除环境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%BC%E5%85%A5%E5%AF%BC%E5%87%BA%E7%8E%AF%E5%A2%83"><span class="toc-text">导入导出环境</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-%E7%AE%A1%E7%90%86conda%E5%8C%85"><span class="toc-text">3.4 管理conda包</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E5%8F%AF%E4%BE%9B%E5%AE%89%E8%A3%85%E7%9A%84%E5%8C%85%E7%89%88%E6%9C%AC"><span class="toc-text">查找可供安装的包版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E5%BD%93%E5%89%8D%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%B7%B2%E5%AE%89%E8%A3%85%E7%9A%84%E5%8C%85%E4%BF%A1%E6%81%AF"><span class="toc-text">获取当前环境中已安装的包信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E5%8C%85"><span class="toc-text">安装包</span></a></li></ol></li></ol></li></ol>
+<hr>
+<h1 id="1-Anaconda下载"><a href="#1-Anaconda下载" class="headerlink" title="1.Anaconda下载"></a>1.Anaconda下载</h1><p>Anaconda Linux版本下载地址<a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-5.3.1-Linux-x86_64.sh">清华镜像源</a></p>
+<h1 id="2-Anaconda安装"><a href="#2-Anaconda安装" class="headerlink" title="2.Anaconda安装"></a>2.Anaconda安装</h1><h2 id="安装代码"><a href="#安装代码" class="headerlink" title="安装代码"></a>安装代码</h2><pre><code>bash Anaconda3-5.3.1-Linux-x86_64.sh
+</code></pre>
+<h2 id="安装过程注意事项："><a href="#安装过程注意事项：" class="headerlink" title="安装过程注意事项："></a>安装过程注意事项：</h2><ul>
+<li><p>首词bash也需要输入，无论是否用的Bash shell。</p>
+</li>
+<li><p>安装过程中，看到提示“In order to continue the installation process, please review the license agreement.”（“请浏览许可证协议以便继续安装。”），点击“Enter”查看“许可证协议”。</p>
+</li>
+<li><p>在“许可证协议”界面将屏幕滚动至底，输入“yes”表示同意许可证协议内容。然后进行下一步。</p>
+</li>
+<li><p>安装过程中，提示“Press Enter to accept the default install location, CTRL-C to cancel the installation or specify an alternate installation directory.”（“按回车键确认安装路径，按’CTRL-C’取消安装或者指定安装目录。”）如果接受默认安装路径，则会显示“PREFIX&#x3D;&#x2F;home&#x2F;<user>&#x2F;anaconda&lt;2 or 3&gt;”并且继续安装。安装过程大约需要几分钟的时间。</p>
+</li>
+<li><p>安装器若提示“Do you wish the installer to prepend the Anaconda&lt;2 or 3&gt; install location to PATH in your &#x2F;home&#x2F;<user>&#x2F;.bashrc ?”（“你希望安装器添加Anaconda安装路径在&#x2F;home&#x2F;<user>&#x2F;.bashrc文件中吗？”），建议输入“yes”。<strong>注意：</strong>路径&#x2F;home&#x2F;<user>&#x2F;.bash_rc中“<user>”即进入到家目录后你的目录名。如果输入“no”，则需要手动添加路径，否则conda将无法正常运行。</p>
+</li>
+<li><p>当看到“Thank you for installing Anaconda&lt;2 or 3&gt;!”则说明已经成功完成安装。</p>
+</li>
+</ul>
+<h2 id="验证安装结果。"><a href="#验证安装结果。" class="headerlink" title="验证安装结果。"></a>验证安装结果。</h2><p><strong>可选用以下任意一种方法：</strong></p>
+<ul>
+<li><p>在终端中输入命令condal list，如果Anaconda被成功安装，则会显示已经安装的包名和版本号。</p>
+</li>
+<li><p>在终端中输入python。这条命令将会启动Python交互界面，如果Anaconda被成功安装并且可以运行，则将会在Python版本号的右边显示“Anaconda custom (64-bit)”。退出Python交互界面则输入exit()或quit()即可。</p>
+</li>
+<li><p>在终端中输入anaconda-navigator。如果Anaconda被成功安装，则Anaconda Navigator将会被启动。</p>
+</li>
+</ul>
+<h1 id="3-conda管理"><a href="#3-conda管理" class="headerlink" title="3.conda管理"></a>3.conda管理</h1><h2 id="3-1-验证conda已被安装"><a href="#3-1-验证conda已被安装" class="headerlink" title="3.1 验证conda已被安装"></a>3.1 验证conda已被安装</h2><pre><code>conda list
+</code></pre>
+<p>终端上将会以conda 版本号的形式显示当前安装conda的版本号。如：conda 4.5.11</p>
+<h2 id="3-2-卸载conda"><a href="#3-2-卸载conda" class="headerlink" title="3.2 卸载conda"></a>3.2 卸载conda</h2><pre><code>rm -rf ~/anaconda2
+</code></pre>
+<h2 id="3-3-管理环境"><a href="#3-3-管理环境" class="headerlink" title="3.3 管理环境"></a>3.3 管理环境</h2><h3 id="创建新环境"><a href="#创建新环境" class="headerlink" title="创建新环境"></a>创建新环境</h3><pre><code>conda create --name wgs
+or 
+#安装python3环境
+conda create --name wgs python=3.7
+or 
+#安装python2环境
+conda create --name wgs python=2.7
+</code></pre>
+<h3 id="切换环境"><a href="#切换环境" class="headerlink" title="切换环境"></a>切换环境</h3><pre><code>source activate wgs
+</code></pre>
+<h3 id="退出环境至root"><a href="#退出环境至root" class="headerlink" title="退出环境至root"></a>退出环境至root</h3><pre><code>source deactivate
+</code></pre>
+<h3 id="显示已创建环境"><a href="#显示已创建环境" class="headerlink" title="显示已创建环境"></a>显示已创建环境</h3><pre><code>conda info --envs
+</code></pre>
+<h3 id="删除环境"><a href="#删除环境" class="headerlink" title="删除环境"></a>删除环境</h3><pre><code>conda remove --name wgs --all
+</code></pre>
+<h3 id="导入导出环境"><a href="#导入导出环境" class="headerlink" title="导入导出环境"></a>导入导出环境</h3><p>如果想要导出当前环境的包信息可以用</p>
+<pre><code>#将包信息存入yaml文件中:
+conda env export &gt; environment.yaml
+</code></pre>
+<p>当需要重新创建一个相同的虚拟环境时可以用</p>
+<pre><code>conda env create -f environment.yaml
+</code></pre>
+<h2 id="3-4-管理conda包"><a href="#3-4-管理conda包" class="headerlink" title="3.4 管理conda包"></a>3.4 管理conda包</h2><h3 id="查找可供安装的包版本"><a href="#查找可供安装的包版本" class="headerlink" title="查找可供安装的包版本"></a>查找可供安装的包版本</h3><pre><code>conda search vcftools
+</code></pre>
+<h3 id="获取当前环境中已安装的包信息"><a href="#获取当前环境中已安装的包信息" class="headerlink" title="获取当前环境中已安装的包信息"></a>获取当前环境中已安装的包信息</h3><pre><code>conda list
+</code></pre>
+<h3 id="安装包"><a href="#安装包" class="headerlink" title="安装包"></a>安装包</h3><pre><code>conda install vcftools
+</code></pre>
+<p>conda config –add channels <a target="_blank" rel="noopener" href="https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/">https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/</a><br>conda config –add channels <a target="_blank" rel="noopener" href="http://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/bioconda/">http://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/bioconda/</a><br>conda config –add channels <a target="_blank" rel="noopener" href="http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free">http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free</a><br>conda config –add channels <a target="_blank" rel="noopener" href="http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main">http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main</a><br>conda config –add channels <a target="_blank" rel="noopener" href="http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2">http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2</a><br>conda config –add channels <a target="_blank" rel="noopener" href="http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/pro">http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/pro</a><br>conda config –add channels <a target="_blank" rel="noopener" href="http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r">http://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r</a><br>conda config –set show_channel_urls yes</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-06-11-GWAS-SAIGE-GENE%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                    data-tooltip="GWAS|SAIGE-GENE安装及使用指南"
+                    aria-label="上一篇: GWAS|SAIGE-GENE安装及使用指南"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-06-06-WGCNA%E6%9C%80%E4%BD%B3%E5%AE%9E%E6%88%98/"
+                    data-tooltip="WGCNA最佳实战"
+                    aria-label="下一篇: WGCNA最佳实战"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-06-11-GWAS-SAIGE-GENE%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                    data-tooltip="GWAS|SAIGE-GENE安装及使用指南"
+                    aria-label="上一篇: GWAS|SAIGE-GENE安装及使用指南"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020-06-06-WGCNA%E6%9C%80%E4%BD%B3%E5%AE%9E%E6%88%98/"
+                    data-tooltip="WGCNA最佳实战"
+                    aria-label="下一篇: WGCNA最佳实战"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2020-06-10-linux%E5%9F%BA%E7%A1%80-Anaconda%E5%AE%89%E8%A3%85%E5%8F%8Aconda%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

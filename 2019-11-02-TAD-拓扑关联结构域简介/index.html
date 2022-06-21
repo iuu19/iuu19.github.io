@@ -1,0 +1,644 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>TAD:拓扑关联结构域简介 - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"TAD: 拓扑关联结构域简介\n\n\n\n\n\n利用更低分辨率的Hi-C基因组互作图谱，科学家对染色质空间结构的了解不断深入。本文主要介绍TAD这种结构，TAD全称如下Topologically Assocaited Domain中文译作拓扑关联结构域，是一种首先在哺乳动物细胞中发现的染色质结构单元，对应的文章发表在nature上，文章标题如下：Topological Domains in Mammalian Genomes Identified by Analysis of Chromatin Interactions将Hi-C基因组互作图谱的分辨率提高到100kb以下，发现了互作图谱中出现了一些self-interaction的区域，示意如下:\n\n\n基因组互作图谱本质是一个对称矩阵，对角线两侧的信息是相等的。上图中只取了原始方阵中对角线一侧的信息，所以看上去是一个大的三角形，三角形的底边对应的是原始方阵中的对角线部分。\n在上图中，互作强度由弱到强，单元格的颜色由白色过渡到红色。可以看到，在底边出重复出现了一些小的三角形区域，这些区域内部几乎全部是红色，说明这些区域内部的染色质片段间的互作频率高，这样的区域称之为self-interaction区域，而相邻的三角形区域间的互作频率较低，如下图所示:\n\n\n红色三角形区域对应TAD内部区域的互作信息，而黑色区域对应TAD之间的互作信息。呈现到三角形的互作图谱上，对应的就是底边上有很多红色的小三角形，而三角形对应的互作区域则都为白色，科学家将这种重复出现的内部互作频率高，组间互作频率低的domain定义为topologically assocaited domain, 简称TAD，对应下图中的模型:\n\n\nA和B对应两个TAD, 在TAD之间存在了一个边界，称之为TAD  doundary。为了准确地识别染色质中的TAD,定义了一种directionality index的统计量，简称DI，公式如下:\n\n\n将分辨率降低到40kb,对于每个40kb的bin来说，A代表这个bin与上游2MB区域的互作reads, B代表这个bin与下游2MB区域的互作reads,E代表A和B的均值，采用类似卡方检验统计量的算法。空假设是这个bin与上游和下游的互作频率相同。如果与上下游的互作频率一致，则DI的值趋近于0。如下图所示:\n\n\n可以看到从TAD的开始到终止，DI的值会有一个从正值逐渐减小到0，然后变为负值，在不断减小的情况。在TAD边界处，DI的值突然趋近于0，因为边界处与上下游的互作频率几乎相同，根据DI的这一分布规律，再结合隐马尔可夫模型，最终在小鼠胚胎干细胞中识别到了2200多个TAD区域，长度的平均值为880kb。\n进一步分别对人和小鼠两种不同细胞系中的TAD进行识别和分析，发现TAD在不同细胞或者组织中相对稳定，在不同物种间也具有一定的保守性，结果如下图所示:\n\n\n为了进一步探究TAD在染色质上的分布特征，科学家分析了TAD边界内各种mark的分布情况。首先是CTCF，结果如下所示:\n\n\n发现在TAD边界处存在CTCF的富集，但并不是说所有的CTCF都集中出现在TAD边界处，所以进一步由探究了其他mark，包括各种组蛋白修饰等的分布，结果如下:\n\n\n发现H3K4me3，H3K36me3, TSS， SINE重复元件等都有富集。进一步分析了基因的分布情况，结果如下\n\n\n发现管家基因在TAD边界处存在富集。\n通过40kb分辨率的Hi-C互作图谱，鉴定到了TAD这种在哺乳动物中存在的相对稳定，且具有一定进化保守性的染色质结构单元。\n","dateCreated":"2019-11-02T22:49:09+08:00","dateModified":"2019-11-02T22:49:09+08:00","datePublished":"2019-11-02T22:49:09+08:00","description":"TAD: 拓扑关联结构域简介","headline":"TAD:拓扑关联结构域简介","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/","keywords":"Hi-C, TAD, 拓扑结构域"}</script>
+    <meta name="description" content="TAD: 拓扑关联结构域简介">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="TAD:拓扑关联结构域简介">
+<meta property="og:url" content="https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:description" content="TAD: 拓扑关联结构域简介">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/1.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/2.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/3.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/4.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/5.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/6.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/7.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/8.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/9.png">
+<meta property="article:published_time" content="2019-11-02T14:49:09.000Z">
+<meta property="article:modified_time" content="2019-11-02T14:49:09.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta property="article:tag" content="Hi-C">
+<meta property="article:tag" content="TAD">
+<meta property="article:tag" content="拓扑结构域">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iuu19.github.io/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/1.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            TAD:拓扑关联结构域简介
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2019-11-02T22:49:09+08:00">
+	
+		    11月 02, 2019
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/all-categories/Hi-C%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">Hi-C数据分析</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>TAD: 拓扑关联结构域简介</p>
+<span id="more"></span>
+
+
+<h1 id="table-of-contents">目录</h1>
+<hr>
+<p>利用更低分辨率的Hi-C基因组互作图谱，科学家对染色质空间结构的了解不断深入。本文主要介绍<code>TAD</code>这种结构，<code>TAD</code>全称如下<strong>Topologically Assocaited Domain</strong><br>中文译作<strong>拓扑关联结构域</strong>，是一种首先在哺乳动物细胞中发现的染色质结构单元，对应的文章发表在<code>nature</code>上，文章标题如下：<br><strong><a target="_blank" rel="noopener" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3356448/">Topological Domains in Mammalian Genomes Identified by Analysis of Chromatin Interactions</a></strong><br>将Hi-C基因组互作图谱的分辨率提高到100kb以下，发现了互作图谱中出现了一些self-interaction的区域，示意如下:</p>
+<img src="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/1.png" class="">
+
+<p>基因组互作图谱本质是一个对称矩阵，对角线两侧的信息是相等的。上图中只取了原始方阵中对角线一侧的信息，所以看上去是一个大的三角形，三角形的底边对应的是原始方阵中的对角线部分。</p>
+<p>在上图中，互作强度由弱到强，单元格的颜色由白色过渡到红色。可以看到，在底边出重复出现了一些小的三角形区域，这些区域内部几乎全部是红色，说明这些区域内部的染色质片段间的互作频率高，这样的区域称之为self-interaction区域，而相邻的三角形区域间的互作频率较低，如下图所示:</p>
+<img src="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/2.png" class="">
+
+<p>红色三角形区域对应TAD内部区域的互作信息，而黑色区域对应TAD之间的互作信息。呈现到三角形的互作图谱上，对应的就是底边上有很多红色的小三角形，而三角形对应的互作区域则都为白色，科学家将这种重复出现的内部互作频率高，组间互作频率低的domain定义为<strong>topologically assocaited domain</strong>, 简称TAD，对应下图中的模型:</p>
+<img src="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/3.png" class="">
+
+<p>A和B对应两个TAD, 在TAD之间存在了一个边界，称之为TAD  doundary。为了准确地识别染色质中的TAD,定义了一种directionality index的统计量，简称DI，公式如下:</p>
+<img src="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/4.png" class="">
+
+<p>将分辨率降低到40kb,对于每个40kb的bin来说，A代表这个bin与上游2MB区域的互作reads, B代表这个bin与下游2MB区域的互作reads,E代表A和B的均值，采用类似卡方检验统计量的算法。空假设是这个bin与上游和下游的互作频率相同。如果与上下游的互作频率一致，则DI的值趋近于0。如下图所示:</p>
+<img src="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/5.png" class="">
+
+<p>可以看到从TAD的开始到终止，DI的值会有一个从正值逐渐减小到0，然后变为负值，在不断减小的情况。在TAD边界处，DI的值突然趋近于0，因为边界处与上下游的互作频率几乎相同，根据DI的这一分布规律，再结合隐马尔可夫模型，最终在小鼠胚胎干细胞中识别到了2200多个TAD区域，长度的平均值为880kb。</p>
+<p>进一步分别对人和小鼠两种不同细胞系中的TAD进行识别和分析，发现TAD在不同细胞或者组织中相对稳定，在不同物种间也具有一定的保守性，结果如下图所示:</p>
+<img src="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/6.png" class="">
+
+<p>为了进一步探究TAD在染色质上的分布特征，科学家分析了TAD边界内各种mark的分布情况。首先是CTCF，结果如下所示:</p>
+<img src="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/7.png" class="">
+
+<p>发现在TAD边界处存在CTCF的富集，但并不是说所有的CTCF都集中出现在TAD边界处，所以进一步由探究了其他mark，包括各种组蛋白修饰等的分布，结果如下:</p>
+<img src="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/8.png" class="">
+
+<p>发现H3K4me3，H3K36me3, TSS， SINE重复元件等都有富集。进一步分析了基因的分布情况，结果如下</p>
+<img src="/2019-11-02-tad-tuo-bu-guan-lian-jie-gou-yu-jian-jie/9.png" class="">
+
+<p>发现管家基因在TAD边界处存在富集。</p>
+<p>通过40kb分辨率的Hi-C互作图谱，鉴定到了TAD这种在哺乳动物中存在的相对稳定，且具有一定进化保守性的染色质结构单元。</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/Hi-C/" rel="tag">Hi-C</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/TAD/" rel="tag">TAD</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/%E6%8B%93%E6%89%91%E7%BB%93%E6%9E%84%E5%9F%9F/" rel="tag">拓扑结构域</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-chromatin-loops-%E6%9F%93%E8%89%B2%E8%B4%A8%E7%8E%AF%E7%AE%80%E4%BB%8B/"
+                    data-tooltip="chromatin loops:染色质环简介"
+                    aria-label="上一篇: chromatin loops:染色质环简介"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/"
+                    data-tooltip="A/B compartment:染色质区室简介"
+                    aria-label="下一篇: A/B compartment:染色质区室简介"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-chromatin-loops-%E6%9F%93%E8%89%B2%E8%B4%A8%E7%8E%AF%E7%AE%80%E4%BB%8B/"
+                    data-tooltip="chromatin loops:染色质环简介"
+                    aria-label="上一篇: chromatin loops:染色质环简介"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/"
+                    data-tooltip="A/B compartment:染色质区室简介"
+                    aria-label="下一篇: A/B compartment:染色质区室简介"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-TAD-%E6%8B%93%E6%89%91%E5%85%B3%E8%81%94%E7%BB%93%E6%9E%84%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

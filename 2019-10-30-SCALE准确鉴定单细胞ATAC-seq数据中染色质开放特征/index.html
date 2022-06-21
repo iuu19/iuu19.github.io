@@ -1,0 +1,756 @@
+
+<!DOCTYPE html>
+<html lang="zh-cn">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="iuu&#39;s blog">
+    <title>SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征 - iuu&#39;s blog</title>
+    <meta name="author" content="Dr.iuu">
+    
+    
+        <link rel="icon" href="https://iuu19.github.io/assets/images/coveriuu.jpg">
+    
+    
+        
+            <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
+        
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征\n\n\n\n\n\nSCALE全称是Single-Cell ATAC-seq analysis vie Latent feature Extraction, 从名字中就能知道这个软件是通过隐特征提取的方式分析单细胞ATAC-seq数据。\n在文章中，作者从开发者的角度列出了目前的scATAC-seq分析软件，chromVAR, scABC, cisTopic, scVI，发现每个软件都有一定的不足之处，而从我们软件使用者的角度，其实可以考虑都试试这些工具。\nSCALE结合了深度生成模型(Depp Generative Models)变分自动编码器框架(Variational Autoencoder, VAE)与概率高斯混合模型(Gaussian Mixture Model, GMM)去学习隐特征，用于准确地鉴定scATAC-seq数据中的特征。\n文章通过一张图来解释了软件的工作机制：\n\n\nSCALE将sc-ATAC-seq的输入数据x(Cells-by-Peaks矩阵)建模成一个联合分布，\np(x,z,c)，c是GMM组件中对应的预定义的K个聚类，z是一个隐变量，是细胞在所有peak中实际可能的值，用于后续的聚类和可视化。z通过z&#x3D;μz+σZ×ϵ计算而得，公式里面的 μzσz是编码器网络从x中学习而得，ϵ则是从 $\\mathbb(0,\\mathbf)$ 抽样而成。\n从公式中我们还可以发现z其实和GMM的c有关，所以p(x,z,c)也可以写成P(x|z)p(z|c)p(c)，而p(c)是K个预定义聚类分布的离散概率分布，p(z|c)服从混合高斯分布，而p(x|z)则是服从多变量伯努利分布(multivartiable Bernoulli distribution), 通过解码者网络建模而成。当然从一个软件使用者的角度而言，我们不会去关心代码，也不会关心原理，我们更关心的是这个工具能做什么。SCALE能做以下的分析SCALE可以对隐特征聚类识别细胞类群SCALE可以降噪，恢复缺失的peakSCALE能够区分批次效应和生物学细胞类群之间的差异\n软件安装推荐使用conda的方式进行软件安装（我测试过了，运行没有问题）\n第一步：创建一个环境，名字就是 SCALE，并且启动该环境\nconda create -n SCALE python=3.6 pytorch\nconda activate SCALE\n\n第二步：从GitHub上克隆该项目\ngit clone git://github.com/jsxlei/SCALE.git\n\n第三步：安装SCALE\ncd SCALE\npython setup.py install\n\n之后分析的时候，只需要通过conda activate SCALE就能启动分析环境。\n考虑后续要交互的读取数据和可视化，那么建议再安装一个Jupyter\nconda install jupyter\n\n软件使用SCALE支持两类输入文件：\n\ncount矩阵，行为peak，列为barcode\n10X输出文件: count.mtx.gz, peak.tsv, barcode.tsv\n\n我们以官方提供的Forebrain数据集为例进行介绍，因为这个数据相对于另外一个数据集Mouse Atlas小多了。\n我们在服务器上新建一个文件夹，用于存放从https://cloud.tsinghua.edu.cn/d/bda0332212154163a647/下载的数据\nmkdir -p Forebrain\n\n保证Forebrain有下载好的数据\n$ ls Forebrain\ndata.txt\n\n之后运行程序\nSCALE.py -d Forebrain/data.txt -k 8 --impute\n\n软件运行步骤为：\n\n加载数据: Loading data\n模型训练: Training Model\n输出结果: Saving imputed data\n\n其中模型训练这一步时间比较久，可以尝试用GPU加速（我是普通CPU服务器没有办法）。最终会在当前文件夹看到一个output文件夹，里面有如下内容:\n\nimputed_data.txt: 每个细胞在每个特征的推断值，建议用–binary保存二进制格式\n\nmodel.pt: 用于重复结果的模型文件，–pretrain参数能够读取该模型\n\nfeature.txt: 每个细胞的隐特征，用于聚类和可视化\n\ncluster_assignments.txt: 两列，barcode和所属类群\n\ntsne.txt, tsne.pdf: tSNE的坐标和PDF文件，坐标文件可以导入到R语言进行可视化\n\n\n上面是命令行部分，下面则是Python环境进行交互式操作，输入jupyter notebook，之后在网页上打开\n首先是导入各种Python库\nimport pandas as pd\nimport numpy as np\nfrom sklearn.metrics import confusion_matrix\nfrom matplotlib import pyplot as plt\nimport seaborn as sns\nfrom scale.plot import plot_embedding, plot_heatmap\n\n然后加载分析结果，包括聚类信息和特征信息\ny = pd.read_csv(&#39;output/cluster_assignments.txt&#39;, sep=&#39;\\t&#39;, index_col=0, header=None)[1].values\nfeature = pd.read_csv(&#39;output/feature.txt&#39;, sep=&#39;\\t&#39;, index_col=0, header=None)\n\n通过热图展示不同聚类细胞之间的差异图\nplot_heatmap(feature.T, y, \n             figsize=(8, 3), cmap=&#39;RdBu_r&#39;, vmax=8, vmin=-8, center=0,\n             ylabel=&#39;Feature dimension&#39;, yticklabels=np.arange(10)+1, \n             cax_title=&#39;Feature value&#39;, legend_font=6, ncol=1,\n             bbox_to_anchor=(1.1, 1.1), position=(0.92, 0.15, .08, .04))\n\n\n如果要矫正批次效应，可以通过根据feature的heatmap，去掉和batch相关的feature来实现我们可以展示SCALE对原始数据纠正后的值(imputed data), 该结果也能提高chromVAR鉴定motif的效果\nimputed = pd.read_csv(&#39;output/imputed_data.txt&#39;, sep=&#39;\\t&#39;, index_col=0)\n\n展示聚类特异性的peak， 分析由mat_specificity_score和cluster_specific完成\nfrom scale.specifity import cluster_specific, mat_specificity_score\n\nscore_mat = mat_specificity_score(imputed, y)\npeak_index, peak_labels = cluster_specific(score_mat, np.unique(y), top=200)\n\nplot_heatmap(imputed.iloc[peak_index], y=y, row_labels=peak_labels, ncol=3, cmap=&#39;Reds&#39;, \n             vmax=1, row_cluster=False, legend_font=6, cax_title=&#39;Peak Value&#39;,\n             figsize=(8, 10), bbox_to_anchor=(0.4, 1.2), position=(0.8, 0.76, 0.1, 0.015))\n\n\n\n参数介绍通过SCALE.py -h可以输出SCALE的所有可用参数\n\n-d&#x2F;–dataset: 单个文件矩阵应该指定文件路径，10X输出的多个文件则是文件目录\n\n-k: 设定输出结果的聚类数\n\n-o: 输出文件路径\n\n–pretrain: 读取之前训练的模型\n\n–lr: 修改起始学习速率, 默认是0.002，和模型训练有关\n\n–batch_size: 批处理大小， 默认就行，不需要修改（和批次效应处理无关）\n\n-g GPU: 选择GPU设备数目，非GPU服务器用不到\n\n–seed: 初始随机数种子，通常在遇到nan缺失时考虑修改\n\n-encode_dim, -decode_dim: 编码器和解码器的维度，通常也不需要修改\n\n-latent 隐藏层维度\n\n–low, –high: 过滤低质量的peak, 即出现比例高于或者低于某个阈值的peak，默认是0.01和0.9。作者推荐保留1万-3万的peak用于SCALE分析。如果数据质量很高，且peak数不多于10万，那么可以不过滤。\n\n–min_peaks: 过滤低质量细胞，如果该细胞的peak低于阈值\n\nlog_transform: log2(x+1)的变换\n\n–max_iter: 最大迭代数，默认是30000, 可以观察损失收敛的情况来修改，也就是训练模型这一步输出的信息\n\n-weight_decay: 没有说明\n\n–impute: 保存推断数据，默认开启\n\n–binary: 推荐加上该参数，减少imputed data占用空间\n\n–no_tsne: 不需要保存t-SNE结果\n\n–reference: 参考细胞类型\n\n-t: 如果输出矩阵是列为peak，行为barcode，用该参数进行转置\n\n\n对于使用者而言，我们一般只用修改-k更改最后的聚类数，–low, –high, —min_peaks来对原始数据进行过滤，以及加上–binary节约空间。\n假如在训练模型阶段，发现输出信息为loss&#x3D;nan recon_loss&#x3D;nan kl_loss&#x3D;nan,十有八九最终会报错退出， 可以如下的参数调整\n\n更改–seed\n\n用更加严格的条件过滤peak，例如-x 0.04 或 -x 0.06\n\n降低初始的学习速率，–lr 0.0002\n\n\nChIP-seq基本分析流程适用于ATAC-seq的前期分析。            \n","dateCreated":"2019-10-30T00:00:00+08:00","dateModified":"2019-10-30T00:00:00+08:00","datePublished":"2019-10-30T00:00:00+08:00","description":"SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征","headline":"SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/","keywords":"scRNA-Seq, ATAC"}</script>
+    <meta name="description" content="SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征">
+<meta property="og:url" content="https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/index.html">
+<meta property="og:site_name" content="iuu&#39;s blog">
+<meta property="og:description" content="SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://iuu19.github.io/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/1.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/2.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/3.png">
+<meta property="article:published_time" content="2019-10-29T16:00:00.000Z">
+<meta property="article:modified_time" content="2019-10-29T16:00:00.000Z">
+<meta property="article:author" content="Dr.iuu">
+<meta property="article:tag" content="scRNA-Seq">
+<meta property="article:tag" content="ATAC">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://iuu19.github.io/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/1.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-gf8wcm29a1hig4pgasvkpmpwcvjyqc9ufzpbo404wwnc2qcamao8rlll1csq.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/prism-vsc-dark-plus.css" type="text/css">
+<link rel="stylesheet" href="/css/prism-line-numbers.css" type="text/css"></head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            iuu&#39;s blog
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="/all-about"
+                aria-label="打开链接: /all-about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="阅读有关作者的更多信息"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+                </a>
+                <h4 class="sidebar-profile-name">Dr.iuu</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>NCMC-SCMC-SWCH</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://iuu19.github.io"
+                            
+                            rel="noopener"
+                            title="首页"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">首页</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="分类"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">分类</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="标签"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">标签</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="归档"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">归档</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-about"
+                            
+                            rel="noopener"
+                            title="关于"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">关于</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/iuu19/iuu19.github.io"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-center">
+    
+        <h1 class="post-title">
+            SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2019-10-30T00:00:00+08:00">
+	
+		    10月 30, 2019
+    	
+    </time>
+    
+        <span>发布在 </span>
+        
+    <a class="category-link" href="/all-categories/Single-Cell-RNA-Sequencing/">Single-Cell-RNA-Sequencing</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征</p>
+<span id="more"></span>
+
+
+<h1 id="table-of-contents">目录</h1><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6%E5%AE%89%E8%A3%85"><span class="toc-text">软件安装</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BD%AF%E4%BB%B6%E4%BD%BF%E7%94%A8"><span class="toc-text">软件使用</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E4%BB%8B%E7%BB%8D"><span class="toc-text">参数介绍</span></a></li></ol>
+
+<p><strong>SCALE</strong>全称是Single-Cell ATAC-seq analysis vie Latent feature Extraction, 从名字中就能知道这个软件是通过隐特征提取的方式分析单细胞ATAC-seq数据。</p>
+<p>在文章中，作者从开发者的角度列出了目前的scATAC-seq分析软件，chromVAR, scABC, cisTopic, scVI，发现每个软件都有一定的不足之处，而从我们软件使用者的角度，其实可以考虑都试试这些工具。</p>
+<p>SCALE结合了深度生成模型(Depp Generative Models)变分自动编码器框架(Variational Autoencoder, VAE)与概率高斯混合模型(Gaussian Mixture Model, GMM)去学习隐特征，用于准确地鉴定scATAC-seq数据中的特征。</p>
+<p>文章通过一张图来解释了软件的工作机制：</p>
+<img src="/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/1.png" class="">
+
+<p>SCALE将sc-ATAC-seq的输入数据x(Cells-by-Peaks矩阵)建模成一个联合分布，</p>
+<p>p(x,z,c)，c是GMM组件中对应的预定义的K个聚类，z是一个隐变量，是细胞在所有peak中实际可能的值，用于后续的聚类和可视化。z通过<br>z&#x3D;μz+σZ×ϵ计算而得，公式里面的 μzσz是编码器网络从x中学习而得，<br>ϵ则是从 $\mathbb(0,\mathbf)$ 抽样而成。</p>
+<p>从公式中我们还可以发现z其实和GMM的c有关，所以p(x,z,c)也可以写成P(x|z)p(z|c)p(c)，而p(c)是K个预定义聚类分布的离散概率分布，p(z|c)服从混合高斯分布，而p(x|z)则是服从多变量伯努利分布(multivartiable Bernoulli distribution), 通过解码者网络建模而成。<br>当然从一个软件使用者的角度而言，我们不会去关心代码，也不会关心原理，我们更关心的是这个工具能做什么。SCALE能做以下的分析<br>SCALE可以对隐特征聚类识别细胞类群<br>SCALE可以降噪，恢复缺失的peak<br>SCALE能够区分批次效应和生物学细胞类群之间的差异</p>
+<h1 id="软件安装"><a href="#软件安装" class="headerlink" title="软件安装"></a>软件安装</h1><p>推荐使用conda的方式进行软件安装（我测试过了，运行没有问题）</p>
+<p>第一步：创建一个环境，名字就是 <code>SCALE</code>，并且启动该环境</p>
+<pre><code>conda create -n SCALE python=3.6 pytorch
+conda activate SCALE
+</code></pre>
+<p>第二步：从GitHub上克隆该项目</p>
+<pre><code>git clone git://github.com/jsxlei/SCALE.git
+</code></pre>
+<p>第三步：安装SCALE</p>
+<pre><code>cd SCALE
+python setup.py install
+</code></pre>
+<p>之后分析的时候，只需要通过<code>conda activate SCALE</code>就能启动分析环境。</p>
+<p>考虑后续要交互的读取数据和可视化，那么建议再安装一个Jupyter</p>
+<pre><code>conda install jupyter
+</code></pre>
+<h1 id="软件使用"><a href="#软件使用" class="headerlink" title="软件使用"></a>软件使用</h1><p>SCALE支持两类输入文件：</p>
+<ul>
+<li>count矩阵，行为peak，列为barcode</li>
+<li>10X输出文件: count.mtx.gz, peak.tsv, barcode.tsv</li>
+</ul>
+<p>我们以官方提供的<strong>Forebrain</strong>数据集为例进行介绍，因为这个数据相对于另外一个数据集Mouse Atlas小多了。</p>
+<p>我们在服务器上新建一个文件夹，用于存放从<a target="_blank" rel="noopener" href="https://cloud.tsinghua.edu.cn/d/bda0332212154163a647/%E4%B8%8B%E8%BD%BD%E7%9A%84%E6%95%B0%E6%8D%AE">https://cloud.tsinghua.edu.cn/d/bda0332212154163a647/下载的数据</a></p>
+<pre><code>mkdir -p Forebrain
+</code></pre>
+<p>保证Forebrain有下载好的数据</p>
+<pre><code>$ ls Forebrain
+data.txt
+</code></pre>
+<p>之后运行程序</p>
+<pre><code>SCALE.py -d Forebrain/data.txt -k 8 --impute
+</code></pre>
+<p>软件运行步骤为：</p>
+<ul>
+<li>加载数据: Loading data</li>
+<li>模型训练: Training Model</li>
+<li>输出结果: Saving imputed data</li>
+</ul>
+<p>其中模型训练这一步时间比较久，可以尝试用GPU加速（我是普通CPU服务器没有办法）。最终会在当前文件夹看到一个output文件夹，里面有如下内容:</p>
+<ul>
+<li><p>imputed_data.txt: 每个细胞在每个特征的推断值，建议用–binary保存二进制格式</p>
+</li>
+<li><p>model.pt: 用于重复结果的模型文件，–pretrain参数能够读取该模型</p>
+</li>
+<li><p>feature.txt: 每个细胞的隐特征，用于聚类和可视化</p>
+</li>
+<li><p>cluster_assignments.txt: 两列，barcode和所属类群</p>
+</li>
+<li><p>tsne.txt, tsne.pdf: tSNE的坐标和PDF文件，坐标文件可以导入到R语言进行可视化</p>
+</li>
+</ul>
+<p>上面是命令行部分，下面则是Python环境进行交互式操作，输入jupyter notebook，之后在网页上打开</p>
+<p>首先是导入各种Python库</p>
+<pre><code>import pandas as pd
+import numpy as np
+from sklearn.metrics import confusion_matrix
+from matplotlib import pyplot as plt
+import seaborn as sns
+from scale.plot import plot_embedding, plot_heatmap
+</code></pre>
+<p>然后加载分析结果，包括聚类信息和特征信息</p>
+<pre><code>y = pd.read_csv(&#39;output/cluster_assignments.txt&#39;, sep=&#39;\t&#39;, index_col=0, header=None)[1].values
+feature = pd.read_csv(&#39;output/feature.txt&#39;, sep=&#39;\t&#39;, index_col=0, header=None)
+</code></pre>
+<p>通过热图展示不同聚类细胞之间的差异图</p>
+<pre><code>plot_heatmap(feature.T, y, 
+             figsize=(8, 3), cmap=&#39;RdBu_r&#39;, vmax=8, vmin=-8, center=0,
+             ylabel=&#39;Feature dimension&#39;, yticklabels=np.arange(10)+1, 
+             cax_title=&#39;Feature value&#39;, legend_font=6, ncol=1,
+             bbox_to_anchor=(1.1, 1.1), position=(0.92, 0.15, .08, .04))
+</code></pre>
+<img src="/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/2.png" class="">
+<p>如果要矫正批次效应，可以通过根据feature的heatmap，去掉和batch相关的feature来实现<br>我们可以展示SCALE对原始数据纠正后的值(imputed data), 该结果也能提高chromVAR鉴定motif的效果</p>
+<pre><code>imputed = pd.read_csv(&#39;output/imputed_data.txt&#39;, sep=&#39;\t&#39;, index_col=0)
+</code></pre>
+<p>展示聚类特异性的peak， 分析由<code>mat_specificity_score</code>和<code>cluster_specific</code>完成</p>
+<pre><code>from scale.specifity import cluster_specific, mat_specificity_score
+
+score_mat = mat_specificity_score(imputed, y)
+peak_index, peak_labels = cluster_specific(score_mat, np.unique(y), top=200)
+
+plot_heatmap(imputed.iloc[peak_index], y=y, row_labels=peak_labels, ncol=3, cmap=&#39;Reds&#39;, 
+             vmax=1, row_cluster=False, legend_font=6, cax_title=&#39;Peak Value&#39;,
+             figsize=(8, 10), bbox_to_anchor=(0.4, 1.2), position=(0.8, 0.76, 0.1, 0.015))
+</code></pre>
+<img src="/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/3.png" class="">
+
+<h1 id="参数介绍"><a href="#参数介绍" class="headerlink" title="参数介绍"></a>参数介绍</h1><p>通过<code>SCALE.py -h</code>可以输出SCALE的所有可用参数</p>
+<ul>
+<li><p>-d&#x2F;–dataset: 单个文件矩阵应该指定文件路径，10X输出的多个文件则是文件目录</p>
+</li>
+<li><p>-k: 设定输出结果的聚类数</p>
+</li>
+<li><p>-o: 输出文件路径</p>
+</li>
+<li><p>–pretrain: 读取之前训练的模型</p>
+</li>
+<li><p>–lr: 修改起始学习速率, 默认是0.002，和模型训练有关</p>
+</li>
+<li><p>–batch_size: 批处理大小， 默认就行，不需要修改（和批次效应处理无关）</p>
+</li>
+<li><p>-g GPU: 选择GPU设备数目，非GPU服务器用不到</p>
+</li>
+<li><p>–seed: 初始随机数种子，通常在遇到nan缺失时考虑修改</p>
+</li>
+<li><p>-encode_dim, -decode_dim: 编码器和解码器的维度，通常也不需要修改</p>
+</li>
+<li><p>-latent 隐藏层维度</p>
+</li>
+<li><p>–low, –high: 过滤低质量的peak, 即出现比例高于或者低于某个阈值的peak，默认是0.01和0.9。作者推荐保留1万-3万的peak用于SCALE分析。如果数据质量很高，且peak数不多于10万，那么可以不过滤。</p>
+</li>
+<li><p>–min_peaks: 过滤低质量细胞，如果该细胞的peak低于阈值</p>
+</li>
+<li><p>log_transform: log2(x+1)的变换</p>
+</li>
+<li><p>–max_iter: 最大迭代数，默认是30000, 可以观察损失收敛的情况来修改，也就是训练模型这一步输出的信息</p>
+</li>
+<li><p>-weight_decay: 没有说明</p>
+</li>
+<li><p>–impute: 保存推断数据，默认开启</p>
+</li>
+<li><p>–binary: 推荐加上该参数，减少imputed data占用空间</p>
+</li>
+<li><p>–no_tsne: 不需要保存t-SNE结果</p>
+</li>
+<li><p>–reference: 参考细胞类型</p>
+</li>
+<li><p>-t: 如果输出矩阵是列为peak，行为barcode，用该参数进行转置</p>
+</li>
+</ul>
+<p>对于使用者而言，我们一般只用修改-k更改最后的聚类数，–low, –high, —min_peaks来对原始数据进行过滤，以及加上–binary节约空间。</p>
+<p>假如在训练模型阶段，发现输出信息为loss&#x3D;nan recon_loss&#x3D;nan kl_loss&#x3D;nan,十有八九最终会报错退出， 可以如下的参数调整</p>
+<ul>
+<li><p>更改–seed</p>
+</li>
+<li><p>用更加严格的条件过滤peak，例如-x 0.04 或 -x 0.06</p>
+</li>
+<li><p>降低初始的学习速率，–lr 0.0002</p>
+</li>
+</ul>
+<p>ChIP-seq基本分析流程适用于ATAC-seq的前期分析。            </p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">标签</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/ATAC/" rel="tag">ATAC</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/scRNA-Seq/" rel="tag">scRNA-Seq</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-chromosome-territories-%E6%9F%93%E8%89%B2%E8%B4%A8%E7%96%86%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                    data-tooltip="chromosome-territories:染色质疆域简介"
+                    aria-label="上一篇: chromosome-territories:染色质疆域简介"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-10-30-Single_Cell_ATAC_Usage/"
+                    data-tooltip="Single Cell ATAC Install and Usage"
+                    aria-label="下一篇: Single Cell ATAC Install and Usage"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2022 Dr.iuu. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-11-02-chromosome-territories-%E6%9F%93%E8%89%B2%E8%B4%A8%E7%96%86%E5%9F%9F%E7%AE%80%E4%BB%8B/"
+                    data-tooltip="chromosome-territories:染色质疆域简介"
+                    aria-label="上一篇: chromosome-territories:染色质疆域简介"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019-10-30-Single_Cell_ATAC_Usage/"
+                    data-tooltip="Single Cell ATAC Install and Usage"
+                    aria-label="下一篇: Single Cell ATAC Install and Usage"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Diesen Beitrag teilen"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                    title="分享到 Facebook"
+                    aria-label="分享到 Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                    title="分享到 Twitter"
+                    aria-label="分享到 Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                    title="分享到 Google+"
+                    aria-label="分享到 Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#table-of-contents" aria-label="目录">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                        aria-label="分享到 Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                        aria-label="分享到 Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/"
+                        aria-label="分享到 Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/coveriuu.jpg" alt="作者的图片"/>
+        
+            <h4 id="about-card-name">Dr.iuu</h4>
+        
+            <div id="about-card-bio"><p>NCMC-SCMC-SWCH</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Bioinfo-CHD</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Pudong, Shanghai
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover2.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-3nlvflbbvekvxx0g6h2clfqhhxs61cvvbofv7nmctigkdbbhu5htlvmrqg80.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>
