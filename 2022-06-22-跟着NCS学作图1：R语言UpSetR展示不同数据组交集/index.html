@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="iuu&#39;s blog">
-    <title>chromosome conformation capture:染色质构象捕获技术 - iuu&#39;s blog</title>
+    <title>跟着NCS学作图1：R语言UpSetR展示不同数据组交集 - iuu&#39;s blog</title>
     <meta name="author" content="Dr.iuu">
     
     
@@ -17,24 +17,22 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"chromosome conformation capture:染色质构象捕获技术\n\n\n\n\n\nchromosome conformation capture称之为染色质构象捕获，简写为3C, 是一种生物化学手段，可以通过实验手段来研究空间结构上相近的染色质，本文简单介绍下3C的实验过程和原理。\n实验流程如下所示:\n\n可以分成以下4个步骤\n\ncrosslink chromatin, 染色质交联。通过甲醛固定细胞，可以在空间结构相邻的染色质片段之间产生共价氢键\ndigest crosslinked chromatin, 采用DNA限制性内切酶消化染色质，在酶切位点会形成粘性末端\nligation, 连接，通过DNA连接酶链接粘性末端\nreverse crosslinking, 反交联，用蛋白酶消除DNA的交联状态\n\n通过以上步骤处理之后，可以得到不同染色质片段连接在一起的DNA，这样的片段是一个嵌合体，由来自空间结构相近的两个不同DNA片段构成，称之为junction reads。通过实验处理，将三维结构上相近的染色质转换成了一维的DNA片段，所以这一技术称之为染色质构象捕获。通过分析junction reads中的不同部分分别对应哪些基因组区域，可以得到DNA之间的相互作用关系。\n在传统的3C技术中，得到junction reads后，需要针对感兴趣的两个目标片段设计引物，通过PCR反应将这两个区域构成的junction reads扩增出来，通过PCR产物的有无和定量，可以评估目的片段之间相互作用关系的有无和强度。\n\n由于需要同时考虑两个DNA片段来设计引物，所以传统的3C技术只适用于研究两个DNA片段之间的相互作用，即one-to-one， 而且受到PCR产物长度的限制，只适用于研究线性距离较近的片段之间的互作。\n科学家们在3C基础上不断革新，陆续发明了4C,5C,Hi-C等等更高通量，更高分辨率的研究手段，促成了三维基因组学的兴起和发展，在后续文章中再进行介绍。\n","dateCreated":"2019-11-02T22:31:01+08:00","dateModified":"2019-11-02T22:31:01+08:00","datePublished":"2019-11-02T22:31:01+08:00","description":"chromosome conformation capture:染色质构象捕获技术","headline":"chromosome conformation capture:染色质构象捕获技术","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/","keywords":"Hi-C, chromosome conformation capture, 染色质构象捕获技术"}</script>
-    <meta name="description" content="chromosome conformation capture:染色质构象捕获技术">
-<meta property="og:type" content="blog">
-<meta property="og:title" content="chromosome conformation capture:染色质构象捕获技术">
-<meta property="og:url" content="https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/index.html">
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"\n\n\n\n跟着NCS学作图1：R语言UpSetR展示不同数据组交集\n\n\n论文Title: A highly conserved core bacterial microbiota with nitrogen-fixation capacity inhabits the xylem sap in maize plants. Nat Commun. 2022 Jun 11;13(1):3361.\n拟复现Figure\n\n数据格式\n\n第一列为基因名字\n后面每一列分别为各数据分组\n\nR代码-UpSetRlibrary(UpSetR) #R 3.5\notu_RA  0] ","dateCreated":"2022-06-22T00:27:41+08:00","dateModified":"2022-06-22T00:27:41+08:00","datePublished":"2022-06-22T00:27:41+08:00","description":"","headline":"跟着NCS学作图1：R语言UpSetR展示不同数据组交集","image":["UpSetR0.png"],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/","keywords":"R语言, UpSetR包","thumbnailUrl":"UpSetR0.png"}</script>
+    <meta property="og:type" content="blog">
+<meta property="og:title" content="跟着NCS学作图1：R语言UpSetR展示不同数据组交集">
+<meta property="og:url" content="https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/index.html">
 <meta property="og:site_name" content="iuu&#39;s blog">
-<meta property="og:description" content="chromosome conformation capture:染色质构象捕获技术">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/1.png">
-<meta property="og:image" content="https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/2.png">
-<meta property="article:published_time" content="2019-11-02T14:31:01.000Z">
-<meta property="article:modified_time" content="2019-11-02T14:31:01.000Z">
+<meta property="og:image" content="https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/Figure2.jpg">
+<meta property="og:image" content="https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/data_info.png">
+<meta property="og:image" content="https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/UpSetR.png">
+<meta property="article:published_time" content="2022-06-21T16:27:41.000Z">
+<meta property="article:modified_time" content="2022-06-21T16:27:41.000Z">
 <meta property="article:author" content="Dr.iuu">
-<meta property="article:tag" content="Hi-C">
-<meta property="article:tag" content="chromosome conformation capture">
-<meta property="article:tag" content="染色质构象捕获技术">
+<meta property="article:tag" content="R语言">
+<meta property="article:tag" content="UpSetR包">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/1.png">
+<meta name="twitter:image" content="https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/Figure2.jpg">
     
     
         
@@ -42,6 +40,9 @@
     
         <meta property="og:image" content="https://iuu19.github.io/assets/images/coveriuu.jpg"/>
     
+    
+        <meta property="og:image" content="https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/UpSetR0.png"/>
+        <meta class="swiftype" name="image" data-type="enum" content="https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/UpSetR0.png"/>
     
     
     
@@ -247,20 +248,20 @@
         <div class="post-header main-content-wrap text-center">
     
         <h1 class="post-title">
-            chromosome conformation capture:染色质构象捕获技术
+            跟着NCS学作图1：R语言UpSetR展示不同数据组交集
         </h1>
     
     
         <div class="post-meta">
-    <time datetime="2019-11-02T22:31:01+08:00">
+    <time datetime="2022-06-22T00:27:41+08:00">
 	
-		    11月 02, 2019
+		    6月 22, 2022
     	
     </time>
     
         <span>发布在 </span>
         
-    <a class="category-link" href="/all-categories/Hi-C%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90/">Hi-C数据分析</a>
+    <a class="category-link" href="/all-categories/%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE/">跟着NCS学作图</a>
 
 
     
@@ -272,27 +273,45 @@
     
     <div class="post-content markdown">
         <div class="main-content-wrap">
-            <p>chromosome conformation capture:染色质构象捕获技术</p>
+            <font face="times new roman" size=3>
+
 <span id="more"></span>
 
-
-<h1 id="table-of-contents">目录</h1>
+<p><strong>跟着NCS学作图1：R语言UpSetR展示不同数据组交集</strong></p>
+<h1 id="table-of-contents">目录</h1><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BA%E6%96%87"><span class="toc-text">论文</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%9F%E5%A4%8D%E7%8E%B0Figure"><span class="toc-text">拟复现Figure</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F"><span class="toc-text">数据格式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#R%E4%BB%A3%E7%A0%81-UpSetR"><span class="toc-text">R代码-UpSetR</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E7%BB%88UpSetR%E5%9B%BE"><span class="toc-text">最终UpSetR图</span></a></li></ol>
 <hr>
-<p><strong>chromosome conformation capture</strong>称之为<strong>染色质构象捕获</strong>，简写为<strong>3C</strong>, 是一种生物化学手段，可以通过实验手段来研究空间结构上相近的染色质，本文简单介绍下3C的实验过程和原理。</p>
-<p>实验流程如下所示:</p>
-<img src="/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/1.png" class="">
-<p>可以分成以下4个步骤</p>
-<ol>
-<li>crosslink chromatin, 染色质交联。通过甲醛固定细胞，可以在空间结构相邻的染色质片段之间产生共价氢键</li>
-<li>digest crosslinked chromatin, 采用DNA限制性内切酶消化染色质，在酶切位点会形成粘性末端</li>
-<li>ligation, 连接，通过DNA连接酶链接粘性末端</li>
-<li>reverse crosslinking, 反交联，用蛋白酶消除DNA的交联状态</li>
-</ol>
-<p>通过以上步骤处理之后，可以得到不同染色质片段连接在一起的DNA，这样的片段是一个嵌合体，由来自空间结构相近的两个不同DNA片段构成，称之为junction reads。<br>通过实验处理，将三维结构上相近的染色质转换成了一维的DNA片段，所以这一技术称之为染色质构象捕获。通过分析junction reads中的不同部分分别对应哪些基因组区域，可以得到DNA之间的相互作用关系。</p>
-<p>在传统的3C技术中，得到junction reads后，需要针对感兴趣的两个目标片段设计引物，通过PCR反应将这两个区域构成的junction reads扩增出来，通过PCR产物的有无和定量，可以评估目的片段之间相互作用关系的有无和强度。</p>
-<img src="/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/2.png" class="">
-<p>由于需要同时考虑两个DNA片段来设计引物，所以传统的3C技术只适用于研究两个DNA片段之间的相互作用，即one-to-one， 而且受到PCR产物长度的限制，只适用于研究线性距离较近的片段之间的互作。</p>
-<p>科学家们在3C基础上不断革新，陆续发明了4C,5C,Hi-C等等更高通量，更高分辨率的研究手段，促成了三维基因组学的兴起和发展，在后续文章中再进行介绍。</p>
+<h2 id="论文"><a href="#论文" class="headerlink" title="论文"></a>论文</h2><p><strong>Title:</strong> A highly conserved core bacterial microbiota with nitrogen-fixation capacity inhabits the xylem sap in maize plants. <strong><a target="_blank" rel="noopener" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9187771/">Nat Commun. 2022 Jun 11;13(1):3361</a></strong>.</p>
+<h2 id="拟复现Figure"><a href="#拟复现Figure" class="headerlink" title="拟复现Figure"></a>拟复现Figure</h2><img src="/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/Figure2.jpg" class="">
+
+<h2 id="数据格式"><a href="#数据格式" class="headerlink" title="数据格式"></a>数据格式</h2><img src="/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/data_info.png" class="">
+<ul>
+<li>第一列为基因名字</li>
+<li>后面每一列分别为各数据分组</li>
+</ul>
+<h2 id="R代码-UpSetR"><a href="#R代码-UpSetR" class="headerlink" title="R代码-UpSetR"></a>R代码-<strong>UpSetR</strong></h2><pre class="line-numbers language-&#123;r"><code class="language-&#123;r">library(UpSetR) #R 3.5
+otu_RA <- read.delim('otu_RA.txt', header = TRUE, row.names = 1, sep = '\t')
+otu_RA[otu_RA > 0] <- 1
+p <- upset(otu_RA, 
+  nset = 7, 
+  nintersects = 10, 
+  order.by = c('degree','freq'), 
+  decreasing = c(TRUE, TRUE),
+  mb.ratio = c(0.7, 0.3),
+  point.size = 1.8,
+  line.size = 1,
+  mainbar.y.label = "Intersection size", 
+  sets.x.label = "Set Size", 
+  main.bar.color = "#2a83a2", 
+  sets.bar.color = "#3b7960",
+  queries = list(list(query = intersects, params = list("BS","RS","RE","VE","SE","LE","P"), active = T,color="#d66a35", query.name = "BS vs RS vs RE vs VE vs SE vs LE vs P")))
+p
+select_otu <- rownames(otu_RA[rowSums(otu_RA[1:7]) == 7, ])
+otu_select <- otu_RA[select_otu, ]
+write.table(as.matrix(otu_select),"otu_overlap.txt",sep = '\t',quote = FALSE,col.names = NA)
+dev.off()
+<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+<h2 id="最终UpSetR图"><a href="#最终UpSetR图" class="headerlink" title="最终UpSetR图"></a>最终UpSetR图</h2><img src="/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/UpSetR.png" class="">
+<p>Vertical bars of upper plot show number of intersecting operational taxonomic units (OTUs) among plant compartments and soil, denoted by connected black circles below the histogram. Orange bars and circles represent OTUs that overlap among seven compartments, horizontal bars show OTUs set size.</p>
 
             
 
@@ -304,7 +323,7 @@
             <div class="post-footer-tags">
                 <span class="text-color-light text-small">标签</span><br/>
                 
-    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/Hi-C/" rel="tag">Hi-C</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/chromosome-conformation-capture/" rel="tag">chromosome conformation capture</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/" rel="tag">染色质构象捕获技术</a>
+    <a class="tag tag--primary tag--small t-none-link" href="/all-tags/R%E8%AF%AD%E8%A8%80/" rel="tag">R语言</a> <a class="tag tag--primary tag--small t-none-link" href="/all-tags/UpSetR%E5%8C%85/" rel="tag">UpSetR包</a>
 
             </div>
         
@@ -314,14 +333,11 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2019-11-02-3C%E7%9A%84%E8%A1%8D%E7%94%9F%E6%8A%80%E6%9C%AF%E7%AE%80%E4%BB%8B/"
-                    data-tooltip="3C的衍生技术简介"
-                    aria-label="上一篇: 3C的衍生技术简介"
-                >
-                    
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
                         <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
                     </a>
@@ -331,9 +347,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2019-11-02-chromosome-territories-%E6%9F%93%E8%89%B2%E8%B4%A8%E7%96%86%E5%9F%9F%E7%AE%80%E4%BB%8B/"
-                    data-tooltip="chromosome-territories:染色质疆域简介"
-                    aria-label="下一篇: chromosome-territories:染色质疆域简介"
+                    href="/2022-06-21-1%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
+                    data-tooltip="1跟着NCS学作图：R语言UpSetR展示不同数据组交集"
+                    aria-label="下一篇: 1跟着NCS学作图：R语言UpSetR展示不同数据组交集"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
@@ -358,7 +374,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -371,7 +387,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -384,7 +400,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -425,14 +441,11 @@
         <ul class="post-actions post-action-nav">
             <li class="post-action">
                 
-                    
-                <a
-                    class="post-action-btn btn btn--default tooltip--top"
-                    href="/2019-11-02-3C%E7%9A%84%E8%A1%8D%E7%94%9F%E6%8A%80%E6%9C%AF%E7%AE%80%E4%BB%8B/"
-                    data-tooltip="3C的衍生技术简介"
-                    aria-label="上一篇: 3C的衍生技术简介"
-                >
-                    
+                    <a
+                        class="post-action-btn btn btn--disabled"
+                        aria-hidden="true"
+                    >
+                        
                         <i class="fa fa-angle-left" aria-hidden="true"></i>
                         <span class="hide-xs hide-sm text-small icon-ml">上一篇</span>
                     </a>
@@ -442,9 +455,9 @@
                     
                 <a
                     class="post-action-btn btn btn--default tooltip--top"
-                    href="/2019-11-02-chromosome-territories-%E6%9F%93%E8%89%B2%E8%B4%A8%E7%96%86%E5%9F%9F%E7%AE%80%E4%BB%8B/"
-                    data-tooltip="chromosome-territories:染色质疆域简介"
-                    aria-label="下一篇: chromosome-territories:染色质疆域简介"
+                    href="/2022-06-21-1%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
+                    data-tooltip="1跟着NCS学作图：R语言UpSetR展示不同数据组交集"
+                    aria-label="下一篇: 1跟着NCS学作图：R语言UpSetR展示不同数据组交集"
                 >
                     
                         <span class="hide-xs hide-sm text-small icon-mr">下一篇</span>
@@ -469,7 +482,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
                     title="分享到 Facebook"
                     aria-label="分享到 Facebook"
                 >
@@ -482,7 +495,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/"
+                    target="new" href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
                     title="分享到 Twitter"
                     aria-label="分享到 Twitter"
                 >
@@ -495,7 +508,7 @@
             <li class="post-action hide-xs">
                 <a
                     class="post-action-btn btn btn--default"
-                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/"
+                    target="new" href="https://plus.google.com/share?url=https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
                     title="分享到 Google+"
                     aria-label="分享到 Google+"
                 >
@@ -527,7 +540,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/"
+                        href="https://www.facebook.com/sharer/sharer.php?u=https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
                         aria-label="分享到 Facebook"
                     >
                         <i class="fab fa-facebook" aria-hidden="true"></i><span>分享到 Facebook</span>
@@ -540,7 +553,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/"
+                        href="https://twitter.com/intent/tweet?text=https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
                         aria-label="分享到 Twitter"
                     >
                         <i class="fab fa-twitter" aria-hidden="true"></i><span>分享到 Twitter</span>
@@ -553,7 +566,7 @@
                     <a
                         class="share-option-btn"
                         target="new"
-                        href="https://plus.google.com/share?url=https://iuu19.github.io/2019-11-02-chromosome-conformation-capture-%E6%9F%93%E8%89%B2%E8%B4%A8%E6%9E%84%E8%B1%A1%E6%8D%95%E8%8E%B7%E6%8A%80%E6%9C%AF/"
+                        href="https://plus.google.com/share?url=https://iuu19.github.io/2022-06-22-%E8%B7%9F%E7%9D%80NCS%E5%AD%A6%E4%BD%9C%E5%9B%BE1%EF%BC%9AR%E8%AF%AD%E8%A8%80UpSetR%E5%B1%95%E7%A4%BA%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E7%BB%84%E4%BA%A4%E9%9B%86/"
                         aria-label="分享到 Google+"
                     >
                         <i class="fab fa-google-plus" aria-hidden="true"></i><span>分享到 Google+</span>
