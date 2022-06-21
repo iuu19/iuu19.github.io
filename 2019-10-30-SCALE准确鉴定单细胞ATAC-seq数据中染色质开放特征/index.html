@@ -25,16 +25,16 @@
 <meta property="og:site_name" content="iuu&#39;s blog">
 <meta property="og:description" content="SCALE准确鉴定单细胞ATAC-seq数据中染色质开放特征">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://iuu19.github.io/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/1.png">
-<meta property="og:image" content="https://iuu19.github.io/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/2.png">
-<meta property="og:image" content="https://iuu19.github.io/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/3.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/1.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/2.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/3.png">
 <meta property="article:published_time" content="2019-10-29T16:00:00.000Z">
 <meta property="article:modified_time" content="2019-10-29T16:00:00.000Z">
 <meta property="article:author" content="Dr.iuu">
 <meta property="article:tag" content="scRNA-Seq">
 <meta property="article:tag" content="ATAC">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://iuu19.github.io/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/1.png">
+<meta name="twitter:image" content="https://iuu19.github.io/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/1.png">
     
     
         
@@ -282,7 +282,7 @@
 <p>在文章中，作者从开发者的角度列出了目前的scATAC-seq分析软件，chromVAR, scABC, cisTopic, scVI，发现每个软件都有一定的不足之处，而从我们软件使用者的角度，其实可以考虑都试试这些工具。</p>
 <p>SCALE结合了深度生成模型(Depp Generative Models)变分自动编码器框架(Variational Autoencoder, VAE)与概率高斯混合模型(Gaussian Mixture Model, GMM)去学习隐特征，用于准确地鉴定scATAC-seq数据中的特征。</p>
 <p>文章通过一张图来解释了软件的工作机制：</p>
-<img src="/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/1.png" class="">
+<img src="/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/1.png" class="">
 
 <p>SCALE将sc-ATAC-seq的输入数据x(Cells-by-Peaks矩阵)建模成一个联合分布，</p>
 <p>p(x,z,c)，c是GMM组件中对应的预定义的K个聚类，z是一个隐变量，是细胞在所有peak中实际可能的值，用于后续的聚类和可视化。z通过<br>z&#x3D;μz+σZ×ϵ计算而得，公式里面的 μzσz是编码器网络从x中学习而得，<br>ϵ则是从 $\mathbb(0,\mathbf)$ 抽样而成。</p>
@@ -358,7 +358,7 @@ feature = pd.read_csv(&#39;output/feature.txt&#39;, sep=&#39;\t&#39;, index_col=
              cax_title=&#39;Feature value&#39;, legend_font=6, ncol=1,
              bbox_to_anchor=(1.1, 1.1), position=(0.92, 0.15, .08, .04))
 </code></pre>
-<img src="/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/2.png" class="">
+<img src="/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/2.png" class="">
 <p>如果要矫正批次效应，可以通过根据feature的heatmap，去掉和batch相关的feature来实现<br>我们可以展示SCALE对原始数据纠正后的值(imputed data), 该结果也能提高chromVAR鉴定motif的效果</p>
 <pre><code>imputed = pd.read_csv(&#39;output/imputed_data.txt&#39;, sep=&#39;\t&#39;, index_col=0)
 </code></pre>
@@ -372,7 +372,7 @@ plot_heatmap(imputed.iloc[peak_index], y=y, row_labels=peak_labels, ncol=3, cmap
              vmax=1, row_cluster=False, legend_font=6, cax_title=&#39;Peak Value&#39;,
              figsize=(8, 10), bbox_to_anchor=(0.4, 1.2), position=(0.8, 0.76, 0.1, 0.015))
 </code></pre>
-<img src="/2019-10-30-scale-zhun-que-jian-ding-dan-xi-bao-atac-seq-shu-ju-zhong-ran-se-zhi-kai-fang-te-zheng/3.png" class="">
+<img src="/2019-10-30-SCALE%E5%87%86%E7%A1%AE%E9%89%B4%E5%AE%9A%E5%8D%95%E7%BB%86%E8%83%9EATAC-seq%E6%95%B0%E6%8D%AE%E4%B8%AD%E6%9F%93%E8%89%B2%E8%B4%A8%E5%BC%80%E6%94%BE%E7%89%B9%E5%BE%81/3.png" class="">
 
 <h1 id="参数介绍"><a href="#参数介绍" class="headerlink" title="参数介绍"></a>参数介绍</h1><p>通过<code>SCALE.py -h</code>可以输出SCALE的所有可用参数</p>
 <ul>
@@ -482,7 +482,7 @@ plot_heatmap(imputed.iloc[peak_index], y=y, row_labels=peak_labels, ncol=3, cmap
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -593,7 +593,7 @@ plot_heatmap(imputed.iloc[peak_index], y=y, row_labels=peak_labels, ncol=3, cmap
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>

@@ -17,7 +17,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"A&#x2F;B compartment:染色质区室简介\n\n\n\n\n\nHi-C技术的出现推动了三维基因组学的发展，利用Hi-C技术，科学家不仅证实了染色质疆域的存在，而且进一步发现了更多染色质的三维特征。\nLieberman-Aiden等人利用Hi-C技术研究了人淋巴母细胞的三维结构，首次提出了A&#x2F;B compartment的概念，文章发表在science上，标题如下:Comprehensive Mapping of Long-Range Interactions Reveals Folding Principles of the Human Genome.Science. 2009 Oct 9; 326(5950): 289–293.\n构建1Mb分辨率下的基因组互作图谱，然后采用Oberved&#x2F;Expected的算法对交互矩阵进行归一化，对归一化之后的矩阵计算泊松相关系数，矩阵对应的热图示意如下:\n\n\n在归一化后的交互矩阵热图中，蓝色代表观测到的交互频率小于期望的交互频率，红色代表观测到的交互频率大于期望的交互频率。在相关系数矩阵的热图中，相关系数从-1到1，颜色从蓝色过渡到红色。\n对相关系数矩阵进行PCA降维分析，在第一主成分PC1轴上，可以将染色质区域明确分成两个部分，称之为A&#x2F;B compartment。对应下图Eigenvector正负两个部分:\n\n\n通过对正负区域对应的基因表达量，组蛋白修饰，DNase酶超敏位点情况研究发现，发现在正数区域，包含的基因较多，对应的基因表达量相对较高，H3K36me3和DNA超敏位点的信号也相对较高，这些特征都表明这些区域是更加开放的，可接近的，转录激活的区域，将这个区域定义为A compartment, 对应开放染色质区域；而负数对应区域包含的基因个数较少，含量也低，将其定义为B  compartment, 对应封闭染色质区域。\n后续文章也都基于这个思路来研究A&#x2F;B compartment，现在已有很多成熟的软件可以使用，比如juice，homer 等，之后会详细介绍其用法。\n","dateCreated":"2019-11-02T22:48:53+08:00","dateModified":"2019-11-02T22:48:53+08:00","datePublished":"2019-11-02T22:48:53+08:00","description":"A&#x2F;B compartment:染色质区室简介","headline":"A/B compartment:染色质区室简介","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/","keywords":"Hi-C, A/B compartment, 染色质区室"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"A&#x2F;B compartment:染色质区室简介\n\n\n\n\n\nHi-C技术的出现推动了三维基因组学的发展，利用Hi-C技术，科学家不仅证实了染色质疆域的存在，而且进一步发现了更多染色质的三维特征。\nLieberman-Aiden等人利用Hi-C技术研究了人淋巴母细胞的三维结构，首次提出了A&#x2F;B compartment的概念，文章发表在science上，标题如下:Comprehensive Mapping of Long-Range Interactions Reveals Folding Principles of the Human Genome.Science. 2009 Oct 9; 326(5950): 289–293.\n构建1Mb分辨率下的基因组互作图谱，然后采用Oberved&#x2F;Expected的算法对交互矩阵进行归一化，对归一化之后的矩阵计算泊松相关系数，矩阵对应的热图示意如下:\n\n\n在归一化后的交互矩阵热图中，蓝色代表观测到的交互频率小于期望的交互频率，红色代表观测到的交互频率大于期望的交互频率。在相关系数矩阵的热图中，相关系数从-1到1，颜色从蓝色过渡到红色。\n对相关系数矩阵进行PCA降维分析，在第一主成分PC1轴上，可以将染色质区域明确分成两个部分，称之为A&#x2F;B compartment。对应下图Eigenvector正负两个部分:\n\n\n通过对正负区域对应的基因表达量，组蛋白修饰，DNase酶超敏位点情况研究发现，发现在正数区域，包含的基因较多，对应的基因表达量相对较高，H3K36me3和DNA超敏位点的信号也相对较高，这些特征都表明这些区域是更加开放的，可接近的，转录激活的区域，将这个区域定义为A compartment, 对应开放染色质区域；而负数对应区域包含的基因个数较少，含量也低，将其定义为B  compartment, 对应封闭染色质区域。\n后续文章也都基于这个思路来研究A&#x2F;B compartment，现在已有很多成熟的软件可以使用，比如juice，homer 等，之后会详细介绍其用法。\n","dateCreated":"2019-11-02T22:48:53+08:00","dateModified":"2019-11-02T22:48:53+08:00","datePublished":"2019-11-02T22:48:53+08:00","description":"A&#x2F;B compartment:染色质区室简介","headline":"A/B compartment:染色质区室简介","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/","keywords":"A/B compartment, 染色质区室, Hi-C"}</script>
     <meta name="description" content="A&#x2F;B compartment:染色质区室简介">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="A&#x2F;B compartment:染色质区室简介">
@@ -25,16 +25,16 @@
 <meta property="og:site_name" content="iuu&#39;s blog">
 <meta property="og:description" content="A&#x2F;B compartment:染色质区室简介">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://iuu19.github.io/2019-11-02-a-b-compartment-ran-se-zhi-qu-shi-jian-jie/1.png">
-<meta property="og:image" content="https://iuu19.github.io/2019-11-02-a-b-compartment-ran-se-zhi-qu-shi-jian-jie/2.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/1.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/2.png">
 <meta property="article:published_time" content="2019-11-02T14:48:53.000Z">
 <meta property="article:modified_time" content="2019-11-02T14:48:53.000Z">
 <meta property="article:author" content="Dr.iuu">
-<meta property="article:tag" content="Hi-C">
 <meta property="article:tag" content="A&#x2F;B compartment">
 <meta property="article:tag" content="染色质区室">
+<meta property="article:tag" content="Hi-C">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://iuu19.github.io/2019-11-02-a-b-compartment-ran-se-zhi-qu-shi-jian-jie/1.png">
+<meta name="twitter:image" content="https://iuu19.github.io/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/1.png">
     
     
         
@@ -281,11 +281,11 @@
 <p>Hi-C技术的出现推动了三维基因组学的发展，利用Hi-C技术，科学家不仅证实了染色质疆域的存在，而且进一步发现了更多染色质的三维特征。</p>
 <p>Lieberman-Aiden等人利用Hi-C技术研究了人淋巴母细胞的三维结构，首次提出了A&#x2F;B compartment的概念，文章发表在science上，标题如下:<br><strong><a target="_blank" rel="noopener" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2858594/">Comprehensive Mapping of Long-Range Interactions Reveals Folding Principles of the Human Genome.Science. 2009 Oct 9; 326(5950): 289–293.</a></strong></p>
 <p>构建1Mb分辨率下的基因组互作图谱，然后采用Oberved&#x2F;Expected的算法对交互矩阵进行归一化，对归一化之后的矩阵计算泊松相关系数，矩阵对应的热图示意如下:</p>
-<img src="/2019-11-02-a-b-compartment-ran-se-zhi-qu-shi-jian-jie/1.png" class="">
+<img src="/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/1.png" class="">
 
 <p>在归一化后的交互矩阵热图中，蓝色代表观测到的交互频率小于期望的交互频率，红色代表观测到的交互频率大于期望的交互频率。在相关系数矩阵的热图中，相关系数从-1到1，颜色从蓝色过渡到红色。</p>
 <p>对相关系数矩阵进行PCA降维分析，在第一主成分PC1轴上，可以将染色质区域明确分成两个部分，称之为A&#x2F;B compartment。对应下图Eigenvector正负两个部分:</p>
-<img src="/2019-11-02-a-b-compartment-ran-se-zhi-qu-shi-jian-jie/2.png" class="">
+<img src="/2019-11-02-A-B-compartment-%E6%9F%93%E8%89%B2%E8%B4%A8%E5%8C%BA%E5%AE%A4%E7%AE%80%E4%BB%8B/2.png" class="">
 
 <p>通过对正负区域对应的基因表达量，组蛋白修饰，DNase酶超敏位点情况研究发现，发现在正数区域，包含的基因较多，对应的基因表达量相对较高，H3K36me3和DNA超敏位点的信号也相对较高，这些特征都表明这些区域是更加开放的，可接近的，转录激活的区域，将这个区域定义为A compartment, 对应开放染色质区域；而负数对应区域包含的基因个数较少，含量也低，将其定义为B  compartment, 对应封闭染色质区域。</p>
 <p>后续文章也都基于这个思路来研究A&#x2F;B compartment，现在已有很多成熟的软件可以使用，比如juice，homer 等，之后会详细介绍其用法。</p>
@@ -343,7 +343,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -454,7 +454,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>

@@ -17,7 +17,7 @@
             <link rel="alternate" type="application/atom+xml" title="RSS" href="/atom.xml">
         
     
-    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"3C的衍生技术简介\n\n\n\n\n\n染色质构象捕获技术的发明，使得科学家可以通过实验手段来研究染色质的空间结构。传统的3C技术通量较低，只适用于分析one_vs_one的染色质互作，为了更加高效的进行3D基因组学的研究，科学家们在3C技术的基础上不断推陈出新，衍生出了各种技术，图示如下:\n\n\n4C在junction reads基础上，进行二次酶切，形成包含junction reads的环状序列，然后针对感兴趣的基因组区域，设计PCR引物，将包含该基因组区域的环状片段扩增出来，从而可以研究该基因组片段与其他片段的相互作用关系，称之为one_vs_all。\n5C采用事先设计好的，两端带有通用引物的探针与junction reads杂交，进行PCR扩增，PCR产物两端包含了通用引物，下游可以结合芯片或者高通量测序来分析基因组区域的互作。事先可以针对感兴趣的多个基因组区域互作设计引探针，所以5C是一种many_vs_many的研究策略。\n3C,4C,5C都是基于最原始的junction reads, 不同之处就在于不同引物设计策略导致的通量的差异。\nHi-C在原始3C基础上有所变化，junction reads产生过程中添加生物素标记，然后采用抗体富集带有标记的junction reads, 再构建普通的测序文库，进行高通量测序。没有了针对目标区域设计引物的限制，再结合测序的高通量特点， 使得Hi-C可以一次性研究所有染色质片段之间的互作，称之为all_vs_all。\nChIP-Ioop先用抗体捕获交联的染色质片段，后续的步骤和3C一样，针对两个目标区域的互作设计引物来进行one_vs_one的研究；ChIA-PET与之类似，只不过在粘性末端连接的过程中引入一段通用的adapter序列，以此为桥梁将互作的两个染色质片段连接起来，后续在进行酶切，加接头，测序，也可以进行all_vs_all的染色质互作研究。\n考虑到不同技术的成本和限制，各自有不同的应用场景，其中Hi-C和ChIA-PET技术由于其研究对象的高通量性，一次可以获取所有染色质片段互作信息，成为了最热门的3D基因组学研究技术，极大的推动了3D基因组学的发展。\n","dateCreated":"2019-11-02T22:37:22+08:00","dateModified":"2019-11-02T22:37:22+08:00","datePublished":"2019-11-02T22:37:22+08:00","description":"3C的衍生技术简介","headline":"3C的衍生技术简介","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-11-02-3C%E7%9A%84%E8%A1%8D%E7%94%9F%E6%8A%80%E6%9C%AF%E7%AE%80%E4%BB%8B/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-11-02-3C%E7%9A%84%E8%A1%8D%E7%94%9F%E6%8A%80%E6%9C%AF%E7%AE%80%E4%BB%8B/","keywords":"3C, Hi-C"}</script>
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg"},"articleBody":"3C的衍生技术简介\n\n\n\n\n\n染色质构象捕获技术的发明，使得科学家可以通过实验手段来研究染色质的空间结构。传统的3C技术通量较低，只适用于分析one_vs_one的染色质互作，为了更加高效的进行3D基因组学的研究，科学家们在3C技术的基础上不断推陈出新，衍生出了各种技术，图示如下:\n\n\n4C在junction reads基础上，进行二次酶切，形成包含junction reads的环状序列，然后针对感兴趣的基因组区域，设计PCR引物，将包含该基因组区域的环状片段扩增出来，从而可以研究该基因组片段与其他片段的相互作用关系，称之为one_vs_all。\n5C采用事先设计好的，两端带有通用引物的探针与junction reads杂交，进行PCR扩增，PCR产物两端包含了通用引物，下游可以结合芯片或者高通量测序来分析基因组区域的互作。事先可以针对感兴趣的多个基因组区域互作设计引探针，所以5C是一种many_vs_many的研究策略。\n3C,4C,5C都是基于最原始的junction reads, 不同之处就在于不同引物设计策略导致的通量的差异。\nHi-C在原始3C基础上有所变化，junction reads产生过程中添加生物素标记，然后采用抗体富集带有标记的junction reads, 再构建普通的测序文库，进行高通量测序。没有了针对目标区域设计引物的限制，再结合测序的高通量特点， 使得Hi-C可以一次性研究所有染色质片段之间的互作，称之为all_vs_all。\nChIP-Ioop先用抗体捕获交联的染色质片段，后续的步骤和3C一样，针对两个目标区域的互作设计引物来进行one_vs_one的研究；ChIA-PET与之类似，只不过在粘性末端连接的过程中引入一段通用的adapter序列，以此为桥梁将互作的两个染色质片段连接起来，后续在进行酶切，加接头，测序，也可以进行all_vs_all的染色质互作研究。\n考虑到不同技术的成本和限制，各自有不同的应用场景，其中Hi-C和ChIA-PET技术由于其研究对象的高通量性，一次可以获取所有染色质片段互作信息，成为了最热门的3D基因组学研究技术，极大的推动了3D基因组学的发展。\n","dateCreated":"2019-11-02T22:37:22+08:00","dateModified":"2019-11-02T22:37:22+08:00","datePublished":"2019-11-02T22:37:22+08:00","description":"3C的衍生技术简介","headline":"3C的衍生技术简介","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"https://iuu19.github.io/2019-11-02-3C%E7%9A%84%E8%A1%8D%E7%94%9F%E6%8A%80%E6%9C%AF%E7%AE%80%E4%BB%8B/"},"publisher":{"@type":"Organization","name":"Dr.iuu","sameAs":["https://github.com/iuu19/iuu19.github.io"],"image":"coveriuu.jpg","logo":{"@type":"ImageObject","url":"coveriuu.jpg"}},"url":"https://iuu19.github.io/2019-11-02-3C%E7%9A%84%E8%A1%8D%E7%94%9F%E6%8A%80%E6%9C%AF%E7%AE%80%E4%BB%8B/","keywords":"Hi-C, 3C"}</script>
     <meta name="description" content="3C的衍生技术简介">
 <meta property="og:type" content="blog">
 <meta property="og:title" content="3C的衍生技术简介">
@@ -25,14 +25,14 @@
 <meta property="og:site_name" content="iuu&#39;s blog">
 <meta property="og:description" content="3C的衍生技术简介">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://iuu19.github.io/2019-11-02-3c-de-yan-sheng-ji-zhu-jian-jie/1.png">
+<meta property="og:image" content="https://iuu19.github.io/2019-11-02-3C%E7%9A%84%E8%A1%8D%E7%94%9F%E6%8A%80%E6%9C%AF%E7%AE%80%E4%BB%8B/1.png">
 <meta property="article:published_time" content="2019-11-02T14:37:22.000Z">
 <meta property="article:modified_time" content="2019-11-02T14:37:22.000Z">
 <meta property="article:author" content="Dr.iuu">
-<meta property="article:tag" content="3C">
 <meta property="article:tag" content="Hi-C">
+<meta property="article:tag" content="3C">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://iuu19.github.io/2019-11-02-3c-de-yan-sheng-ji-zhu-jian-jie/1.png">
+<meta name="twitter:image" content="https://iuu19.github.io/2019-11-02-3C%E7%9A%84%E8%A1%8D%E7%94%9F%E6%8A%80%E6%9C%AF%E7%AE%80%E4%BB%8B/1.png">
     
     
         
@@ -277,7 +277,7 @@
 <h1 id="table-of-contents">目录</h1>
 <hr>
 <p>染色质构象捕获技术的发明，使得科学家可以通过实验手段来研究染色质的空间结构。传统的3C技术通量较低，只适用于分析one_vs_one的染色质互作，为了更加高效的进行3D基因组学的研究，科学家们在3C技术的基础上不断推陈出新，衍生出了各种技术，图示如下:</p>
-<img src="/2019-11-02-3c-de-yan-sheng-ji-zhu-jian-jie/1.png" class="">
+<img src="/2019-11-02-3C%E7%9A%84%E8%A1%8D%E7%94%9F%E6%8A%80%E6%9C%AF%E7%AE%80%E4%BB%8B/1.png" class="">
 
 <p><strong>4C</strong>在junction reads基础上，进行二次酶切，形成包含junction reads的环状序列，然后针对感兴趣的基因组区域，设计PCR引物，将包含该基因组区域的环状片段扩增出来，从而可以研究该基因组片段与其他片段的相互作用关系，称之为one_vs_all。</p>
 <p><strong>5C</strong>采用事先设计好的，两端带有通用引物的探针与junction reads杂交，进行PCR扩增，PCR产物两端包含了通用引物，下游可以结合芯片或者高通量测序来分析基因组区域的互作。事先可以针对感兴趣的多个基因组区域互作设计引探针，所以5C是一种many_vs_many的研究策略。</p>
@@ -339,7 +339,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
@@ -450,7 +450,7 @@
             <a
                 class="post-action-btn btn btn--default btn-open-shareoptions"
                 href="#btn-open-shareoptions"
-                aria-label="Share this post"
+                aria-label="Diesen Beitrag teilen"
             >
                 <i class="fa fa-share-alt" aria-hidden="true"></i>
             </a>
